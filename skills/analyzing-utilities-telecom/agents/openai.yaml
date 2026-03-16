@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Utilities Telecom"
+  short_description: "Companion logic for utility stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-utilities-telecom when the controller has routed a company into utility or telecom analysis."

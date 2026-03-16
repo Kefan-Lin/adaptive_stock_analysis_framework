@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Software Platforms"
+  short_description: "Companion logic for software stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-software-platforms when the controller has routed a company into software or platform analysis."

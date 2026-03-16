@@ -1,0 +1,4 @@
+interface:
+  display_name: "Adaptive Stock Analysis Framework"
+  short_description: "Controller for industry-routed equity research"
+  default_prompt: "Use $analyzing-stocks to route a company to the correct industry skill and produce a unified equity research report with bear/base/bull valuation, margin of safety, and position sizing."

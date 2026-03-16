@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Banks"
+  short_description: "Companion logic for bank stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-banks when the controller has routed a company into bank analysis."

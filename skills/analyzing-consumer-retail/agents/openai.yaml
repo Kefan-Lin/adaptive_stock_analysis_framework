@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Consumer Retail"
+  short_description: "Companion logic for consumer stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-consumer-retail when the controller has routed a company into consumer or retail analysis."

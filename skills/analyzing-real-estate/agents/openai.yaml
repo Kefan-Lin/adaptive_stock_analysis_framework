@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Real Estate"
+  short_description: "Companion logic for real-estate research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-real-estate when the controller has routed a company into real-estate analysis."

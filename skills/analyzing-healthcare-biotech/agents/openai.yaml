@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Healthcare Biotech"
+  short_description: "Companion logic for biotech stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-healthcare-biotech when the controller has routed a company into healthcare or biotech analysis."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Industrials Transport"
+  short_description: "Companion logic for industrial stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-industrials-transport when the controller has routed a company into industrial or transport analysis."

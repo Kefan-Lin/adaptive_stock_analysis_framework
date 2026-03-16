@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Insurers"
+  short_description: "Companion logic for insurer stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-insurers when the controller has routed a company into insurer analysis."

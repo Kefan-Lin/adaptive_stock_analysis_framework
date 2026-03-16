@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Resource Energy Materials"
+  short_description: "Companion logic for resource stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-resource-energy-materials when the controller has routed a company into resource, energy, or materials analysis."

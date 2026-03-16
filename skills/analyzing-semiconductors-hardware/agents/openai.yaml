@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyzing Semiconductors Hardware"
+  short_description: "Companion logic for semi stock research"
+  default_prompt: "Use $analyzing-stocks with $analyzing-semiconductors-hardware when the controller has routed a company into semiconductor or hardware analysis."
