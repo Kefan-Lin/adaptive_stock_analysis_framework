@@ -124,6 +124,15 @@ Use with `portfolio-sizing.md`:
 - `Core` is only possible when financial quality is high, confidence is high, and margin of safety is at least `25%`.
 - High-uncertainty industries should be downgraded at least one tier even if upside looks large.
 - Any failed value-trap screen blocks aggressive sizing.
+- If `risk-register.md` returns 2+ `High` entries, maximum size is `Starter` regardless of margin of safety.
+
+## 9a) Red-Team Interaction
+
+Before writing the Investment Conclusion, complete `risk-register.md` and the Red-Team Gate (Section 9.0 of `report-template.md`).
+The value-investing verdict (`Attractive / Neutral / Unattractive`) must be reconciled with the red-team output:
+- If the highest-risk scenario drives the weighted fair value below current price, the verdict cannot be `Attractive`.
+- If a key assumption failure reduces margin of safety below 10%, downgrade the verdict by one band.
+- Document the reconciliation in the "何种证据会改变观点" field.
 
 ## 10) Required Output Block
 

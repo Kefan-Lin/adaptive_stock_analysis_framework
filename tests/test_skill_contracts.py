@@ -74,6 +74,55 @@ class RoutingBoundaryContractTests(unittest.TestCase):
         self.assertIn("Tower infrastructure", routing_examples)
 
 
+class RiskRegisterAndRedTeamContractTests(unittest.TestCase):
+    def test_risk_register_covers_eight_required_categories(self) -> None:
+        register = read("skills/analyzing-stocks/references/risk-register.md")
+        for category in [
+            "Regulatory",
+            "Customer",
+            "Supply Chain",
+            "Leverage",
+            "Accounting",
+            "Litigation",
+            "Competitive",
+            "Geopolitical",
+        ]:
+            self.assertIn(category, register, f"risk-register.md missing category: {category}")
+
+    def test_risk_register_defines_stance_constraint_table(self) -> None:
+        register = read("skills/analyzing-stocks/references/risk-register.md")
+        self.assertIn("2+ High entries", register)
+        self.assertIn("Stance cannot exceed", register)
+
+    def test_report_template_has_red_team_gate_before_conclusion(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        red_team_pos = template.find("Red-Team Gate")
+        # Use the subsection header "9.1 投资结论" so the section title "→ 投资结论" doesn't confuse ordering
+        conclusion_pos = template.find("9.1 投资结论")
+        self.assertGreater(red_team_pos, 0, "Red-Team Gate section missing from report-template.md")
+        self.assertGreater(conclusion_pos, 0, "Section 9.1 投资结论 missing from report-template.md")
+        self.assertGreater(conclusion_pos, red_team_pos, "Red-Team Gate must appear before 9.1 投资结论")
+
+    def test_report_template_risk_section_uses_eight_bucket_table(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        for bucket in [
+            "监管与政策",
+            "客户与收入集中度",
+            "供应链与投入成本",
+            "杠杆与债务契约",
+            "会计与盈利质量",
+            "诉讼、ESG",
+            "竞争与颠覆",
+            "地缘政治与汇率",
+        ]:
+            self.assertIn(bucket, template, f"report-template.md risk table missing bucket: {bucket}")
+
+    def test_value_investing_lens_references_red_team_gate(self) -> None:
+        lens = read("skills/analyzing-stocks/references/value-investing-lens.md")
+        self.assertIn("Red-Team", lens)
+        self.assertIn("risk-register.md", lens)
+
+
 class GlobalSourceAndSizingContractTests(unittest.TestCase):
     def test_source_policy_covers_us_hk_and_a_share_inputs(self) -> None:
         source_policy = read("skills/analyzing-stocks/references/source-policy.md")
