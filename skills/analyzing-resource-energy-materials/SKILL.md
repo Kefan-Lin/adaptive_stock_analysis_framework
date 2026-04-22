@@ -20,13 +20,17 @@ Use as a companion to `$analyzing-stocks`, not as a standalone replacement for t
 Choose one subtype:
 - Upstream energy
 - Diversified mining or bulk materials
-- Specialty chemicals or processors
+- Commodity chemicals or spread-driven materials
+- Specialty chemicals or processors with formulation, distribution, or service economics
 - Royalty or streaming-like asset exposure
 
 State:
 - why this subtype fits
 - 3 key value drivers
 - 3 failure triggers
+
+Boundary rule:
+- If the thesis is mostly formulation, service, distribution, or customer-embedded economics rather than commodity exposure, reroute to `analyzing-industrials-transport`.
 
 ## 2. KPI Tree
 
@@ -46,9 +50,13 @@ State:
 
 ## 4. Valuation Routing
 
-- Primary: mid-cycle DCF or NAV
-- Secondary: EV/resource or EV/EBITDA
-- Critical assumptions: long-run price deck, reserve life, cost-curve position, sustaining capex
+- Commodity assets:
+  - Primary: mid-cycle DCF or NAV
+  - Secondary: EV/resource or EV/EBITDA
+- Specialty processors:
+  - Primary: mid-cycle operating-company DCF or EV/EBITDA on normalized margins
+  - Secondary: replacement-cost or asset-value cross-check only when assets truly anchor the thesis
+- Critical assumptions: long-run price deck, reserve life, cost-curve position, sustaining capex, spread durability
 - Avoid: spot-price extrapolation or single-year earnings multiple at cycle extremes
 
 ## 5. Risk Checklist

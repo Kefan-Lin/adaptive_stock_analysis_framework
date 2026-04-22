@@ -39,14 +39,20 @@ Choose one primary route and optionally one secondary route:
 | --- | --- |
 | Software, data platform, marketplace software, mission-critical infra | `$analyzing-software-platforms` |
 | Consumer brand, retail, marketplace retail, restaurants | `$analyzing-consumer-retail` |
-| Industrials, logistics, transport, capital goods, distributors | `$analyzing-industrials-transport` |
+| Industrials, logistics, transport, capital goods, distributors, specialty/process manufacturers without commodity-asset thesis | `$analyzing-industrials-transport` |
 | Semiconductors, hardware, foundry, equipment, electronics | `$analyzing-semiconductors-hardware` |
-| Mining, energy, materials, upstream/downstream commodity exposure | `$analyzing-resource-energy-materials` |
+| Mining, energy, bulk materials, commodity chemicals, spread-driven materials, asset-NAV-heavy processors | `$analyzing-resource-energy-materials` |
 | Commercial banks, regional banks, digital banks | `$analyzing-banks` |
 | P&C insurers, life insurers, reinsurers, brokers with insurance economics | `$analyzing-insurers` |
-| REITs, developers, landlords, property platforms with NAV/FFO logic | `$analyzing-real-estate` |
-| Pharma, biotech, medtech, healthcare services with pipeline/regulatory risk | `$analyzing-healthcare-biotech` |
-| Utilities, telecom, regulated networks, dividend-like infrastructure | `$analyzing-utilities-telecom` |
+| REITs, developers, landlords, property-linked operators; asset-light managers may still keep operating-company valuation family | `$analyzing-real-estate` |
+| Pharma, biotech, medtech, healthcare services, CRO, and HCIT; subtype decides operating-company vs probabilistic path | `$analyzing-healthcare-biotech` |
+| Utilities, telecom, towers, fiber, and regulated or network infrastructure; tower/fiber names may use infrastructure overlay | `$analyzing-utilities-telecom` |
+
+Boundary reminders:
+- If a business is processor-heavy, service-led, or distribution-led rather than commodity/NAV-led, processor-heavy businesses may route to industrials instead.
+- Healthcare services, CRO, and HCIT names are not automatically pipeline businesses.
+- Property services or brokerage businesses can stay on the real-estate route for domain KPI coverage while still using operating-company valuation family.
+- Tower/fiber names may use infrastructure overlay rather than pure telecom subscriber or utility rate-base logic.
 
 If the company is mixed:
 - Output `primary industry` and `secondary industry`.

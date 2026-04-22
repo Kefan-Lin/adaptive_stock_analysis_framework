@@ -21,12 +21,15 @@ Choose one subtype:
 - Equity REIT
 - Net lease or infrastructure-like REIT
 - Developer or merchant builder
-- Property manager or services-heavy real-estate operator
+- Asset-light property manager, broker, or real-estate services platform
 
 State:
 - why this subtype fits
 - 3 key value drivers
 - 3 failure triggers
+
+Boundary rule:
+- Asset-light property service names may stay on this route for sector KPI coverage, but they can still use operating-company valuation family rather than default NAV/FFO logic.
 
 ## 2. KPI Tree
 
@@ -46,10 +49,14 @@ State:
 
 ## 4. Valuation Routing
 
-- Primary: NAV
-- Secondary: FFO/AFFO multiple
-- Critical assumptions: cap rates, occupancy durability, lease rollover, debt refinancing
-- Avoid: EBITDA-only valuation without asset-value context
+- Asset-heavy landlords and developers:
+  - Primary: NAV
+  - Secondary: FFO/AFFO multiple
+- Asset-light property services:
+  - Primary: operating-company valuation family, EBIT/FCF multiple, or DCF
+  - Secondary: sector-specific transaction or management-fee multiples
+- Critical assumptions: cap rates, occupancy durability, lease rollover, debt refinancing, fee durability
+- Avoid: forcing asset-light service businesses into NAV-only logic
 
 ## 5. Risk Checklist
 
@@ -62,6 +69,7 @@ State:
 ## 6. Deliverables Back to Controller
 
 - Subtype and property model
+- Whether the name should keep operating-company valuation family
 - KPI tree with NOI, NAV, leverage, and payout metrics
 - Key accounting normalizations
 - Valuation route using NAV or FFO/AFFO logic

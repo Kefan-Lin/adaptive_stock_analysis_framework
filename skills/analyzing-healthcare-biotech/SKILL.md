@@ -18,15 +18,19 @@ Use as a companion to `$analyzing-stocks`, not as a standalone replacement for t
 ## 1. Industry Router
 
 Choose one subtype:
+- Pre-commercial biotech or pipeline-heavy biopharma
 - Commercial biopharma
-- Pre-commercial biotech
-- Medtech and devices
-- Healthcare services or tools with reimbursement sensitivity
+- Medtech, diagnostics, or devices
+- Healthcare services, tools, CRO, or HCIT
 
 State:
 - why this subtype fits
 - 3 key value drivers
 - 3 failure triggers
+
+Boundary rule:
+- Not every healthcare name is a pipeline story.
+- Healthcare services, tools, CRO, or HCIT names usually keep operating-company diagnostics and cash-flow-and-multiples valuation unless binary reimbursement, trial, or pipeline exposure dominates.
 
 ## 2. KPI Tree
 
@@ -46,10 +50,15 @@ State:
 
 ## 4. Valuation Routing
 
-- Primary: SOTP or rNPV
-- Secondary: peer multiple or cash-floor triangulation
-- Critical assumptions: probability of success, peak sales, exclusivity duration, runway, dilution
-- Avoid: standard steady-state DCF for early-stage or binary pipeline names
+- Pre-commercial biotech:
+  - Primary: SOTP or rNPV
+  - Secondary: peer multiple or cash-floor triangulation
+  - Avoid: standard steady-state DCF
+- Commercial biopharma / medtech / healthcare services:
+  - Primary: operating-company diagnostics plus DCF, earnings, or revenue multiple as appropriate
+  - Secondary: SOTP when a portfolio or pipeline really matters
+- Critical assumptions: probability of success, peak sales, exclusivity duration, reimbursement path, runway, dilution
+- Avoid: treating healthcare services and tools as if they are automatically binary pipeline assets
 
 ## 5. Risk Checklist
 
@@ -62,6 +71,7 @@ State:
 ## 6. Deliverables Back to Controller
 
 - Subtype and asset model
+- Which names should stay on operating-company diagnostics vs probabilistic-healthcare
 - KPI tree with pipeline, launch, runway, and dilution metrics
 - Key normalizations for collaboration and milestone accounting
 - Valuation route with probability adjustment

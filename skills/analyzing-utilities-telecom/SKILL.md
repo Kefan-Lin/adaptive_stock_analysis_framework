@@ -21,12 +21,15 @@ Choose one subtype:
 - Regulated utility
 - Wireless telecom
 - Wireline or broadband operator
-- Fiber, tower, or network infrastructure operator
+- Tower or fiber infrastructure operator
 
 State:
 - why this subtype fits
 - 3 key value drivers
 - 3 failure triggers
+
+Boundary rule:
+- Tower or fiber names may lean on infrastructure-style DCF, AFFO, or EV/EBITDA rather than utility rate-base logic or subscriber-telecom logic.
 
 ## 2. KPI Tree
 
@@ -46,9 +49,14 @@ State:
 
 ## 4. Valuation Routing
 
-- Primary: DCF or DDM
-- Secondary: EV/EBITDA
-- Critical assumptions: allowed return, rate-base growth, churn, ARPU, dividend coverage, capex
+- Regulated utility:
+  - Primary: DCF or DDM
+  - Secondary: rate-base or allowed-return cross-check
+- Telecom:
+  - Primary: DCF or EV/EBITDA
+  - Secondary: subscriber or ARPU-based multiple context
+- Tower or fiber names may lean on infrastructure-style DCF, AFFO, or EV/EBITDA with tenancy and churn assumptions.
+- Critical assumptions: allowed return, rate-base growth, churn, ARPU, tenancy, dividend coverage, capex
 - Avoid: treating yield alone as value without capex and leverage context
 
 ## 5. Risk Checklist

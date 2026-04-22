@@ -10,20 +10,31 @@
 | E-commerce marketplace | MercadoLibre | `analyzing-consumer-retail` |
 | Capital goods | Honeywell | `analyzing-industrials-transport` |
 | Logistics | UPS | `analyzing-industrials-transport` |
+| Specialty coatings / formulation-led chemicals | Sherwin-Williams | `analyzing-industrials-transport` |
 | Foundry | TSMC | `analyzing-semiconductors-hardware` |
 | Equipment | ASML | `analyzing-semiconductors-hardware` |
 | Upstream energy | ConocoPhillips | `analyzing-resource-energy-materials` |
-| Specialty chemicals | Sherwin-Williams | `analyzing-resource-energy-materials` |
+| Commodity chemicals | Dow | `analyzing-resource-energy-materials` |
 | Large bank | JPMorgan | `analyzing-banks` |
 | Regional bank | M&T Bank | `analyzing-banks` |
 | P&C insurer | Chubb | `analyzing-insurers` |
 | Reinsurer | RenaissanceRe | `analyzing-insurers` |
 | Equity REIT | Prologis | `analyzing-real-estate` |
+| Property services | CBRE | `analyzing-real-estate` |
 | Developer | D.R. Horton | `analyzing-real-estate` |
+| Healthcare services | HCA Healthcare | `analyzing-healthcare-biotech` |
 | Medtech | Intuitive Surgical | `analyzing-healthcare-biotech` |
 | Pre-commercial biotech | Recursion | `analyzing-healthcare-biotech` |
 | Regulated utility | NextEra Energy | `analyzing-utilities-telecom` |
 | Wireless telecom | T-Mobile | `analyzing-utilities-telecom` |
+| Tower infrastructure | American Tower | `analyzing-utilities-telecom` |
+
+## Boundary Notes
+
+- `analyzing-healthcare-biotech` includes healthcare services and tools, but those names often keep operating-company diagnostics and valuation family.
+- `analyzing-real-estate` includes property services for sector KPI coverage, but asset-light names do not have to default to NAV/FFO logic.
+- `analyzing-resource-energy-materials` is for commodity or spread-driven materials exposure; formulation-led specialty chemicals may fit `analyzing-industrials-transport` better.
+- `analyzing-utilities-telecom` covers towers and fiber, but those names often use infrastructure-style valuation rather than subscriber or rate-base-only logic.
 
 ## Mixed Business Examples
 
