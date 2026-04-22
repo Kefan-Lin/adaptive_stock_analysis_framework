@@ -26,6 +26,7 @@ Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selec
 ## Step 1: Define Scope
 
 - Pin down ticker, exchange, currency, analysis date.
+- If there are multiple listings, ADRs, or locally listed lines, state the primary listing and the actual tradable line you are evaluating.
 - State horizon (`1-2y`, `3-5y`, `5y+`) and style (`compounder`, `cyclical`, `turnaround`, `special situation`).
 - State the final user-facing `Stance`: `Buy / Add / Hold / Reduce / Avoid`.
 - If working notes use `initiate / trim`, normalize them to `Buy / Reduce` before the final report.
@@ -101,6 +102,7 @@ Always load these references from this skill:
 ## Step 5: Build Source Map and Evidence Ledger
 
 - Follow [source-policy](references/source-policy.md) strictly.
+- Match the filing set to the listing jurisdiction and accounting basis (`US GAAP`, `IFRS`, `PRC GAAP`, or local equivalent).
 - Tag each critical number with date and source.
 - Label each statement as:
   - `Fact`
@@ -146,6 +148,7 @@ Always load these references from this skill:
 6. If the company fits a high-uncertainty bucket, auto-downgrade position sizing by at least one tier.
 7. If a secondary industry skill is used, state exactly which sections it influenced.
 8. If the route is not `operating-company`, do not force EBITDA, ROIC-WACC, or Reverse DCF terminology where it does not fit the balance-sheet or asset framework.
+9. If the tradable line is illiquid, the ADR differs materially from the primary listing, or the bid-ask spread is wide, downgrade position sizing and say which line anchors the conclusion.
 
 ## Merge schema
 

@@ -26,6 +26,12 @@ Before finalizing any report, verify:
 
 If current data cannot be verified, say so explicitly and lower confidence.
 
+## Listing Line and Jurisdiction Rules
+
+- Anchor the report on the security the user can actually trade, but reconcile it with the primary listing when ADRs, dual listings, or local lines differ.
+- State which exchange line is the valuation anchor and which filing regime supplies the primary evidence.
+- If the ADR is thinly traded but the local line is liquid, say so and downgrade sizing for execution friction.
+
 ## Evidence Ledger Rules
 
 For every material number:
@@ -42,11 +48,36 @@ Preferred citation style inside the report:
 ## Primary Source Checklist
 
 Use as many as available:
-- `10-K / 10-Q / 20-F / 6-K`
-- Earnings release and earnings deck
-- Conference call transcript or prepared remarks
-- Proxy statement for compensation/governance
-- Debt presentation or credit agreement for leveraged names
+
+### US / SEC names
+
+- `10-K / 10-Q / 20-F / 6-K / 8-K`
+- earnings release and earnings deck
+- conference call transcript or prepared remarks
+- proxy statement for compensation/governance
+
+### HK / HKEX names
+
+- HKEX annual report, interim report, and results announcement
+- inside information, allotment, buyback, dividend, placement, circular, or refinancing notice
+- management presentation or webcast when provided
+
+### CN / A-share names
+
+- A-share annual / interim / quarterly reports
+- `业绩预告` and `业绩快报`
+- exchange announcements for placements, convertibles, buybacks, M&A, and major contracts
+
+### Cross-market supplements
+
+- debt presentation or credit agreement for leveraged names
+- regulator or exchange statistics for banks, insurers, utilities, and other regulated sectors
+
+## Accounting-Basis Mapping
+
+- State whether the numbers are under `US GAAP`, `IFRS`, `PRC GAAP`, or another local basis.
+- When comparing peers across standards, call out the line items most likely to break comparability: fair-value marks, impairment timing, lease treatment, capitalized R&D, reserve accounting, and regulatory capital definitions.
+- If a mapping is uncertain, do not smooth it away; lower confidence and keep the assumptions visible.
 
 ## Failure Conditions
 
@@ -55,3 +86,4 @@ Do not finalize a confident stance if:
 - The latest reporting period is missing
 - Capital structure is unclear
 - Share count or dilution is stale
+- The filing jurisdiction or accounting basis is unclear for the tradable line you are valuing

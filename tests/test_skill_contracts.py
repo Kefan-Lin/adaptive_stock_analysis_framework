@@ -74,5 +74,28 @@ class RoutingBoundaryContractTests(unittest.TestCase):
         self.assertIn("Tower infrastructure", routing_examples)
 
 
+class GlobalSourceAndSizingContractTests(unittest.TestCase):
+    def test_source_policy_covers_us_hk_and_a_share_inputs(self) -> None:
+        source_policy = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("HKEX", source_policy)
+        self.assertIn("A-share annual / interim / quarterly reports", source_policy)
+        self.assertIn("业绩预告", source_policy)
+        self.assertIn("IFRS", source_policy)
+        self.assertIn("PRC GAAP", source_policy)
+
+    def test_portfolio_sizing_has_liquidity_and_spread_rules(self) -> None:
+        sizing = read("skills/analyzing-stocks/references/portfolio-sizing.md")
+        self.assertIn("Average daily traded value", sizing)
+        self.assertIn("bid-ask spread", sizing)
+        self.assertIn("ADR", sizing)
+        self.assertIn("micro-cap", sizing)
+        self.assertIn("low-turnover", sizing)
+
+    def test_controller_mentions_tradable_line_and_liquidity_downgrade(self) -> None:
+        controller = read("skills/analyzing-stocks/SKILL.md")
+        self.assertIn("tradable line", controller)
+        self.assertIn("bid-ask spread", controller)
+
+
 if __name__ == "__main__":
     unittest.main()
