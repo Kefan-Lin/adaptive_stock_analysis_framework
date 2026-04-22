@@ -123,6 +123,36 @@ class RiskRegisterAndRedTeamContractTests(unittest.TestCase):
         self.assertIn("risk-register.md", lens)
 
 
+class MacroOverlayROICAndFXContractTests(unittest.TestCase):
+    def test_macro_overlay_covers_four_regime_dimensions(self) -> None:
+        macro = read("skills/analyzing-stocks/references/macro-overlay.md")
+        for dimension in ["Rate Regime", "Inflation Regime", "FX Regime", "Commodity Cycle"]:
+            self.assertIn(dimension, macro, f"macro-overlay.md missing section: {dimension}")
+
+    def test_macro_overlay_per_family_adjustments_cover_all_families(self) -> None:
+        macro = read("skills/analyzing-stocks/references/macro-overlay.md")
+        for family in ["Operating companies", "Banks", "Real estate", "Biotech", "Regulated utilities"]:
+            self.assertIn(family, macro, f"macro-overlay.md missing per-family adjustment for: {family}")
+
+    def test_macro_overlay_defines_combined_stress_scenario(self) -> None:
+        macro = read("skills/analyzing-stocks/references/macro-overlay.md")
+        self.assertIn("Combined Stress Scenario", macro)
+        self.assertIn("Bear (macro stress)", macro)
+
+    def test_financial_diagnostics_roic_wacc_required_for_operating_company(self) -> None:
+        diagnostics = read("skills/analyzing-stocks/references/financial-diagnostics.md")
+        self.assertIn("required", diagnostics)
+        self.assertIn("insufficient disclosure", diagnostics)
+        # Ensure the old "only when" language is gone
+        self.assertNotIn("only when invested-capital math is meaningful", diagnostics)
+
+    def test_source_policy_has_fx_normalization_section(self) -> None:
+        source = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("Currency and FX Normalization", source)
+        self.assertIn("period-average", source)
+        self.assertIn("period-end", source)
+
+
 class CatalystAndPortfolioConstructionContractTests(unittest.TestCase):
     def test_report_template_catalyst_section_requires_timing_and_probability(self) -> None:
         template = read("skills/analyzing-stocks/references/report-template.md")

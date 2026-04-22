@@ -79,6 +79,25 @@ Use as many as available:
 - When comparing peers across standards, call out the line items most likely to break comparability: fair-value marks, impairment timing, lease treatment, capitalized R&D, reserve accounting, and regulatory capital definitions.
 - If a mapping is uncertain, do not smooth it away; lower confidence and keep the assumptions visible.
 
+## Currency and FX Normalization
+
+When the primary reporting currency differs from the analysis or comparison currency:
+
+1. **State the reporting currency** at the top of the evidence ledger (Section 10.4).
+2. **Income-statement items** (revenue, gross profit, EBITDA, net income):
+   use **period-average** exchange rates for the reporting period.
+3. **Balance-sheet items** (cash, debt, book value, net assets):
+   use **period-end** exchange rates.
+4. Do not mix period-average and period-end rates within the same table or comparison.
+5. Source the FX rates from the company's own filing footnotes when provided;
+   otherwise cite a reputable data source and the date retrieved.
+6. For cross-name comparisons, convert all names to a common currency using a
+   consistent rate vintage (same quarter-end or year-end) and note this as an Assumption.
+7. For ADR or dual-listed names, verify that USD/ADR valuations are reconciled with
+   the primary-listing currency before finalizing a price target.
+
+If FX rates cannot be sourced reliably, lower confidence and flag as a data gap.
+
 ## Failure Conditions
 
 Do not finalize a confident stance if:

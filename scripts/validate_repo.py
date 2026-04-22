@@ -24,6 +24,7 @@ FULL_REQUIRED = [
     "skills/analyzing-stocks/references/financial-diagnostics.md",
     "skills/analyzing-stocks/references/industry-playbooks.md",
     "skills/analyzing-stocks/references/industry-structure.md",
+    "skills/analyzing-stocks/references/macro-overlay.md",
     "skills/analyzing-stocks/references/portfolio-construction.md",
     "skills/analyzing-stocks/references/portfolio-sizing.md",
     "skills/analyzing-stocks/references/risk-register.md",

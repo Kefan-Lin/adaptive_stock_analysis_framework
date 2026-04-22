@@ -27,7 +27,10 @@ Key checks:
 - Margin quality: gross margin, operating leverage, adjusted-vs-GAAP gaps
 - Balance sheet resilience: leverage, liquidity, maturity wall, contingent liabilities
 - Cash conversion: CFO vs net income, FCF stability, maintenance vs growth capex
-- Capital efficiency: ROIC vs WACC only when invested-capital math is meaningful
+- Capital efficiency: ROIC vs WACC is **required** for operating-company family.
+  If invested-capital math cannot be derived from available disclosures, state
+  "insufficient disclosure" explicitly and lower the confidence level by one band.
+  Do not omit or substitute a qualitative comment for the quantitative check.
 
 Stress design:
 - `Mild`: revenue down 10%
