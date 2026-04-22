@@ -142,7 +142,9 @@
 ### 9.1 投资结论
 
 - `Stance`：`Buy / Add / Hold / Reduce / Avoid`
-- `Position Size`：`Core / Starter / Speculative / Watch-Avoid`
+- `Position Size`（per-name，来自 portfolio-sizing.md）：`Core / Starter / Speculative / Watch-Avoid`
+- `Position Size`（portfolio-adjusted，来自 portfolio-construction.md）：`Core / Starter / Speculative / Watch-Avoid`
+- 如果两者不同，说明调整原因（行业上限/相关性/因子集中度）：
 - `Add-on Trigger`：
 - `Trim/Exit Trigger`：
 - 何种证据会改变观点：
@@ -167,10 +169,19 @@
 - 整体风险等级：`Low / Medium / High`
 - 来自风险清单的 Stance 约束（如有）：
 
-### 10.2 催化剂
-1. ...
-2. ...
-3. ...
+### 10.2 催化剂（每条必须包含时间、概率、估值影响）
+
+| # | 催化剂描述 | 预期时间区间 | 触发概率 | 估值影响（±%） |
+| --- | --- | --- | --- | --- |
+| 1 |  |  |  |  |
+| 2 |  |  |  |  |
+| 3 |  |  |  |  |
+
+说明：
+- 预期时间区间：例如 `2025Q3`、`FY2026H1`、`12-18个月内`
+- 触发概率：主观估计，如 `高（>60%）/ 中（30-60%）/ 低（<30%）`
+- 估值影响：相对于 Base 估值的加权公允价值变化，例如 `+15%`（正向触发）或 `-20%`（风险催化剂）
+- 如果是 biotech 或 binary outcome，每条 catalyst 还需对应 `industry-playbooks.md` 中的 catalyst calendar 格式
 
 ### 10.3 监控指标
 1. `<KPI/阈值>` → `<动作>`

@@ -123,6 +123,41 @@ class RiskRegisterAndRedTeamContractTests(unittest.TestCase):
         self.assertIn("risk-register.md", lens)
 
 
+class CatalystAndPortfolioConstructionContractTests(unittest.TestCase):
+    def test_report_template_catalyst_section_requires_timing_and_probability(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("预期时间区间", template)
+        self.assertIn("触发概率", template)
+        self.assertIn("估值影响", template)
+
+    def test_report_template_catalyst_section_covers_biotech_calendar(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("catalyst calendar", template)
+
+    def test_report_template_section9_references_portfolio_construction(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("portfolio-construction.md", template)
+
+    def test_portfolio_construction_defines_sector_caps(self) -> None:
+        construction = read("skills/analyzing-stocks/references/portfolio-construction.md")
+        self.assertIn("soft cap", construction)
+        self.assertIn("hard cap", construction)
+
+    def test_portfolio_construction_defines_correlation_check(self) -> None:
+        construction = read("skills/analyzing-stocks/references/portfolio-construction.md")
+        self.assertIn("KPI-Driver Correlation", construction)
+        self.assertIn("high-correlation", construction)
+
+    def test_portfolio_construction_defines_factor_tilt(self) -> None:
+        construction = read("skills/analyzing-stocks/references/portfolio-construction.md")
+        for factor in ["Value", "Quality", "Growth", "Momentum", "Defensive"]:
+            self.assertIn(factor, construction, f"portfolio-construction.md missing factor: {factor}")
+
+    def test_portfolio_construction_references_upstream_sizing(self) -> None:
+        construction = read("skills/analyzing-stocks/references/portfolio-construction.md")
+        self.assertIn("portfolio-sizing.md", construction)
+
+
 class GlobalSourceAndSizingContractTests(unittest.TestCase):
     def test_source_policy_covers_us_hk_and_a_share_inputs(self) -> None:
         source_policy = read("skills/analyzing-stocks/references/source-policy.md")
