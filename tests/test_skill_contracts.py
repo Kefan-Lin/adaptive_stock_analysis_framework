@@ -188,6 +188,29 @@ class CatalystAndPortfolioConstructionContractTests(unittest.TestCase):
         self.assertIn("portfolio-sizing.md", construction)
 
 
+class HKEXAndAShareDisclosureContractTests(unittest.TestCase):
+    def test_source_policy_has_market_specific_disclosure_checklist(self) -> None:
+        source = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("Market-Specific Disclosure Checklist", source)
+
+    def test_source_policy_hkex_calendar_warns_no_quarterly_reports(self) -> None:
+        source = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("No quarterly reports", source)
+
+    def test_source_policy_ashare_calendar_explains_yejiyugao_threshold(self) -> None:
+        source = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("业绩预告", source)
+        self.assertIn("mandatory", source)
+
+    def test_source_policy_has_disclosure_absence_rules(self) -> None:
+        source = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("Disclosure Absence Rules by Market", source)
+
+    def test_source_policy_warns_against_sec_intuition_on_other_markets(self) -> None:
+        source = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("absence = red flag", source)
+
+
 class GlobalSourceAndSizingContractTests(unittest.TestCase):
     def test_source_policy_covers_us_hk_and_a_share_inputs(self) -> None:
         source_policy = read("skills/analyzing-stocks/references/source-policy.md")

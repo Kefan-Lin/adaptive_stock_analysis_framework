@@ -73,6 +73,85 @@ Use as many as available:
 - debt presentation or credit agreement for leveraged names
 - regulator or exchange statistics for banks, insurers, utilities, and other regulated sectors
 
+## Market-Specific Disclosure Checklist
+
+Each market has a distinct disclosure calendar and mandatory-announcement regime.
+Do not apply the "absence = red flag" intuition from one market to another.
+A missing quarterly report is normal for HKEX names; it is a red flag for SEC names.
+
+### US / SEC — Key Disclosure Calendar
+
+| Document | Frequency | Deadline after period-end | Where to find |
+| --- | --- | --- | --- |
+| 10-K | Annual | 60 / 75 / 90 days (by filer size) | EDGAR |
+| 10-Q | Quarterly (Q1–Q3) | 40 / 45 days | EDGAR |
+| 8-K | Current events (material) | 4 business days | EDGAR |
+| Proxy (DEF 14A) | Annual | Before AGM | EDGAR |
+| Earnings release | Quarterly | No statutory deadline (usually 2–4 weeks after quarter) | IR website / 8-K |
+
+Absence markers: Missing 10-Q filing beyond deadline → NT 10-Q extension notice required;
+if not filed, downgrade confidence to `Low`.
+
+---
+
+### HK / HKEX — Key Disclosure Calendar
+
+| Document | Frequency | Deadline after period-end | Where to find |
+| --- | --- | --- | --- |
+| Annual report (年报) | Annual | 4 months after fiscal year-end | HKEX EDGAR / company IR |
+| Interim report (中期报告) | Semi-annual | 3 months after H1 year-end | HKEX EDGAR / company IR |
+| Preliminary results announcement (业绩公告) | Semi-annual (H1 + full year) | Usually within 2–3 months | HKEX news release |
+| Inside information (内幕消息) | As triggered | Within 1 business day | HKEX news release |
+| Connected transactions (关连交易) | As triggered | Before completion | HKEX circular |
+| Notifiable transactions (须予披露交易) | By size threshold | Before or at completion | HKEX circular |
+
+Key HKEX differences vs SEC:
+- **No quarterly reports (季报)** are required; only semi-annual.  Missing quarterly data is normal.
+- Preliminary results announcements (业绩公告) are often issued before the full annual/interim report.
+- HKEX Listing Rules require disclosure of continuing connected transactions annually; check for
+  related-party dependency that may not be obvious from the financial statements alone.
+- Management forward guidance is rarely quantitative (no EPS guidance convention); treat
+  absence of guidance as neutral, not as a red flag.
+
+---
+
+### CN / A-share — Key Disclosure Calendar
+
+| Document | Frequency | Deadline after period-end | Where to find |
+| --- | --- | --- | --- |
+| 年度报告 (Annual) | Annual | April 30 | CNINFO / SZSE / SSE |
+| 半年度报告 (Interim) | Semi-annual | August 31 | CNINFO / SZSE / SSE |
+| 季度报告 Q1 / Q3 | Quarterly | April 30 / October 31 | CNINFO / SZSE / SSE |
+| 业绩预告 (Profit warning / estimate) | As triggered | Before 1 month prior to filing | Exchange announcements |
+| 业绩快报 (Preliminary results) | Voluntary (most large-caps publish) | Before full annual report | Exchange announcements |
+| 重大事项公告 (Material events) | As triggered | Immediately | Exchange announcements |
+| 问询函 / 监管函 (Regulatory inquiry) | As triggered | Published on exchange | Exchange announcements |
+
+Key A-share differences vs SEC:
+- Quarterly reports (季报) exist but are **condensed** with limited disclosure; they are less
+  detailed than SEC 10-Q filings.  Treat Q1/Q3 as preliminary indicators, not full diagnostics.
+- 业绩预告 is **mandatory** for companies expecting a significant profit change
+  (≥ 50% YoY or expected loss); absence of a 业绩预告 when the market expects a major swing
+  is not the same as absence on SEC — check whether the company is in a mandatory-disclosure
+  threshold before treating absence as a red flag.
+- 问询函 (exchange inquiry letters) and company responses are publicly available; search for
+  recent inquiry letters when accounting quality is in question — they often surface undisclosed
+  risks that the auditor has not yet flagged.
+- PRC GAAP lease accounting, fair-value marks, and goodwill impairment rules differ from IFRS
+  and US GAAP; always confirm the accounting basis before peer comparisons.
+- State-owned enterprises (SOEs) may have additional disclosures to SASAC; these are not always
+  on exchange platforms.
+
+---
+
+### Disclosure Absence Rules by Market
+
+| Market | Missing quarterly report | Missing interim report | Missing annual report |
+| --- | --- | --- | --- |
+| US / SEC | Red flag (NT filing required) | Not applicable | Red flag beyond deadline |
+| HK / HKEX | Normal (no quarterly requirement) | Red flag if > 3 months post H1 | Red flag if > 4 months post FY |
+| CN / A-share | Condensed Q1/Q3 → normal; full quarterly detail absent = normal | Red flag if > August 31 | Red flag if > April 30 |
+
 ## Accounting-Basis Mapping
 
 - State whether the numbers are under `US GAAP`, `IFRS`, `PRC GAAP`, or another local basis.
