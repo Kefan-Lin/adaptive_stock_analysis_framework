@@ -27,9 +27,11 @@ analyzing-stocks
 
 - defining the decision scope
 - routing the company into the right industry path
+- choosing the right analysis family and valuation family
 - loading shared references
 - enforcing evidence quality
 - producing the unified 10-block report
+- merging primary and secondary sector overlays into one stable contract
 
 ## Industry Companion Skills
 
@@ -49,11 +51,14 @@ The controller routes to one primary skill from this set:
 These skills should not replace the controller. They provide only:
 
 - subtype classification
+- analysis family
+- valuation family
 - KPI trees
 - accounting traps
-- valuation routing
+- valuation anchors
 - industry-specific risks
 - monitor triggers
+- sections influenced
 
 ## Typical Flow
 
@@ -61,8 +66,18 @@ These skills should not replace the controller. They provide only:
 2. Invoke `analyzing-stocks`.
 3. The controller identifies the primary business model.
 4. The controller routes to one industry companion skill.
-5. The controller uses shared references plus the industry output.
-6. The final output uses the unified report contract.
+5. The controller selects the correct analysis family and valuation family.
+6. The controller uses shared references plus the industry output.
+7. The final output uses the unified report contract.
+
+## Shared-Reference Contract
+
+Shared references are not a license to force one methodology on every industry.
+
+- `financial-diagnostics.md` must branch by diagnostic family.
+- `valuation-scenarios.md` must branch by valuation family.
+- `report-template.md` fixes the output blocks, not one universal DCF table.
+- `value-investing-lens.md` applies downside discipline across different valuation anchors.
 
 ## Packaging Notes
 

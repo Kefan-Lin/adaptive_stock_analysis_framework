@@ -16,17 +16,19 @@ Core principle: **先做行业分型，再做估值，再做仓位建议**。不
 1. Define scope and decision question.
 2. Determine primary industry and optional secondary industry.
 3. Route to one primary industry skill and optionally one secondary companion skill.
-4. Load shared references from this skill.
-5. Build source map, evidence ledger, and any needed structural overlay.
-6. Produce the unified report with stance and position sizing.
+4. Determine the `analysis family` and `valuation family`.
+5. Load shared references from this skill.
+6. Build source map, evidence ledger, and any needed structural overlay.
+7. Produce the unified report with stance and position sizing.
 
-Do not skip steps 2, 3, 4. A report without explicit routing is incomplete.
+Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selection is incomplete.
 
 ## Step 1: Define Scope
 
 - Pin down ticker, exchange, currency, analysis date.
 - State horizon (`1-2y`, `3-5y`, `5y+`) and style (`compounder`, `cyclical`, `turnaround`, `special situation`).
-- State decision verb: `initiate / add / trim / hold / avoid`.
+- State the final user-facing `Stance`: `Buy / Add / Hold / Reduce / Avoid`.
+- If working notes use `initiate / trim`, normalize them to `Buy / Reduce` before the final report.
 - If user gives no constraints, assume a fundamental-investor context and label assumptions.
 
 ## Step 2: Route to One Industry Skill (Mandatory)
@@ -52,7 +54,30 @@ If the company is mixed:
 - Use the secondary industry skill only to enrich KPI, risk, and monitor discussion.
 - Do not let the secondary industry override primary valuation method unless the business is truly split and you explicitly switch to a sum-of-parts approach.
 
-## Step 3: Load Shared References (Mandatory)
+## Step 3: Determine `analysis family` and `valuation family`
+
+Use the industry route plus subtype to choose the family that governs diagnostics and valuation.
+
+| Route | Default analysis family | Default valuation family |
+| --- | --- | --- |
+| Software / consumer / industrials / semis | `operating-company` | `cash-flow-and-multiples` |
+| Resource / energy / materials | `cycle-and-asset` | `mid-cycle-dcf-nav-multiples` |
+| Banks | `balance-sheet-financial` | `book-value-and-earnings` |
+| Insurers | `balance-sheet-financial` | `book-value-and-float` |
+| Real estate | `real-asset-property` | `nav-ffo-affo` |
+| Healthcare / biotech | `subtype-driven` | `subtype-driven` |
+| Utilities / telecom | `regulated-or-network` | `regulated-dcf-ddm-multiples` |
+
+Healthcare / biotech override:
+- Commercial biopharma, devices, and healthcare services with stable recurring operations may use `operating-company`.
+- Pre-commercial, binary, or pipeline-driven names must use `probabilistic-healthcare`.
+
+Mixed-company rule:
+- Primary skill decides the default `analysis family` and `valuation family`.
+- Secondary skill may enrich KPI, risk, and monitor sections.
+- Secondary skill cannot silently replace the valuation family; if it changes the valuation family, say so explicitly and justify the switch.
+
+## Step 4: Load Shared References (Mandatory)
 
 Always load these references from this skill:
 - [source-policy](references/source-policy.md)
@@ -67,7 +92,7 @@ Always load these references from this skill:
 - [portfolio-sizing](references/portfolio-sizing.md)
 - [report-template](references/report-template.md)
 
-## Step 4: Build Source Map and Evidence Ledger
+## Step 5: Build Source Map and Evidence Ledger
 
 - Follow [source-policy](references/source-policy.md) strictly.
 - Tag each critical number with date and source.
@@ -77,19 +102,20 @@ Always load these references from this skill:
   - `Assumption`
 - Keep an assumption ledger with sensitivity priority (`H/M/L`).
 
-## Step 5: Execute Shared Analysis Modules
+## Step 6: Execute Shared Analysis Modules
 
 - Use [industry-structure](references/industry-structure.md) for value chain, cycle, and key variables.
 - Use [industry-playbooks](references/industry-playbooks.md) as an optional structural overlay when the industry route is still too broad.
 - Use [business-moat](references/business-moat.md) for business model and moat.
-- Use [financial-diagnostics](references/financial-diagnostics.md) for three-statement quality.
+- Use [financial-diagnostics](references/financial-diagnostics.md) for the route-appropriate diagnostic family rather than one generic three-statement template.
 - Use [capital-allocation](references/capital-allocation.md) for management and deployment of capital.
-- Use [valuation-router](references/valuation-router.md) plus the industry skill for valuation methods.
-- Use [valuation-scenarios](references/valuation-scenarios.md) for `Bear / Base / Bull` construction and sensitivity.
-- Use [value-investing-lens](references/value-investing-lens.md) for margin of safety, reverse DCF, and value-trap checks.
+- Use [valuation-router](references/valuation-router.md) plus the industry skill to confirm the `valuation family`.
+- Use [valuation-scenarios](references/valuation-scenarios.md) for the route-appropriate `Bear / Base / Bull` method set and sensitivity design.
+- Use [value-investing-lens](references/value-investing-lens.md) for downside framing, value-trap checks, and market-implied expectations.
+- Reverse DCF is required only for steady-state operating companies. For other families, use the closest market-implied expectation check instead.
 - Use [portfolio-sizing](references/portfolio-sizing.md) for `Core / Starter / Speculative / Watch-Avoid`.
 
-## Step 6: Produce the Unified Report
+## Step 7: Produce the Unified Report
 
 - Use [report-template](references/report-template.md) as the fixed contract.
 - Always output all 10 blocks in the template.
@@ -113,6 +139,28 @@ Always load these references from this skill:
 5. If data gaps materially affect valuation, lower confidence and widen the value range.
 6. If the company fits a high-uncertainty bucket, auto-downgrade position sizing by at least one tier.
 7. If a secondary industry skill is used, state exactly which sections it influenced.
+8. If the route is not `operating-company`, do not force EBITDA, ROIC-WACC, or Reverse DCF terminology where it does not fit the balance-sheet or asset framework.
+
+## Merge schema
+
+Every primary industry skill must return these controller-ready fields:
+
+- `subtype`
+- `analysis family`
+- `valuation family`
+- `kpi tree`
+- `accounting normalizations`
+- `valuation anchors`
+- `risk checklist`
+- `monitor triggers`
+- `sections influenced`
+
+Controller merge rules:
+
+- Shared references define the report spine and evidence rules.
+- Primary skill output defines the KPI language, diagnostic family, and valuation anchors.
+- Secondary skill output may enrich only the sections listed in `sections influenced`.
+- If a sector skill does not provide one of the required fields, the controller must say the contract is incomplete and lower confidence.
 
 ## Report Contract
 
@@ -124,6 +172,6 @@ The final report must contain these 10 blocks in order:
 5. Management and capital allocation
 6. Financial diagnostics
 7. Valuation and bear/base/bull scenarios
-8. Margin of safety, reverse DCF, and value-trap judgment
+8. Margin of safety, market-implied expectations, and value-trap judgment
 9. Investment conclusion, position size, and trading triggers
 10. Risks, catalysts, monitor list, and evidence ledger

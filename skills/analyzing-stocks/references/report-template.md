@@ -18,9 +18,14 @@
 - 主行业：
 - 次行业（如有）：
 - 路由到的行业 skill：
+- `Analysis Family`：
+- `Valuation Family`：
 - 为什么使用该行业框架（2-4条）：
   1. ...
   2. ...
+- `Merge Schema`：
+  - primary skill 提供：`subtype / analysis family / valuation family / kpi tree / valuation anchors`
+  - secondary skill 仅补充：`sections influenced`
 
 ## 3. 行业结构与核心变量树
 
@@ -63,17 +68,18 @@
 
 ## 6. 财报与财务质量诊断
 
-- 收入与利润质量：
-- 资产负债表韧性：
-- 现金流与资本开支：
+- 诊断家族：`operating-company / balance-sheet-financial / real-asset-property / probabilistic-healthcare / regulated-or-network / cycle-and-asset`
+- 收入、盈利能力或 earning-power 质量：
+- 资产负债表、资本或偿付韧性：
+- 现金流、资金来源、跑道或分红覆盖：
 
 | 模块 | 权重 | 评分(0-5) | 结论 |
 | --- | --- | --- | --- |
-| 增长质量 | 20% |  |  |
-| 利润质量 | 20% |  |  |
-| 资产负债表强度 | 25% |  |  |
-| 现金流质量 | 25% |  |  |
-| 会计/治理质量 | 10% |  |  |
+| earning-power / 增长质量 | 20% |  |  |
+| 利润率 / 承保 / 利差 / 物业现金流质量 | 20% |  |  |
+| 资产负债表 / 资本强度 | 25% |  |  |
+| 现金流 / 融资 / 跑道质量 | 25% |  |  |
+| 会计 / 治理质量 | 10% |  |  |
 
 - 财务质量结论：
 
@@ -83,17 +89,15 @@
 
 | 假设 | Bear | Base | Bull |
 | --- | --- | --- | --- |
-| 收入增速 / 关键量价参数 |  |  |  |
-| 利润率路径 |  |  |  |
-| 再投资强度 |  |  |  |
-| 折现率 / 要求回报 |  |  |  |
-| 终值增速 / 退出倍数 |  |  |  |
-| 净现金(债务)与摊薄股本 |  |  |  |
+| 路由相关核心驱动 1 |  |  |  |
+| 路由相关核心驱动 2 |  |  |  |
+| 估值锚点输入（P/TBV / P/B / NAV / FFO / rNPV / DCF 等） |  |  |  |
+| 资本、杠杆、稀释或跑道假设 |  |  |  |
 | 概率 |  |  |  |
 
 ### 7.2 估值结果
 
-| 场景 | 内在价值(方法1) | 相对估值(方法2) | 综合每股价值 |
+| 场景 | 主估值方法 | 辅助估值方法 | 综合每股价值 |
 | --- | --- | --- | --- |
 | Bear |  |  |  |
 | Base |  |  |  |
@@ -102,7 +106,7 @@
 - 概率加权价值：
 - 期望收益与收益/风险比：
 
-## 8. 安全边际、Reverse DCF、价值陷阱判断
+## 8. 安全边际、市场预期反推、价值陷阱判断
 
 | 场景 | 内在价值 | 当前价 | 安全边际 |
 | --- | --- | --- | --- |
@@ -112,8 +116,8 @@
 | 加权 |  |  |  |
 
 - 安全边际分档：`高 / 中 / 低`
-- `Reverse DCF` 隐含增长：
-- `Reverse DCF` 隐含利润率：
+- 市场预期反推方法：`Reverse DCF / implied ROTCE / implied ROE / implied cap rate / implied PoS / other`
+- 市场预期反推结论：
 - 价值陷阱检查：`通过 / 警惕 / 不通过`
 - 明确 downside path：
 

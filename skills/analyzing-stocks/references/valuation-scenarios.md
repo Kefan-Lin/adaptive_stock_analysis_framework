@@ -3,60 +3,126 @@
 ## Objective
 
 Translate business and financial analysis into a decision-ready valuation range with explicit probabilities, sensitivity, and value-investing checks.
+Use the valuation family that matches the business. Do not force every route into a DCF-first operating template.
 
 ## 1) Scenario Construction Rules
 
 Build three internally consistent scenarios:
 
-1. Bear: adverse demand, weaker margins, multiple compression.
-2. Base: normalized operating trajectory and fair multiple.
-3. Bull: superior execution, sustained edge, optionality realization.
+1. Bear: downside path that is economically plausible for the route.
+2. Base: normalized operating trajectory or normalized asset/credit outcome.
+3. Bull: favorable but still coherent execution or cycle outcome.
 
 Hard rules:
 - Do not vary only one variable; change assumptions coherently.
-- Ensure scenario assumptions align with moat durability assessment.
+- Ensure scenario assumptions align with moat durability assessment and the sector skill's KPI tree.
 - Keep probability sum at 100%.
 - Keep downside scenario economically plausible, not mechanically pessimistic.
 
-## 2) Required Assumption Set
+## 2) Valuation Families
 
-Use this table for each scenario:
+### Cash-flow-and-multiples
+
+Use for steady-state operating companies.
+
+Typical assumption rows:
+- revenue CAGR or volume/price bridge
+- operating or net margin path
+- reinvestment intensity
+- discount rate or required return
+- terminal growth or exit multiple
+- net debt or net cash
+- diluted shares
+- scenario probability
+
+Typical methods:
+1. DCF (FCFF or FCFE)
+2. justified multiple cross-check
+
+### Book-value-and-earnings / Book-value-and-float
+
+Use for banks and insurers.
+
+Typical assumption rows:
+- ROTCE or ROE path
+- normalized credit cost, combined ratio, or float yield
+- capital generation and payout
+- tangible book value or book value per share growth
+- required return
+- target P/TBV, P/B, or earnings multiple
+- scenario probability
+
+Typical methods:
+1. P/TBV with ROTE or Gordon-style framework
+2. P/B with ROE or excess-capital framework
+3. earnings power cross-check when appropriate
+
+### NAV-FFO-AFFO
+
+Use for REITs, developers, and real-asset property names.
+
+Typical assumption rows:
+- occupancy, lease spreads, or sales velocity
+- same-store NOI or gross margin path
+- cap rate or NAV discount/premium
+- FFO or AFFO path
+- refinancing cost and debt ladder assumptions
+- equity issuance or buyback assumptions
+- scenario probability
+
+Typical methods:
+1. NAV
+2. FFO / AFFO multiple
+
+### Mid-cycle-DCF-NAV-multiples
+
+Use for cyclical resource, energy, and asset-heavy materials names.
+
+Typical assumption rows:
+- long-run price deck
+- volume, reserve life, or utilization
+- cost curve position
+- sustaining vs growth capex
+- discount rate or exit multiple
+- net debt, asset-sale optionality, or closure liabilities
+- scenario probability
+
+Typical methods:
+1. mid-cycle DCF
+2. NAV or EV / EBITDA or EV / resource cross-check
+
+### rNPV-SOTP-cash-floor
+
+Use for pre-commercial biotech and binary healthcare.
+
+Typical assumption rows:
+- probability of success
+- peak sales or market penetration
+- launch timing or readout timing
+- exclusivity duration
+- burn rate, runway, and financing dilution
+- cash floor or residual value
+- scenario probability
+
+Typical methods:
+1. rNPV or SOTP
+2. peer multiple or cash-floor triangulation
+
+## 3) Scenario Table Design
+
+Use a route-appropriate assumption table rather than hard-coding revenue plus margin rows for every sector.
+
+Minimum table columns:
 
 | Assumption | Bear | Base | Bull |
 | --- | --- | --- | --- |
-| Revenue CAGR (explicit period) |  |  |  |
-| Operating margin / net margin |  |  |  |
-| Reinvestment intensity (capex + WC) |  |  |  |
-| Normalized FCF basis (FCFF or FCFE) |  |  |  |
-| Tax rate |  |  |  |
-| Discount rate / required return |  |  |  |
-| Terminal growth or exit multiple |  |  |  |
-| Net debt (or net cash) |  |  |  |
-| Diluted shares outstanding |  |  |  |
+| Route-specific key driver 1 |  |  |  |
+| Route-specific key driver 2 |  |  |  |
+| Valuation anchor or method input |  |  |  |
+| Capital, leverage, dilution, or runway assumption |  |  |  |
 | Scenario probability |  |  |  |
 
-Add one-line rationale per row if spread is wide.
-
-## 3) Valuation Methods
-
-Prefer triangulation with at least two methods:
-
-1. Intrinsic method: DCF (FCFF or FCFE).
-2. Market method: justified multiple (P/E, EV/EBIT, EV/EBITDA, P/S depending on maturity).
-
-### DCF skeleton
-
-`Enterprise Value = sum(FCFF_t / (1 + r)^t) + Terminal Value / (1 + r)^N`
-
-`Equity Value = Enterprise Value - Net Debt +/- Non-operating Adjustments`
-
-`Per-share Fair Value = Equity Value / Diluted Shares`
-
-### Multiple cross-check
-
-`Per-share Fair Value = Forward Metric * Target Multiple`
-
-Use peer and own-history context to justify target multiple.
+Add one-line rationale per row if the spread is wide.
 
 ## 4) Weighted Fair Value
 
@@ -91,30 +157,37 @@ Recommended thresholds (adjust if market regime requires):
 
 ## 6) Sensitivity Design
 
-Test at least two key drivers plus one valuation parameter:
+Test at least two key drivers plus one valuation parameter from the chosen family:
 
-1. Growth sensitivity (`-200 bps / base / +200 bps`)
-2. Margin sensitivity (`-150 bps / base / +150 bps`)
-3. Discount rate or exit multiple sensitivity
+1. Operating names: growth, margin, discount rate or exit multiple
+2. Financials: ROTCE/ROE, credit cost or combined ratio, target P/TBV or P/B
+3. Real estate: NOI, cap rate, refinancing rate
+4. Biotech: probability of success, peak sales, dilution or runway
+5. Cyclicals: price deck, cost curve, sustaining capex, multiple or discount rate
 
 Show how fair value shifts under combinations; avoid single-point confidence.
 
-## 7) Reverse DCF Sanity Check
+## 7) Market-Implied Expectations Check
 
-Back out market-implied growth/margin from current price.
+Back out the expectation embedded in the current price using the chosen framework.
 
-If implied assumptions exceed realistic operating or industry bounds, reduce margin-of-safety confidence.
+Examples:
+- operating companies: Reverse DCF on growth and margin
+- banks and insurers: implied ROTCE / ROE or implied P/TBV / P/B justification
+- real estate: implied cap rate, NAV discount, or payout durability
+- biotech: implied probability of success or value assigned to the lead asset
+
+Reverse DCF is required only for steady-state operating companies.
+For the other families, use the closest market-implied expectations check instead.
 
 ## 8) Sanity Checks
 
 Before finalizing:
 
-- Compare implied long-term growth with industry reality.
-- Compare implied margin with historical and peer range.
-- Check if terminal assumptions exceed competitive logic.
-- Ensure forecast reinvestment supports forecast growth.
-- Reconcile valuation conclusion with identified risks.
-- Confirm valuation does not ignore balance-sheet downside.
+- Compare the embedded assumptions with historical and peer reality.
+- Check that the chosen valuation method matches the economic driver of the business.
+- Reconcile valuation conclusion with identified risks and the diagnostic-family stress test.
+- Confirm valuation does not ignore balance-sheet, dilution, or refinancing downside.
 
 If sanity checks fail, revise assumptions before publishing.
 
@@ -127,5 +200,5 @@ Produce:
 3. Weighted fair value and return profile
 4. Margin-of-safety table
 5. Sensitivity summary
-6. Reverse DCF takeaway
+6. Market-implied expectations takeaway
 7. Key assumptions that most affect conclusion

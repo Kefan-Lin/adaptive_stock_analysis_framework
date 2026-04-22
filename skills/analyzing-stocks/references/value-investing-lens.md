@@ -4,18 +4,30 @@
 
 Add a downside-first value-investing decision layer on top of fundamental analysis.
 Focus on intrinsic value, margin of safety, and value-trap avoidance.
+When a cash-flow DCF is not the right anchor, translate the same downside discipline into the route-appropriate valuation framework.
 
 ## 1) Core Principles
 
 1. Price is what you pay; value is what you get.
 2. Downside protection comes first; upside is secondary.
 3. Use conservative assumptions, then test sensitivity.
-4. Prefer cash-generating businesses over accounting-profit stories.
-5. Reject ideas with weak balance sheets even if they look optically cheap.
+4. Prefer real per-share value creation over flattering accounting optics.
+5. Reject ideas with weak balance sheets, fragile funding, or unbounded dilution even if they look optically cheap.
 
-## 2) Normalized Free Cash Flow Setup
+## 2) Pick the Right Downside Anchor
 
-Use normalized cash generation before valuation.
+Use the valuation family that matches the route:
+
+- Operating companies: normalized FCFF or FCFE plus Reverse DCF
+- Banks and insurers: tangible book or book value growth plus implied ROE / ROTCE sanity check
+- Real estate: NAV / AFFO plus implied cap-rate or payout sanity check
+- Binary biotech: rNPV / cash-floor plus implied probability or asset-value sanity check
+
+If the business lacks stable normalized cash generation, do not pretend a cash-flow DCF is the main anchor.
+
+## 3) Operating-Company FCF Workflow
+
+Use this only when the company has stable recurring operations and cash conversion.
 
 Steps:
 1. Start from historical CFO and capex series (at least 5 years if available).
@@ -29,10 +41,6 @@ Suggested outputs:
 - Normalized FCFE
 - FCF margin trend
 - FCF conversion (`FCF / Net Income`)
-
-If normalized FCF is unstable or persistently negative, lower conviction materially.
-
-## 3) FCF DCF Workflow (Intrinsic Value)
 
 Choose method:
 - FCFF DCF for enterprise-level valuation (then subtract net debt).
@@ -51,7 +59,17 @@ Modeling rules:
 4. Terminal growth should be conservative and below long-run nominal GDP in mature cases.
 5. Avoid terminal value dominating all value without justification.
 
-## 4) Margin of Safety Rules
+## 4) Non-DCF Margin-of-Safety Translation
+
+When DCF is not the main anchor, define margin of safety against the weighted fair value from the chosen family:
+
+- Banks and insurers: book-value-based fair value after reserve / credit / capital normalization
+- Real estate: NAV or AFFO-based fair value after cap-rate and refinancing stress
+- Binary healthcare: probability-adjusted value or cash-floor-weighted fair value after dilution
+
+Margin of safety still means buying below conservative value. The math changes; the discipline does not.
+
+## 5) Margin of Safety Rules
 
 Compute:
 
@@ -64,30 +82,31 @@ Interpretation bands:
 
 Do not use margin of safety in isolation. Combine with quality and balance-sheet checks.
 
-## 5) Value-Trap Diagnostics
+## 6) Value-Trap Diagnostics
 
 A cheap multiple is not enough. Run these checks:
 
-1. Cash quality: Is FCF real and recurring?
-2. Leverage risk: Can debt be serviced in a mild/severe downturn?
-3. Dilution risk: Are buybacks offset by heavy SBC or issuance?
+1. Cash quality or earning-power quality: Is the value anchor real and repeatable?
+2. Balance-sheet or funding risk: Can the capital structure survive a realistic stress?
+3. Dilution risk: Are buybacks offset by SBC, equity issuance, or capital raises?
 4. Competitive decay: Is moat weakening faster than market expects?
 5. Governance quality: Is capital allocation value-accretive?
-6. Structural decline risk: Is end-market shrinking secularly?
+6. Structural decline risk: Is end-market shrinking or asset quality deteriorating?
 
 Any two severe failures should block a positive value-investing verdict.
 
-## 6) Reverse DCF Sanity Check
+## 7) Market-Implied Expectations Check
 
-Derive implied expectations from market price:
+Derive the expectation embedded in market price with the route-appropriate method:
 
-1. Solve for implied long-term growth.
-2. Solve for implied normalized margin.
-3. Compare implied assumptions with historical and peer reality.
+1. Operating companies: implied long-term growth and normalized margin
+2. Banks and insurers: implied ROE / ROTCE or implied justified P/B / P/TBV
+3. Real estate: implied cap rate, NAV discount, or payout durability
+4. Binary healthcare: implied probability of success or value attributed to the lead asset
 
 If implied assumptions are already very optimistic, margin of safety is likely overstated.
 
-## 7) Decision Matrix
+## 8) Decision Matrix
 
 Combine financial quality and margin of safety:
 
@@ -99,20 +118,20 @@ Combine financial quality and margin of safety:
 | Medium | Low | Avoid or monitor only |
 | Low | Any | Usually avoid (possible value trap) |
 
-## 8) Position Sizing Interaction
+## 9) Position Sizing Interaction
 
 Use with `portfolio-sizing.md`:
 - `Core` is only possible when financial quality is high, confidence is high, and margin of safety is at least `25%`.
 - High-uncertainty industries should be downgraded at least one tier even if upside looks large.
 - Any failed value-trap screen blocks aggressive sizing.
 
-## 9) Required Output Block
+## 10) Required Output Block
 
 Always include:
 
-1. Normalized FCF assumptions (FCFF or FCFE)
-2. DCF-derived intrinsic value range
+1. The chosen downside anchor and why it fits
+2. Route-appropriate intrinsic value range
 3. Margin-of-safety percentage and band
 4. Value-trap diagnostic summary
-5. Reverse DCF implied expectation check
+5. Market-implied expectation check
 6. Final value-investing verdict (`Attractive / Neutral / Unattractive`)

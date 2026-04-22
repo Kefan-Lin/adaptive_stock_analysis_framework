@@ -3,29 +3,29 @@
 ## General Research
 
 ```text
-Use $analyzing-stocks to analyze Microsoft as a 3-5 year compounder candidate. Include bear, base, and bull valuation ranges, margin of safety, and position sizing.
+Use $analyzing-stocks to analyze Microsoft as a 3-5 year compounder candidate. Route it explicitly, confirm the operating-company valuation family, and include bear/base/bull ranges, margin of safety, and position sizing.
 ```
 
 ```text
-Use $analyzing-stocks to evaluate whether I should add to TSM after earnings. Focus on the right industry route, valuation method, and the downside path.
+Use $analyzing-stocks to evaluate whether I should add to TSM after earnings. Focus on the right industry route, valuation family, and downside path rather than defaulting to one generic template.
 ```
 
 ```text
-Use $analyzing-stocks to compare Brookfield Renewable and NextEra Energy. State the primary industry route for each company and whether a sum-of-parts view is needed.
+Use $analyzing-stocks to compare Brookfield Renewable and NextEra Energy. State the primary industry route, analysis family, and valuation family for each company and whether a sum-of-parts view is needed.
 ```
 
 ## Sector-Specific Research
 
 ```text
-Use $analyzing-stocks and the appropriate companion skill to analyze JPMorgan. I want the key bank KPI tree, valuation route, and monitor triggers.
+Use $analyzing-stocks and the appropriate companion skill to analyze JPMorgan. I want the bank KPI tree, the book-value valuation family, and the monitor triggers.
 ```
 
 ```text
-Use $analyzing-stocks and the appropriate companion skill to analyze ServiceNow. Focus on ARR quality, SBC normalization, and position sizing.
+Use $analyzing-stocks and the appropriate companion skill to analyze ServiceNow. Focus on ARR quality, SBC normalization, the operating-company diagnostics path, and position sizing.
 ```
 
 ```text
-Use $analyzing-stocks and the appropriate companion skill to analyze Prologis. Focus on NAV, AFFO quality, debt ladder, and downside valuation.
+Use $analyzing-stocks and the appropriate companion skill to analyze Prologis. Focus on NAV, AFFO quality, debt ladder, and the real-asset valuation family.
 ```
 
 ## Portfolio Decision Support
