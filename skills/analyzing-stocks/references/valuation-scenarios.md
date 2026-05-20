@@ -18,6 +18,27 @@ Hard rules:
 - Ensure scenario assumptions align with moat durability assessment and the sector skill's KPI tree.
 - Keep probability sum at 100%.
 - Keep downside scenario economically plausible, not mechanically pessimistic.
+- Do not change Bear/Base/Bull fair values solely because the current share price changed.
+
+### Scenario Change Control
+
+When reassessing a company with a prior local report, treat the prior Bear/Base/Bull
+fair values as the starting baseline. The current market price updates expected
+return, margin of safety, stance discipline, and market-implied expectations; it
+does not by itself update intrinsic value.
+
+Any change to Bear/Base/Bull fair values must be attributed to at least one explicit
+driver:
+- new filing, results, guidance, or management commentary
+- normalized revenue, margin, FCF, book value, NAV, or per-share earnings estimate
+- discount rate, required return, terminal multiple, or valuation multiple
+- net debt, cash, share count, dilution, FX, or capital return
+- material M&A, regulation, litigation, refinancing, or other capital action
+
+If price changed but the valuation drivers did not, keep Bear/Base/Bull fair values
+unchanged and update only the margin-of-safety, expected-return, market-implied
+expectations, and position-sizing discussion. If a scenario value changes, include
+a bridge explaining the prior value, current value, change, and reason.
 
 ## 2) Valuation Families
 
@@ -170,6 +191,9 @@ Show how fair value shifts under combinations; avoid single-point confidence.
 ## 7) Market-Implied Expectations Check
 
 Back out the expectation embedded in the current price using the chosen framework.
+This is a price-explanation tool, not a license to rewrite Bear/Base/Bull intrinsic
+values. Keep market-implied assumptions separate from analyst intrinsic-value
+assumptions unless new evidence justifies changing the latter.
 
 Examples:
 - operating companies: Reverse DCF on growth and margin

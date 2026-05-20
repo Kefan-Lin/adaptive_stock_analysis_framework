@@ -38,6 +38,16 @@ class SectorSafeControllerContractTests(unittest.TestCase):
         self.assertIn("rNPV", scenarios)
         self.assertIn("Reverse DCF is required only for steady-state operating companies", scenarios)
 
+    def test_reassessment_valuation_changes_are_not_price_anchored(self) -> None:
+        scenarios = read("skills/analyzing-stocks/references/valuation-scenarios.md")
+        template = read("skills/analyzing-stocks/references/report-template.md")
+
+        self.assertIn("Scenario Change Control", scenarios)
+        self.assertIn("Do not change Bear/Base/Bull fair values solely because the current share price changed", scenarios)
+        self.assertIn("Valuation change bridge vs prior report", template)
+        self.assertIn("Prior", template)
+        self.assertIn("Reason", template)
+
 
 class RoutingBoundaryContractTests(unittest.TestCase):
     def test_controller_calls_out_the_problem_boundaries(self) -> None:

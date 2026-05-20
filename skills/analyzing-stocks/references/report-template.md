@@ -85,6 +85,18 @@
 
 ## 7. 估值与三情景预测
 
+### 7.0 Valuation change bridge vs prior report（重评时必填）
+
+如果这是对已有本地报告的重评，先填下表。若没有 prior report，写 `N/A - first coverage`。
+当前股价变化本身不是调整 Bear/Base/Bull 内在价值的理由；只能改变安全边际、预期收益、市场预期反推和仓位纪律。
+
+| Item | Prior | Current | Change | Reason |
+| --- | ---: | ---: | ---: | --- |
+| Bear value |  |  |  |  |
+| Base value |  |  |  |  |
+| Bull value |  |  |  |  |
+| Weighted fair value |  |  |  |  |
+
 ### 7.1 假设表
 
 | 假设 | Bear | Base | Bull |
