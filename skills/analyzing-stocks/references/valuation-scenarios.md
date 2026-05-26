@@ -40,6 +40,29 @@ unchanged and update only the margin-of-safety, expected-return, market-implied
 expectations, and position-sizing discussion. If a scenario value changes, include
 a bridge explaining the prior value, current value, change, and reason.
 
+### Structural Re-rating Gate
+
+Before finalizing any reassessment, test whether new evidence changes the business
+regime rather than only the next-period earnings estimate. This is mandatory when
+management commentary, filings, or contracts point to any of:
+
+- contracted revenue visibility, take-or-pay terms, backlog conversion quality, lease
+  duration, regulated asset-base visibility, or subscription/renewal durability
+- lower earnings volatility, lower funding risk, lower refinancing risk, or lower
+  commodity/cycle exposure
+- higher customer lock-in, switching cost, pricing power, or recurring mix
+- structurally higher or lower reinvestment returns, capital intensity, or dilution
+
+If the regime changed, include a sensitivity that separates old-regime and new-regime
+valuation. A structurally less volatile business may deserve a lower discount rate or
+higher valuation multiple, but only if the evidence shows durable visibility rather than
+one favorable quarter. Conversely, a business losing visibility should use a higher
+discount rate or lower valuation multiple even if near-term earnings are strong.
+
+Do not bury this inside the Bull case when it could plausibly affect Base valuation.
+State whether the evidence is strong enough to update the headline Base case or only
+strong enough for an upside/downside sensitivity.
+
 ## 2) Valuation Families
 
 ### Cash-flow-and-multiples
@@ -185,6 +208,8 @@ Test at least two key drivers plus one valuation parameter from the chosen famil
 3. Real estate: NOI, cap rate, refinancing rate
 4. Biotech: probability of success, peak sales, dilution or runway
 5. Cyclicals: price deck, cost curve, sustaining capex, multiple or discount rate
+6. Contracted or re-rating cases: visibility duration, contract coverage, customer
+   concentration, earnings volatility, discount rate or valuation multiple
 
 Show how fair value shifts under combinations; avoid single-point confidence.
 

@@ -23,6 +23,9 @@ Before finalizing any report, verify:
 - Latest quarterly or annual filing
 - Latest guidance or outlook change
 - Latest major capital action: buyback, dividend, issuance, M&A, refinancing
+- Latest material contract or business-model change when the thesis depends on
+  contracted revenue, backlog, subscriptions, leases, regulated returns, offtake,
+  reimbursement, or other visibility-improving commitments
 
 If current data cannot be verified, say so explicitly and lower confidence.
 
@@ -54,6 +57,8 @@ Use as many as available:
 - `10-K / 10-Q / 20-F / 6-K / 8-K`
 - earnings release and earnings deck
 - conference call transcript or prepared remarks
+- contract, backlog, customer commitment, capacity reservation, or long-term
+  agreement commentary when it could change valuation multiple or discount rate
 - proxy statement for compensation/governance
 
 ### HK / HKEX names

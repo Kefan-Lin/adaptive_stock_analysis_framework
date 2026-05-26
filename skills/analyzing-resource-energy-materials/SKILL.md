@@ -39,6 +39,8 @@ Boundary rule:
 - Cost structure: AISC or cash cost, LOE, recovery rate, grade
 - Capital intensity: sustaining vs growth capex, F&D or reserve replacement
 - Balance sheet: leverage, liquidity, covenant cushion, asset sale optionality
+- Contracted cash flow: offtake agreements, tolling arrangements, streaming or royalty
+  contracts, floor-price hedge terms, take-or-pay commitments, and counterparty credit
 
 ## 3. Accounting Traps and Normalizations
 
@@ -46,6 +48,9 @@ Boundary rule:
 - Separate sustaining capex from growth capex.
 - Reserve write-downs, impairment reversals, stripping, and DD&A can distort economics.
 - Hedge gains/losses can obscure true realized economics.
+- Offtake, tolling, or floor-price hedge contracts can transform commodity exposure into
+  contracted cash flow; verify duration, floors, caps, volumes, and counterparty risk
+  before applying a lower discount rate or higher multiple.
 - Asset retirement or closure obligations can hide tail liabilities.
 
 ## 4. Valuation Routing
@@ -56,8 +61,10 @@ Boundary rule:
 - Specialty processors:
   - Primary: mid-cycle operating-company DCF or EV/EBITDA on normalized margins
   - Secondary: replacement-cost or asset-value cross-check only when assets truly anchor the thesis
-- Critical assumptions: long-run price deck, reserve life, cost-curve position, sustaining capex, spread durability
+- Critical assumptions: long-run price deck, reserve life, cost-curve position, sustaining capex, spread durability, contracted volume, and cost-curve reset risk
 - Avoid: spot-price extrapolation or single-year earnings multiple at cycle extremes
+- If contracts or policy support reduce commodity beta, run old spot-cycle vs contracted
+  cash-flow sensitivity and say whether the valuation family shifts toward infrastructure-like DCF.
 
 ## 5. Risk Checklist
 
@@ -66,6 +73,7 @@ Boundary rule:
 - Jurisdiction, permitting, or environmental risk
 - Cost inflation and capital blowouts
 - Over-levered balance sheet into a down-cycle
+- Contract rollover, counterparty failure, or hedge expiry that restores commodity exposure
 
 ## 6. Deliverables Back to Controller
 

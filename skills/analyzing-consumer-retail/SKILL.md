@@ -34,6 +34,8 @@ State:
 - Pricing: average ticket, mix, promo intensity, take rate if marketplace
 - Cost structure: gross margin, markdowns, logistics or labor ratio
 - Working capital: inventory turns, returns, payable support
+- Recurring/platform economics: membership, loyalty frequency, advertising monetization,
+  marketplace take-rate durability, franchise mix, and third-party seller services
 - Per-share economics: FCF conversion, lease-adjusted leverage, buyback quality
 
 ## 3. Accounting Traps and Normalizations
@@ -43,13 +45,17 @@ State:
 - GMV or order growth can obscure weak take-rate or margin quality.
 - Promo-driven revenue can overstate underlying demand.
 - Franchise or marketplace revenue recognition may need gross-to-net normalization.
+- Membership, advertising monetization, and marketplace services can deserve platform re-rating,
+  but only if incremental margins and customer frequency improve without subsidy leakage.
 
 ## 4. Valuation Routing
 
 - Primary: DCF or FCFE
 - Secondary: EV/EBIT or P/E
-- Critical assumptions: same-store sales durability, gross margin recovery, inventory normalization, lease burden
+- Critical assumptions: same-store sales durability, gross margin recovery, inventory normalization, lease burden, membership durability, advertising margin, and franchise mix
 - Avoid: sales multiples without a clear path to normalized margin and cash conversion
+- If recurring membership, ad, marketplace, or franchise economics become material, run
+  old retail multiple vs platform re-rating sensitivity.
 
 ## 5. Risk Checklist
 

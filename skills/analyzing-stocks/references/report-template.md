@@ -118,6 +118,19 @@
 - 概率加权价值：
 - 期望收益与收益/风险比：
 
+### 7.3 Structural re-rating sensitivity（如适用必填）
+
+当新披露显示商业模式、合同结构、监管资产、收入可见性、盈利波动率、资本回报或融资风险发生结构性变化时，必须填本节；若不适用，写 `N/A - no structural re-rating evidence`。
+
+| Item | Old regime | New regime | Valuation impact | Evidence strength |
+| --- | --- | --- | --- | --- |
+| 收入/现金流可见性 |  |  |  |  |
+| 盈利波动率或风险溢价 |  |  |  |  |
+| 估值倍数或折现率 |  |  |  |  |
+
+- 是否进入 headline Base case：
+- 若仅作为 sensitivity，触发进入 Base case 的证据：
+
 ## 8. 安全边际、市场预期反推、价值陷阱判断
 
 | 场景 | 内在价值 | 当前价 | 安全边际 |

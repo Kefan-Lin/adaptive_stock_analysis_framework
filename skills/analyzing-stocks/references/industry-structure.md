@@ -43,10 +43,16 @@ Then state whether the current environment is:
 Build one tree with:
 - Level 1 drivers: price, volume, mix, cost, capital intensity, valuation multiple
 - Level 2 drivers: sector-specific KPIs
+- Visibility drivers: contract duration, renewal/retention, backlog quality, regulated
+  return, lease length, reimbursement durability, or other evidence that changes
+  earnings volatility and risk premium
 
 Decision rule:
 - If the thesis depends mainly on fast variables, widen valuation bands.
 - If the thesis depends mainly on durable structural advantages, confidence can be higher.
+- If new evidence shifts the business from spot/cyclical/project revenue toward durable
+  contracted or recurring cash flow, run the Structural Re-rating Gate in
+  `valuation-scenarios.md`.
 
 ## Required Output Block
 

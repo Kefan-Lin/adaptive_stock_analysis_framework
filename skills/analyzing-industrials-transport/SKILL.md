@@ -34,6 +34,8 @@ State:
 - Pricing: contract repricing, fuel surcharge pass-through, mix
 - Cost structure: utilization, labor productivity, maintenance, procurement
 - Cash and capital: capex intensity, working capital, service attach rate
+- Contract quality: cancellable vs non-cancellable backlog, price escalator clauses,
+  advance payment terms, cost pass-through, service attach durability, and aftermarket mix
 - Per-share economics: FCF conversion, restructuring drag, acquisition reliance
 
 ## 3. Accounting Traps and Normalizations
@@ -43,13 +45,18 @@ State:
 - Pension obligations or lease obligations may hide leverage.
 - M&A-heavy rollups can inflate growth while depressing organic visibility.
 - Backlog quality matters; not all backlog is equally cancel-resistant.
+- A large backlog is not automatically high-quality demand; separate cancellable awards,
+  fixed-price execution risk, price escalator protection, advance payment support, and
+  service attach that can reduce earnings volatility.
 
 ## 4. Valuation Routing
 
 - Primary: through-cycle DCF
 - Secondary: EV/EBITDA or EV/EBIT
-- Critical assumptions: backlog conversion, utilization, service mix, normalized margin, capex needs
+- Critical assumptions: backlog conversion, utilization, service mix, normalized margin, capex needs, backlog protection, and service/aftermarket mix
 - Avoid: peak-cycle multiples or one-quarter run-rate valuation
+- If backlog or service attach materially improves visibility, run a re-rating sensitivity
+  against the old project-cycle multiple before changing the Base valuation.
 
 ## 5. Risk Checklist
 
@@ -58,6 +65,7 @@ State:
 - End-market cycle reversal
 - Cost inflation or labor constraints
 - Balance-sheet strain from acquisition or capex programs
+- Backlog repricing failure or low-quality backlog that reverses expected visibility
 
 ## 6. Deliverables Back to Controller
 

@@ -19,7 +19,9 @@ Core principle: **先做行业分型，再做估值，再做仓位建议**。不
 4. Determine the `analysis family` and `valuation family`.
 5. Load shared references from this skill.
 6. Build source map, evidence ledger, and any needed structural overlay.
-7. Produce the unified report with stance and position sizing.
+7. Run the structural re-rating gate when new evidence changes revenue visibility,
+   earnings volatility, contract durability, capital intensity, or risk premium.
+8. Produce the unified report with stance and position sizing.
 
 Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selection is incomplete.
 
@@ -109,6 +111,9 @@ Always load these references from this skill:
   - `Inference`
   - `Assumption`
 - Keep an assumption ledger with sensitivity priority (`H/M/L`).
+- For reassessments, explicitly tag any new contract, backlog, subscription, lease,
+  regulated-return, reimbursement, or offtake evidence that may change valuation
+  multiple or discount rate, not just near-term earnings.
 
 ## Step 6: Execute Shared Analysis Modules
 
@@ -119,6 +124,9 @@ Always load these references from this skill:
 - Use [capital-allocation](references/capital-allocation.md) for management and deployment of capital.
 - Use [valuation-router](references/valuation-router.md) plus the industry skill to confirm the `valuation family`.
 - Use [valuation-scenarios](references/valuation-scenarios.md) for the route-appropriate `Bear / Base / Bull` method set and sensitivity design.
+- Use the `Structural Re-rating Gate` in [valuation-scenarios](references/valuation-scenarios.md)
+  whenever business-model visibility or earnings volatility changes. Do not leave a
+  plausible re-rating thesis only inside vague Bull-case prose.
 - Use [value-investing-lens](references/value-investing-lens.md) for downside framing, value-trap checks, and market-implied expectations.
 - Reverse DCF is required only for steady-state operating companies. For other families, use the closest market-implied expectation check instead.
 - Use [portfolio-sizing](references/portfolio-sizing.md) for `Core / Starter / Speculative / Watch-Avoid`.
@@ -129,6 +137,7 @@ Always load these references from this skill:
 - Always output all 10 blocks in the template.
 - Always include:
   - `Bear / Base / Bull`
+  - `Structural re-rating sensitivity` when applicable
   - `Fact / Inference / Assumption`
   - `Stance`
   - `Weighted Fair Value`
