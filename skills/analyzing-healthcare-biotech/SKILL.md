@@ -38,6 +38,8 @@ Boundary rule:
 - Pipeline quality: probability of success, catalyst path, patent duration
 - Commercial execution: launch ramp, gross-to-net, field-force productivity
 - Cash profile: burn rate, runway, milestone timing, financing terms
+- Recurring economics: value-based care contracts, reimbursement contract durability,
+  installed base, recurring consumables, procedure durability, renewal rate, and payer mix
 - Per-share economics: dilution path, partnership economics, royalty leakage
 
 ## 3. Accounting Traps and Normalizations
@@ -47,6 +49,9 @@ Boundary rule:
 - Cash runway matters more than current accounting profit for early-stage names.
 - IPR&D, licensing, and acquired pipeline accounting need normalization.
 - Probability-adjust value; do not treat unproven assets as certain.
+- For commercial healthcare, recurring consumables, installed base, or value-based care
+  economics can justify multiple re-rating only when reimbursement contract quality and
+  procedure durability reduce revenue volatility.
 
 ## 4. Valuation Routing
 
@@ -57,8 +62,11 @@ Boundary rule:
 - Commercial biopharma / medtech / healthcare services:
   - Primary: operating-company diagnostics plus DCF, earnings, or revenue multiple as appropriate
   - Secondary: SOTP when a portfolio or pipeline really matters
-- Critical assumptions: probability of success, peak sales, exclusivity duration, reimbursement path, runway, dilution
+- Critical assumptions: probability of success, peak sales, exclusivity duration, reimbursement path,
+  reimbursement contract durability, installed base, recurring consumables, runway, dilution
 - Avoid: treating healthcare services and tools as if they are automatically binary pipeline assets
+- If a device, service, or HCIT name shifts from episodic sales to recurring contracted revenue,
+  run old product/service multiple vs recurring-economics re-rating sensitivity.
 
 ## 5. Risk Checklist
 
@@ -67,6 +75,7 @@ Boundary rule:
 - Patent cliff or competitive entry
 - Financing or dilution shock
 - Over-reliance on one asset or one catalyst
+- Reimbursement contract reset, procedure-volume reversal, or consumables attach-rate deterioration
 
 ## 6. Deliverables Back to Controller
 

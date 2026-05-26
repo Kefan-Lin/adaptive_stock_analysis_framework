@@ -40,6 +40,8 @@ State:
 - Pricing: seat expansion, usage growth, price uplift, attach rate
 - Cost structure: gross margin, sales efficiency, R&D leverage
 - Cash economics: FCF margin, OCF conversion, CAC payback, LTV/CAC
+- Monetization shift: pricing model migration, usage-based adoption, AI monetization,
+  platform attach, bundle penetration, and contract-duration changes
 - Per-share leakage: SBC, dilution, acquisition roll-up dependence
 
 ## 3. Accounting Traps and Normalizations
@@ -49,13 +51,17 @@ State:
 - Capitalized commissions and implementation costs can flatter margins.
 - Marketplace or payments names may require principal-vs-agent normalization.
 - Acquired growth can hide weakening organic expansion.
+- Usage-based or AI monetization can raise TAM and revenue volatility at the same time;
+  separate real consumption durability from temporary overage or hype-driven workloads.
 
 ## 4. Valuation Routing
 
 - Primary: FCFF DCF
 - Secondary: EV/EBIT or P/E for mature names; EV/Sales only with explicit margin bridge
-- Critical assumptions: NRR durability, steady-state margin, SBC normalization, FCF conversion
+- Critical assumptions: NRR durability, steady-state margin, SBC normalization, FCF conversion, pricing model migration, and multiple re-rating from improved platform durability
 - Avoid: revenue-only valuation without margin path or dilution discussion
+- If a product shift changes retention, usage intensity, or platform breadth, compare old
+  seat/subscription economics with the new usage or AI monetization regime before changing Base multiples.
 
 ## 5. Risk Checklist
 

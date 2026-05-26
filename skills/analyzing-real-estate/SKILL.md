@@ -37,6 +37,8 @@ Boundary rule:
 - Asset value: cap rates, NAV, development yield, asset quality
 - Capital structure: debt ladder, LTV, secured vs unsecured debt, liquidity
 - Cash flow: FFO, AFFO, maintenance capex, payout coverage
+- Lease durability: WALT, CPI escalator terms, tenant credit, lease renewal spreads,
+  rent indexation, pre-leasing, and cap-rate re-rating potential
 - Per-share economics: equity issuance, buybacks, JV leakage
 
 ## 3. Accounting Traps and Normalizations
@@ -46,6 +48,8 @@ Boundary rule:
 - Development profits can make recurring earnings look stronger than they are.
 - Asset marks and cap-rate assumptions need external realism.
 - Equity issuance can offset operating progress on a per-share basis.
+- Long leases and CPI escalator clauses can lower cash-flow risk, but tenant credit,
+  renewal economics, and mark-to-market rent must support any cap-rate re-rating.
 
 ## 4. Valuation Routing
 
@@ -55,8 +59,11 @@ Boundary rule:
 - Asset-light property services:
   - Primary: operating-company valuation family, EBIT/FCF multiple, or DCF
   - Secondary: sector-specific transaction or management-fee multiples
-- Critical assumptions: cap rates, occupancy durability, lease rollover, debt refinancing, fee durability
+- Critical assumptions: cap rates, occupancy durability, WALT, tenant credit, CPI escalator,
+  lease rollover, debt refinancing, fee durability
 - Avoid: forcing asset-light service businesses into NAV-only logic
+- If lease duration, tenant quality, or indexation changes materially, run old cap-rate
+  vs lower-risk cap-rate re-rating sensitivity.
 
 ## 5. Risk Checklist
 
@@ -65,6 +72,7 @@ Boundary rule:
 - Cap-rate expansion or asset markdown risk
 - Development execution risk
 - Per-share dilution from repeated equity issuance
+- Tenant credit downgrade, lease rollover cliff, or CPI escalator reset that weakens duration value
 
 ## 6. Deliverables Back to Controller
 

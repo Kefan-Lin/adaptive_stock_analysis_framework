@@ -34,6 +34,8 @@ State:
 - Capital and reserves: reserve adequacy, solvency ratio, catastrophe exposure
 - Investment income: float yield, duration, reinvestment rate
 - Profitability: BVPS growth, ROE, normalized earnings power
+- Franchise and cycle durability: hard market persistence, rate adequacy duration,
+  float duration, reserve confidence, distribution lock-in, and P/B re-rating potential
 - Per-share economics: buyback discipline, dilution, capital release capacity
 
 ## 3. Accounting Traps and Normalizations
@@ -43,13 +45,18 @@ State:
 - DAC, reserve assumptions, and investment marks can distort headline earnings.
 - Life insurers need asset-liability duration and spread sensitivity review.
 - Book value quality matters more than simple EPS growth.
+- A hard market can justify P/B re-rating only when pricing adequacy, reserve confidence,
+  loss trend, and float duration indicate lower earnings volatility rather than temporary rate catch-up.
 
 ## 4. Valuation Routing
 
 - Primary: P/B with ROE or excess-capital framework
 - Secondary: dividend-based valuation or earnings yield
-- Critical assumptions: normalized combined ratio, reserve quality, float return, solvency buffer
+- Critical assumptions: normalized combined ratio, reserve quality, float return, solvency buffer,
+  hard market duration, and the justified P/B re-rating from more durable underwriting
 - Avoid: generic enterprise DCF without insurance-balance-sheet logic
+- If underwriting volatility or float economics structurally improve, run old-cycle P/B
+  vs durable-underwriting sensitivity before changing Base valuation.
 
 ## 5. Risk Checklist
 
@@ -58,6 +65,7 @@ State:
 - Asset-liability mismatch
 - Regulatory capital strain
 - Reinsurance pricing or competitive underpricing cycle
+- Hard-market reversal or reserve confidence deterioration that compresses justified P/B
 
 ## 6. Deliverables Back to Controller
 

@@ -37,6 +37,9 @@ Boundary rule:
 - Cost structure: network opex, maintenance, customer-acquisition cost
 - Capital intensity: capex, spectrum or grid investment, asset-base growth
 - Balance sheet: leverage, dividend coverage, refinancing need
+- Contracted or regulated visibility: PPA terms, capacity contract duration,
+  interconnection queue position, rate-case lag, allowed ROE lag, tenancy contracts,
+  and contracted cash flow coverage
 - Per-share economics: regulated return, free cash after dividends, buyback restraint
 
 ## 3. Accounting Traps and Normalizations
@@ -46,6 +49,8 @@ Boundary rule:
 - Spectrum or network rights require long-horizon capital-return analysis.
 - For utilities, rate-case timing can distort yearly earnings.
 - For telecom, promo-led net adds can weaken long-term value if ARPU and churn deteriorate.
+- PPA, capacity contract, tenancy, or regulated asset visibility can reduce cash-flow risk,
+  but only if counterparty credit, escalation terms, and capex obligations preserve returns.
 
 ## 4. Valuation Routing
 
@@ -56,8 +61,11 @@ Boundary rule:
   - Primary: DCF or EV/EBITDA
   - Secondary: subscriber or ARPU-based multiple context
 - Tower or fiber names may lean on infrastructure-style DCF, AFFO, or EV/EBITDA with tenancy and churn assumptions.
-- Critical assumptions: allowed return, rate-base growth, churn, ARPU, tenancy, dividend coverage, capex
+- Critical assumptions: allowed return, rate-base growth, PPA or capacity contract coverage,
+  interconnection execution, churn, ARPU, tenancy, dividend coverage, capex
 - Avoid: treating yield alone as value without capex and leverage context
+- If contracted cash flow or regulatory visibility changes materially, run old yield
+  multiple vs lower-risk infrastructure/regulated re-rating sensitivity.
 
 ## 5. Risk Checklist
 
@@ -66,6 +74,7 @@ Boundary rule:
 - Capex burden that weakens dividend sustainability
 - Balance-sheet stress from rates or spectrum spending
 - Competitive pricing pressure or technological substitution
+- PPA, capacity contract, or interconnection failure that removes expected visibility
 
 ## 6. Deliverables Back to Controller
 

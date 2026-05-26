@@ -49,6 +49,96 @@ class SectorSafeControllerContractTests(unittest.TestCase):
         self.assertIn("Reason", template)
 
 
+class StructuralReratingGateContractTests(unittest.TestCase):
+    def test_shared_valuation_contract_requires_structural_rerating_gate(self) -> None:
+        scenarios = read("skills/analyzing-stocks/references/valuation-scenarios.md")
+        template = read("skills/analyzing-stocks/references/report-template.md")
+
+        for expected in [
+            "Structural Re-rating Gate",
+            "contracted revenue visibility",
+            "earnings volatility",
+            "discount rate or valuation multiple",
+        ]:
+            self.assertIn(expected, scenarios)
+
+        for expected in [
+            "Structural re-rating sensitivity",
+            "Old regime",
+            "New regime",
+        ]:
+            self.assertIn(expected, template)
+
+    def test_sector_skills_cover_industry_specific_rerating_drivers(self) -> None:
+        expectations = {
+            "skills/analyzing-semiconductors-hardware/SKILL.md": [
+                "SCA",
+                "take-or-pay",
+                "volatility compression",
+                "re-rating",
+            ],
+            "skills/analyzing-resource-energy-materials/SKILL.md": [
+                "offtake",
+                "tolling",
+                "floor-price hedge",
+                "contracted cash flow",
+            ],
+            "skills/analyzing-industrials-transport/SKILL.md": [
+                "cancellable",
+                "price escalator",
+                "advance payment",
+                "service attach",
+            ],
+            "skills/analyzing-software-platforms/SKILL.md": [
+                "pricing model migration",
+                "usage-based",
+                "AI monetization",
+                "multiple re-rating",
+            ],
+            "skills/analyzing-consumer-retail/SKILL.md": [
+                "membership",
+                "advertising monetization",
+                "franchise mix",
+                "platform re-rating",
+            ],
+            "skills/analyzing-banks/SKILL.md": [
+                "deposit franchise re-rating",
+                "funding beta",
+                "fee mix",
+                "duration of ROTCE",
+            ],
+            "skills/analyzing-insurers/SKILL.md": [
+                "hard market",
+                "float duration",
+                "reserve confidence",
+                "P/B re-rating",
+            ],
+            "skills/analyzing-real-estate/SKILL.md": [
+                "WALT",
+                "CPI escalator",
+                "tenant credit",
+                "cap-rate re-rating",
+            ],
+            "skills/analyzing-utilities-telecom/SKILL.md": [
+                "PPA",
+                "capacity contract",
+                "interconnection",
+                "contracted cash flow",
+            ],
+            "skills/analyzing-healthcare-biotech/SKILL.md": [
+                "value-based care",
+                "recurring consumables",
+                "reimbursement contract",
+                "installed base",
+            ],
+        }
+
+        for relative_path, expected_terms in expectations.items():
+            content = read(relative_path)
+            for expected in expected_terms:
+                self.assertIn(expected, content, f"{relative_path} missing {expected!r}")
+
+
 class RoutingBoundaryContractTests(unittest.TestCase):
     def test_controller_calls_out_the_problem_boundaries(self) -> None:
         controller = read("skills/analyzing-stocks/SKILL.md")
