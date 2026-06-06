@@ -9,6 +9,18 @@ def read(relative_path: str) -> str:
     return (REPO_ROOT / relative_path).read_text(encoding="utf-8")
 
 
+def read_frontmatter(relative_path: str) -> str:
+    content = read(relative_path)
+    parts = content.split("---", 2)
+    if len(parts) < 3:
+        raise AssertionError(f"{relative_path} is missing YAML frontmatter")
+    return parts[1]
+
+
+def skill_paths() -> list[pathlib.Path]:
+    return sorted((REPO_ROOT / "skills").glob("*/SKILL.md"))
+
+
 class SectorSafeControllerContractTests(unittest.TestCase):
     def test_controller_declares_analysis_and_merge_contract(self) -> None:
         controller = read("skills/analyzing-stocks/SKILL.md")
@@ -332,6 +344,64 @@ class GlobalSourceAndSizingContractTests(unittest.TestCase):
         controller = read("skills/analyzing-stocks/SKILL.md")
         self.assertIn("tradable line", controller)
         self.assertIn("bid-ask spread", controller)
+
+
+class InvestmentDecisionWorkflowContractTests(unittest.TestCase):
+    def test_workflow_declares_mode_routing_priority(self) -> None:
+        workflow = read("skills/investment-decision-workflow/SKILL.md")
+        self.assertIn("Position Review", workflow)
+        self.assertIn("Event Review", workflow)
+        self.assertIn("Existing Report to Action", workflow)
+        self.assertIn("New Idea Decision", workflow)
+        self.assertIn("Mode", workflow)
+        self.assertIn("Reason", workflow)
+
+    def test_workflow_reuses_analyzing_stocks_as_research_engine(self) -> None:
+        workflow = read("skills/investment-decision-workflow/SKILL.md")
+        self.assertIn("$analyzing-stocks", workflow)
+        self.assertIn("Research & Valuation Engine", workflow)
+        self.assertIn("Do not change Bear/Base/Bull fair values solely because current price changed", workflow)
+
+    def test_workflow_requires_stale_check_and_incremental_update(self) -> None:
+        workflow = read("skills/investment-decision-workflow/SKILL.md")
+        self.assertIn("Stale Check", workflow)
+        self.assertIn("Incremental Valuation Update", workflow)
+        self.assertIn("Structural Re-rating Gate", workflow)
+        self.assertIn("Red-Team Gate", workflow)
+
+    def test_workflow_has_execution_and_option_risk_contract(self) -> None:
+        workflow = read("skills/investment-decision-workflow/SKILL.md")
+        for expected in [
+            "Equivalent Exposure",
+            "Technical Execution Filter",
+            "Momentum Risk Filter",
+            "Premium Hurdle",
+            "Earnings Risk Block",
+            "Earnings Risk Exit",
+            "Do-Not-Initiate Rule",
+            "No Action",
+        ]:
+            self.assertIn(expected, workflow)
+
+
+class SkillMetadataContractTests(unittest.TestCase):
+    def test_skill_frontmatter_scalars_with_colons_are_quoted(self) -> None:
+        for path in skill_paths():
+            relative_path = path.relative_to(REPO_ROOT).as_posix()
+            frontmatter = read_frontmatter(relative_path)
+            for line in frontmatter.strip().splitlines():
+                if not line.strip() or line.startswith("  "):
+                    continue
+                key, separator, value = line.partition(":")
+                self.assertTrue(separator, f"{relative_path} frontmatter line lacks key/value separator: {line}")
+                value = value.strip()
+                if value.startswith(("\"", "'", "|", ">")):
+                    continue
+                self.assertNotIn(
+                    ": ",
+                    value,
+                    f"{relative_path} frontmatter field {key!r} contains an unquoted colon sequence",
+                )
 
 
 if __name__ == "__main__":

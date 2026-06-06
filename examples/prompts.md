@@ -1,5 +1,19 @@
 # Example Prompts
 
+## End-to-End Investment Decisions
+
+```text
+Use $investment-decision-workflow to decide whether GOOGL is worth building a position in and produce a decision brief plus execution sheet.
+```
+
+```text
+Use $investment-decision-workflow to convert my latest Pop Mart report into an action plan. Check whether the report is stale, update valuation only if drivers changed, and decide whether direct buying or cash-secured puts are allowed.
+```
+
+```text
+Use $investment-decision-workflow to review my current position: 09992.HK stock plus open short puts. Recalculate equivalent exposure, check earnings risk, and tell me whether to hold, reduce, close, or take no action.
+```
+
 ## General Research
 
 ```text

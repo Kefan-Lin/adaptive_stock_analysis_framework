@@ -39,6 +39,7 @@ CLAUDE_DEST="$TMP_DIR/claude-skills"
 COPY_DEST="$TMP_DIR/copied-skills"
 
 bash "$REPO_ROOT/install/install-codex.sh" --dest "$CODEx_DEST"
+assert_symlink_target "$CODEx_DEST/investment-decision-workflow" "$REPO_ROOT/skills/investment-decision-workflow"
 assert_symlink_target "$CODEx_DEST/analyzing-stocks" "$REPO_ROOT/skills/analyzing-stocks"
 assert_symlink_target "$CODEx_DEST/analyzing-banks" "$REPO_ROOT/skills/analyzing-banks"
 assert_symlink_target "$CODEx_DEST/analyzing-utilities-telecom" "$REPO_ROOT/skills/analyzing-utilities-telecom"

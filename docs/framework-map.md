@@ -2,9 +2,12 @@
 
 ## Core Structure
 
-The framework has one controller skill and ten industry companion skills.
+The framework has one end-to-end decision workflow, one research controller skill, and ten industry companion skills.
 
 ```text
+investment-decision-workflow
+└── orchestrates analyzing-stocks, stale checks, valuation updates, decision briefs, and execution sheets
+
 analyzing-stocks
 ├── references/
 │   ├── source-policy.md
@@ -20,6 +23,17 @@ analyzing-stocks
 │   └── report-template.md
 └── routes to one primary industry skill
 ```
+
+## Decision Workflow Skill
+
+`investment-decision-workflow` is responsible for:
+
+- selecting `New Idea Decision`, `Existing Report to Action`, `Position Review`, or `Event Review`
+- running live verification before current execution advice
+- requiring stale checks and incremental valuation updates for existing reports, positions, and events
+- reusing `analyzing-stocks` as the Research and Valuation Engine
+- mapping research output into candidate tier, valuation zone, execution method, option suitability, and review triggers
+- enforcing equivalent exposure, no-action, do-not-initiate, technical-filter, and earnings-risk rules
 
 ## Controller Skill
 
@@ -62,13 +76,13 @@ These skills should not replace the controller. They provide only:
 
 ## Typical Flow
 
-1. User asks for company or stock analysis.
-2. Invoke `analyzing-stocks`.
-3. The controller identifies the primary business model.
-4. The controller routes to one industry companion skill.
-5. The controller selects the correct analysis family and valuation family.
-6. The controller uses shared references plus the industry output.
-7. The final output uses the unified report contract.
+1. User asks for an investment decision, action plan, position review, or event response.
+2. Invoke `investment-decision-workflow`.
+3. The workflow selects the mode and verifies current data.
+4. For new or stale research, the workflow invokes `analyzing-stocks`.
+5. The controller identifies the primary business model and routes to the right industry companion skill.
+6. The workflow performs stale check or incremental valuation update when using prior material.
+7. The final output is a decision brief plus execution sheet.
 
 ## Shared-Reference Contract
 
