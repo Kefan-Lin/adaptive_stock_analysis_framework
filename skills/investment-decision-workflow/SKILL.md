@@ -1,0 +1,246 @@
+---
+name: investment-decision-workflow
+description: "Use when the user wants an end-to-end public-equity decision workflow: analyze a new stock idea, convert an existing valuation report into an action plan, review an existing stock/options position, or react to earnings, sharp price moves, technical damage, valuation changes, or option assignment risk. Orchestrates analyzing-stocks as the research and valuation engine, then produces a decision brief and execution sheet."
+---
+
+# Investment Decision Workflow
+
+## Purpose
+
+Run the user's end-to-end investment decision process:
+
+`Idea Intake -> Research & Valuation Engine -> Action Sheet Adapter -> Execution Plan -> Position Review`
+
+Use this skill as the top-level orchestrator. Reuse `$analyzing-stocks` for research and valuation; do not replace it with a looser trading template.
+
+## Mode Routing
+
+Choose the mode automatically and state `Mode` plus `Reason` at the top of the output.
+
+Priority when multiple modes match:
+
+1. `Position Review`
+2. `Event Review`
+3. `Existing Report to Action`
+4. `New Idea Decision`
+
+Modes:
+
+- `New Idea Decision`: user gives a new ticker/company and asks whether it is worth buying, building a position in, or selling puts on.
+- `Existing Report to Action`: user references a prior report, local thesis, or asks to turn research into an action sheet.
+- `Position Review`: user provides existing stock holdings, cost basis, open option legs, assignment risk, cash, margin, or asks what to do with a live position.
+- `Event Review`: user mentions earnings, major disclosure, sharp price move, technical break, valuation regime change, or option leg nearing assignment.
+
+If mode routing is ambiguous and materially changes required inputs, ask one concise clarification. Otherwise proceed.
+
+## Required Data Discipline
+
+Before saying whether an action is executable now, perform `Live Verification`:
+
+- current share price and date
+- latest filing, earnings release, guidance, and material capital action
+- next earnings date or similarly binary event
+- option-chain terms when recommending or managing options
+- technical state used by the Technical Execution Filter
+- actual holdings, cost basis, open option legs, cash/margin impact for `Position Review`
+
+If required live or position data is missing, output `Missing Inputs` and give only conditional sizing or conditional execution. Do not invent holdings or assume no existing exposure.
+
+## Research & Valuation Engine
+
+Use `$analyzing-stocks` when a current valuation report is missing, stale, incomplete, or needs a full rerun.
+
+The upstream report must provide or be refreshed to provide:
+
+- `Stance`: `Buy / Add / Hold / Reduce / Avoid`
+- `Position Size`: `Core / Starter / Speculative / Watch-Avoid`
+- `Bear / Base / Bull`
+- `Weighted Fair Value`
+- `Margin of Safety`
+- `Confidence`
+- value-trap judgment
+- Red-Team Gate result
+- `Add-on Trigger`
+- `Trim/Exit Trigger`
+- monitor list
+- evidence ledger
+
+Do not change Bear/Base/Bull fair values solely because current price changed. Price changes update margin of safety, expected return, market-implied expectations, valuation zone, and execution posture unless valuation drivers changed.
+
+## Existing Report Path
+
+For `Existing Report to Action`, `Position Review`, and `Event Review`, use this path:
+
+`Existing Report / Prior Thesis -> Stale Check -> Incremental Valuation Update -> Decision Brief -> Execution Sheet`
+
+### Stale Check
+
+Decide whether the old report/thesis/action sheet can be used as the starting point.
+
+Check:
+
+- price drift from the old report anchor
+- new filings, earnings releases, guidance, or company disclosures
+- buyback, dividend, issuance, M&A, refinancing, or other capital action
+- passed catalysts or monitor dates
+- material technical state change
+- earnings date and binary event calendar
+- option-chain relevance for option execution
+- holdings, cost basis, open option legs, cash/margin gaps for position work
+
+If stale inputs are material, refresh the affected research/valuation modules before producing execution advice.
+
+### Incremental Valuation Update
+
+Update only what new evidence justifies:
+
+- keep Bear/Base/Bull if valuation drivers did not change
+- update Bear/Base/Bull only for changed fundamentals, discount rate, multiple, net debt, share count, capital action, regulation, litigation, financing, or structural regime evidence
+- run the Structural Re-rating Gate when revenue visibility, earnings volatility, contract quality, reinvestment economics, or risk premium changed
+- update margin of safety, market-implied expectations, and position discipline for price moves
+- re-check Red-Team Gate, value-trap status, Add-on Trigger, Trim/Exit Trigger, and Position Size
+
+## Candidate & Valuation Mapping
+
+Map upstream research into the user's decision language:
+
+- `Core Candidate`: durable quality, quality-adjusted mispricing, and enough valuation support for potential core ownership.
+- `Tactical Candidate`: temporary, cyclical, or event-driven mispricing with weaker long-term compounding quality.
+- `Reject`: insufficient quality, insufficient valuation gap, unbounded downside, failed value-trap checks, or no willingness to own.
+
+Map price to `Quality-Adjusted Valuation Zone`:
+
+- `Accumulation Zone`: payoff/risk supports buying or eligible sell-put execution.
+- `Hold Zone`: holding is acceptable; new exposure requires stronger evidence or better execution.
+- `Exhaustion Zone`: stop adding, reduce sell-put aggressiveness, and consider trimming.
+- `Invalidation Zone`: triggered by Thesis Break, not price alone.
+
+High-quality Core Candidates may allow staged entry with a smaller margin of safety than lower-quality names; do not use a one-size-fits-all PE or discount rule.
+
+## Technical Execution Filter
+
+Technical analysis is an execution filter, not the investment engine. It can adjust timing, pacing, option structure, and review triggers, but cannot create a thesis, admit a rejected security, override valuation zone, or exceed exposure limits.
+
+Standardize four checks:
+
+1. `Trend Regime`: rising, range-bound, falling.
+2. `Key Level`: support, resistance, prior high/low, long-term moving-average area.
+3. `Volume/Price Confirmation`: breakout quality, pullback quality, failed support, or lack of demand.
+4. `Momentum Risk Filter`: daily and weekly RSI/MACD overbought, oversold, and bullish/bearish divergence. Weekly signals carry more weight than daily signals.
+
+Use overbought or bearish divergence to pause chase buying and reduce sell-put aggressiveness. Use oversold or bullish divergence only to improve execution for a security that already passes research and valuation gates.
+
+## Option Execution Rules
+
+Sell cash-secured puts only when all are true:
+
+- candidate is not `Reject`
+- user is willing to own the underlying at the net assignment price
+- net assignment price is inside the relevant Accumulation Zone
+- annualized premium or net breakeven discount clears the Premium Hurdle
+- Equivalent Exposure stays inside the position limit
+- Earnings Risk Block does not apply
+
+Suggested starting hurdles:
+
+- `Core Candidate`: net assignment price in Accumulation Zone and simple annualized premium around `12% - 15%` or better.
+- `Tactical Candidate`: net assignment price in Accumulation Zone and simple annualized premium around `20% - 25%` or better.
+- `Reject`: no sell puts.
+
+Use simple annualized premium math first:
+
+`premium / notional * 365 / days-to-expiry`
+
+Add complexity only if the user asks.
+
+## Earnings Risk Rules
+
+Do not gamble on earnings.
+
+`Earnings Risk Block`:
+
+- Default: do not open new short puts that cross earnings or similarly binary disclosures.
+- High IV or attractive premium is not enough.
+- Rare exception: small Core Candidate exposure where the user is already willing to own through the event at the net assignment price.
+
+`Earnings Risk Exit`:
+
+- Existing short puts that cross earnings must trigger Event Review.
+- Default objective is to close, reduce, or restructure before the event to remove or lower event exposure.
+- Do not roll a short put through earnings just to avoid realizing a loss.
+- Rolling is acceptable only when it avoids carrying short-put risk across the event or materially reduces Equivalent Exposure under an explicit Core Candidate exception.
+
+Stock ownership can cross earnings as `Ownership Event Risk` when the position is sized as long-term ownership. Do not make large new pre-earnings buys just to bet on the report.
+
+## Exposure & Stop Rules
+
+Use `Equivalent Exposure` for stock plus option obligations. Cash-secured puts count by the stock exposure the user would take if assigned.
+
+Valid execution outcomes:
+
+- `Buy now`
+- `Stage buy`
+- `Sell cash-secured put`
+- `Wait`
+- `Reduce / Exit`
+- `No Action`
+
+`No Action` is a valid result when no trade clears thesis quality, valuation zone, exposure, technical, event-risk, or premium constraints.
+
+Use `Do-Not-Initiate Rule` to stop opening new legs when price, premium, event risk, exposure, or thesis quality no longer supports the plan, even if an earlier plan listed unfilled legs.
+
+Allow limited `Thesis-Upgrade Entry` only when new evidence raises intrinsic value or lowers risk enough to upgrade the thesis. Momentum alone is not enough.
+
+## Output Contract
+
+For current decisions, output these sections in order.
+
+### 1. Mode & Inputs
+
+- `Mode`:
+- `Reason`:
+- `Live Verification`:
+- `Missing Inputs`:
+
+### 2. Stale Check
+
+Use for existing report, position, and event modes. For new ideas, write `N/A - New Idea Decision`.
+
+- `Prior report / thesis anchor`:
+- `Stale items`:
+- `Refresh needed before action?`:
+
+### 3. Incremental Valuation Update
+
+For new ideas, use the current `$analyzing-stocks` output or state that full valuation is required first.
+
+- `Bear / Base / Bull change`:
+- `Weighted Fair Value change`:
+- `Margin of Safety update`:
+- `Structural Re-rating Gate`:
+- `Red-Team / value-trap update`:
+- `Add-on / Trim-Exit trigger status`:
+
+### 4. Decision Brief
+
+- `Candidate Tier`: `Core Candidate / Tactical Candidate / Reject`
+- `Valuation Zone`: `Accumulation / Hold / Exhaustion / Invalidation`
+- `Thesis status`:
+- `Main risk`:
+- `Most likely error`:
+- `Action allowed?`:
+
+### 5. Execution Sheet
+
+- `Execution Method`: `Buy now / Stage buy / Sell cash-secured put / Wait / Reduce / Exit / No Action`
+- `Current Exposure`:
+- `Max Equivalent Exposure`:
+- `Order / level plan`:
+- `Technical Execution Filter`:
+- `Option Suitability`:
+- `Premium Hurdle`:
+- `Earnings Risk Block / Exit`:
+- `Do-Not-Initiate Rule`:
+- `Review Trigger`:
+
+Keep execution language concrete. If the evidence does not support a concrete order, say `No Action` or provide conditional branches instead of forcing a trade.

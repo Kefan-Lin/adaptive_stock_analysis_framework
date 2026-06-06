@@ -17,6 +17,8 @@ TOP_LEVEL_REQUIRED = [
 ]
 
 FULL_REQUIRED = [
+    "skills/investment-decision-workflow/SKILL.md",
+    "skills/investment-decision-workflow/agents/openai.yaml",
     "skills/analyzing-stocks/SKILL.md",
     "skills/analyzing-stocks/agents/openai.yaml",
     "skills/analyzing-stocks/references/business-moat.md",

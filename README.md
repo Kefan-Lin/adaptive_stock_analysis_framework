@@ -4,7 +4,8 @@ Adaptive Stock Analysis Framework is a multi-skill equity research framework bui
 
 ## Included
 
-- `analyzing-stocks` as the controller skill
+- `investment-decision-workflow` as the end-to-end decision orchestrator
+- `analyzing-stocks` as the research and valuation controller skill
 - 10 industry companion skills
 - shared references for source policy, diagnostics, valuation, portfolio sizing, and report structure
 - OpenAI-oriented metadata in `agents/openai.yaml`
@@ -57,6 +58,8 @@ adaptive_stock_analysis_framework/
 ```
 
 ## Skill Topology
+
+`investment-decision-workflow` routes new ideas, existing reports, live positions, and events through research, valuation, stale checks, incremental valuation updates, decision briefs, and execution sheets.
 
 `analyzing-stocks` routes companies into one primary industry path:
 

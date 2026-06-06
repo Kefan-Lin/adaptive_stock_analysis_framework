@@ -1,0 +1,4 @@
+interface:
+  display_name: "Investment Decision Workflow"
+  short_description: "End-to-end research to execution workflow"
+  default_prompt: "Use $investment-decision-workflow to decide whether GOOGL is worth building a position in and produce an execution plan."
