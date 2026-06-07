@@ -369,6 +369,19 @@ class InvestmentDecisionWorkflowContractTests(unittest.TestCase):
         self.assertIn("Structural Re-rating Gate", workflow)
         self.assertIn("Red-Team Gate", workflow)
 
+    def test_workflow_blocks_material_actions_until_research_is_refreshed(self) -> None:
+        workflow = read("skills/investment-decision-workflow/SKILL.md")
+        for expected in [
+            "Action-Blocking Refresh Gate",
+            "Refresh required before action",
+            "material portfolio exposure",
+            ">= 2% - 3%",
+            "top portfolio drivers",
+            "run `$analyzing-stocks` first",
+            "Do not leave `needs future refresh` as a current recommendation for material positions",
+        ]:
+            self.assertIn(expected, workflow)
+
     def test_workflow_has_execution_and_option_risk_contract(self) -> None:
         workflow = read("skills/investment-decision-workflow/SKILL.md")
         for expected in [

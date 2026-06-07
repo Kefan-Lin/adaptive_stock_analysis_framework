@@ -50,6 +50,8 @@ If required live or position data is missing, output `Missing Inputs` and give o
 
 Use `$analyzing-stocks` when a current valuation report is missing, stale, incomplete, or needs a full rerun.
 
+Action-level outputs must be backed by a current upstream valuation. Do not put `needs future refresh`, `future reassessment`, or equivalent language into an executable current-position plan for any name that drives a buy/add/reduce/exit decision, has material portfolio exposure, or lacks a complete current valuation.
+
 The upstream report must provide or be refreshed to provide:
 
 - `Stance`: `Buy / Add / Hold / Reduce / Avoid`
@@ -89,6 +91,29 @@ Check:
 - holdings, cost basis, open option legs, cash/margin gaps for position work
 
 If stale inputs are material, refresh the affected research/valuation modules before producing execution advice.
+
+### Action-Blocking Refresh Gate
+
+This gate prevents an action sheet from deferring required research.
+
+Before `Decision Brief` or `Execution Sheet`, classify each security:
+
+- `Current enough`: upstream valuation is complete and live verification did not identify material stale inputs.
+- `Refresh required before action`: upstream valuation is missing, incomplete, stale, or contradicted by new material evidence.
+- `Conditional only`: required live or position data is missing, so only conditional sizing or conditional execution is allowed.
+
+If `Refresh required before action` applies, run `$analyzing-stocks` first and refresh the affected research/valuation modules before giving any concrete `Buy`, `Add`, `Reduce`, `Exit`, target weight, or order-level plan.
+
+Hard triggers for `Refresh required before action`:
+
+- no current full valuation report exists for the security
+- old report lacks Bear/Base/Bull, Weighted Fair Value, margin of safety, confidence, Red-Team/value-trap check, add trigger, or trim/exit trigger
+- position exposure is material to the portfolio, normally `>= 2% - 3%` of net liquidation value, or the security is one of the top portfolio drivers
+- the proposed action would change exposure materially, normally `>= 1%` of net liquidation value
+- new earnings, guidance, filing, capital action, financing, commodity-price regime, regulatory event, or thesis KPI has arrived after the old anchor
+- the old conclusion says `needs refresh`, `future reassessment`, `stale`, or equivalent before action
+
+After refreshing, replace the stale placeholder with the refreshed `Weighted Fair Value`, `Bear/Base/Bull`, `Stance`, `Position Size`, `Add-on Trigger`, `Trim/Exit Trigger`, and updated portfolio action. Do not leave `needs future refresh` as a current recommendation for material positions; use it only as a post-decision monitor after the current decision is fully supported.
 
 ### Incremental Valuation Update
 
@@ -209,6 +234,7 @@ Use for existing report, position, and event modes. For new ideas, write `N/A - 
 - `Prior report / thesis anchor`:
 - `Stale items`:
 - `Refresh needed before action?`:
+- `Action-Blocking Refresh Gate`: `Current enough / Refresh required before action / Conditional only`
 
 ### 3. Incremental Valuation Update
 
