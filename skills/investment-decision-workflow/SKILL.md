@@ -125,6 +125,20 @@ Update only what new evidence justifies:
 - update margin of safety, market-implied expectations, and position discipline for price moves
 - re-check Red-Team Gate, value-trap status, Add-on Trigger, Trim/Exit Trigger, and Position Size
 
+### Valuation Evidence Gate
+
+WFV can be refreshed only after new evidence changes intrinsic-value drivers. Do not raise Weighted Fair Value because the share price rose, the chart broke out, the valuation multiple expanded, market narrative improved, or a sell-side target-price upgrade appeared.
+
+Evidence that may justify a WFV change:
+
+- realized revenue, order, contract, or backlog improvement
+- gross margin, FCF margin, ROIC, unit economics, or capital-efficiency improvement
+- management guidance raised with verifiable support from backlog, customer contracts, constrained capacity, take-or-pay agreements, PPAs, long-term supply agreements, or similar evidence
+- industry structure change such as HBM long-term agreements, optical networking order durability, power PPA / capacity revenue lock-in, or other supply-demand evidence
+- discount-rate, risk-premium, share-count, net-debt, litigation, regulation, financing, or capital-allocation changes
+
+If the only new evidence is price action, sell-side target-price upgrade, or sentiment, trigger reassessment and market-implied-expectations analysis, but keep WFV unchanged until fundamentals support the change.
+
 ## Candidate & Valuation Mapping
 
 Map upstream research into the user's decision language:
@@ -201,6 +215,40 @@ Stock ownership can cross earnings as `Ownership Event Risk` when the position i
 
 Use `Equivalent Exposure` for stock plus option obligations. Cash-secured puts count by the stock exposure the user would take if assigned.
 
+### Portfolio Risk Budget
+
+For `Position Review`, portfolio plans, and multi-name action sheets, use stock-equivalent exposure rather than spot holdings alone.
+
+- `stock-equivalent exposure = stock market value + cash-secured put assigned reserve + delta-adjusted directional ETF/option exposure`
+- cash-secured put assigned reserve is locked for assignment or for closing the put; do not count it again as free cash, AI-buying cash, quality-buying cash, or crisis reserve
+- set or preserve a cash reserve floor before recommending new buys; if the floor would be breached, output `No Action`, a conditional trigger, or a funding source
+- enforce a single-name cap using stock-equivalent exposure, not just shares owned
+- treat hedge puts as risk offsets only by reasonable net delta; do not count hedges as cash
+- if the user's stated risk budget differs from the default, use the user's cap and show whether the plan fits it
+
+For concentrated portfolio reviews, explicitly show sleeve targets, single-name cap, cash reserve floor, and assignment reserve before the execution table.
+
+### Capital Allocation Waterfall
+
+When multiple opportunities are eligible at once, apply this order before any single-name order plan:
+
+1. Lock every open cash-secured put assigned reserve.
+2. Preserve the cash reserve floor.
+3. Fund high-conviction existing target exposures only when price and thesis gates are both met.
+4. Fund higher-quality core candidates that are below target and inside Accumulation Zone.
+5. Fund quality cash-flow / ballast candidates only from their reserved sleeve, not from assignment reserve.
+6. Stop adding risk when portfolio drawdown approaches the user's max drawdown budget; prefer defensive swaps over higher gross exposure.
+
+### Rebalance Rule
+
+Upside drift does not automatically become a new target weight.
+
+- positions inside target range can run without mechanical trading
+- positions above target range plus tolerance require valuation and thesis review
+- positions above the single-name cap must stop adding and be reduced toward the allowed range unless a fresh full report and explicit risk budget support the exception
+- sleeves above their cap must pause new buys and rebalance after valuation repair
+- speculative or venture buckets that rise above their cap must be trimmed; they do not graduate into core holdings solely because they rose
+
 Valid execution outcomes:
 
 - `Buy now`
@@ -242,6 +290,7 @@ For new ideas, use the current `$analyzing-stocks` output or state that full val
 
 - `Bear / Base / Bull change`:
 - `Weighted Fair Value change`:
+- `Valuation Evidence Gate`:
 - `Margin of Safety update`:
 - `Structural Re-rating Gate`:
 - `Red-Team / value-trap update`:
@@ -261,6 +310,9 @@ For new ideas, use the current `$analyzing-stocks` output or state that full val
 - `Execution Method`: `Buy now / Stage buy / Sell cash-secured put / Wait / Reduce / Exit / No Action`
 - `Current Exposure`:
 - `Max Equivalent Exposure`:
+- `Portfolio Risk Budget`: sleeve target, single-name cap, cash reserve floor, assignment reserve, and stock-equivalent exposure
+- `Capital Allocation Waterfall`:
+- `Rebalance Rule`:
 - `Order / level plan`:
 - `Technical Execution Filter`:
 - `Option Suitability`:

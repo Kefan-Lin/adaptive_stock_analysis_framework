@@ -396,6 +396,32 @@ class InvestmentDecisionWorkflowContractTests(unittest.TestCase):
         ]:
             self.assertIn(expected, workflow)
 
+    def test_workflow_requires_evidence_based_valuation_updates(self) -> None:
+        workflow = read("skills/investment-decision-workflow/SKILL.md")
+        for expected in [
+            "Valuation Evidence Gate",
+            "Do not raise Weighted Fair Value because the share price rose",
+            "sell-side target-price upgrade",
+            "backlog",
+            "take-or-pay",
+            "PPA",
+            "WFV can be refreshed only after",
+        ]:
+            self.assertIn(expected, workflow)
+
+    def test_workflow_includes_portfolio_risk_budget_contract(self) -> None:
+        workflow = read("skills/investment-decision-workflow/SKILL.md")
+        for expected in [
+            "Portfolio Risk Budget",
+            "stock-equivalent exposure",
+            "cash-secured put assigned reserve",
+            "cash reserve floor",
+            "Capital Allocation Waterfall",
+            "Rebalance Rule",
+            "single-name cap",
+        ]:
+            self.assertIn(expected, workflow)
+
 
 class SkillMetadataContractTests(unittest.TestCase):
     def test_skill_frontmatter_scalars_with_colons_are_quoted(self) -> None:
