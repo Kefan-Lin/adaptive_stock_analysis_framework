@@ -54,7 +54,11 @@ State:
 - Primary: through-cycle DCF
 - Secondary: EV/EBITDA or EV/EBIT
 - Critical assumptions: backlog conversion, utilization, service mix, normalized margin, capex needs, backlog protection, and service/aftermarket mix
-- Avoid: peak-cycle multiples or one-quarter run-rate valuation
+- Avoid: peak-cycle multiples, and do not naively annualize one strong quarter — but
+  distinguish a one-off or peak-cycle quarter (avoid annualizing) from a
+  **structural earnings re-basing** (new capacity, non-cancellable backlog, durable mix
+  shift). A re-basing should move the Base toward a forward run-rate only after the
+  corroborating evidence in the Earnings Base Re-basing Gate is met, not dismissed as a fluke.
 - If backlog or service attach materially improves visibility, run a re-rating sensitivity
   against the old project-cycle multiple before changing the Base valuation.
 

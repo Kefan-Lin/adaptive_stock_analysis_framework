@@ -16,6 +16,31 @@ Before ratio work:
 
 If restatements are frequent or key line items are not reconcilable, lower confidence.
 
+### Earnings base representativeness (do this before anchoring any multiple)
+
+Trailing earnings can **understate** forward earnings power just as often as they
+overstate it. Before using any fiscal-year or TTM figure as a valuation base:
+
+1. Compute the latest-quarter (or latest-half) **annualized run-rate** and the most
+   recent TTM, and compare both to the **trailing full-year or TTM** base.
+2. If the latest run-rate diverges materially from the trailing base in either
+   direction, the trailing base may be unrepresentative — do not anchor a multiple
+   on it without classifying the cause.
+3. Classify the divergence as either:
+   - **structural step-change**: new capacity online, a new product or business line
+     ramping, post-turnaround operating leverage, or a durable mix shift — the profit
+     center has genuinely re-based; or
+   - **one-off / peak / pulled-forward**: lumpy project recognition, a one-time gain,
+     a cyclical peak, channel stuffing, or order pull-forward — trailing-style
+     normalization still applies.
+4. Note **seasonality** direction explicitly (e.g. is the strong quarter normally a
+   seasonally weak one?), so a seasonal artifact is not mistaken for an inflection and
+   a genuine inflection in a seasonally weak quarter is not dismissed.
+
+A structural step-change routes into the `Earnings Base Re-basing Gate` in
+[valuation-scenarios](valuation-scenarios.md); a one-off does not. Do not default to
+skepticism: a strong quarter is neither automatically noise nor automatically signal.
+
 ## 2) Choose the Diagnostic Family First
 
 ### Operating companies
@@ -104,6 +129,26 @@ Flag and explain impact if any are present:
 - Aggressive capitalization that suppresses expenses
 - Dilution inconsistent with per-share value creation
 - Environmental, legal, pension, or statutory obligations with weak disclosure
+
+### Understatement and hidden-value flags
+
+Earnings quality runs both ways. Symmetrically check whether reported earnings or book
+value **understate** economic reality, so a genuinely cheap or inflecting business is not
+dismissed on optically high trailing multiples:
+
+- conservative accounting that depresses current earnings: growth investment fully
+  expensed rather than capitalized, accelerated depreciation, or front-loaded provisioning
+- hidden or under-marked assets: land or property at historical cost, equity stakes or
+  investment securities carried below fair value, an overfunded pension, or net cash masked
+  by gross presentation
+- trough or one-off costs in the base period (start-up losses for a ramping segment,
+  restructuring, integration) that understate normalized earning power
+- loss-making or pre-profit segments dragging blended margins while a profitable core
+  compounds underneath
+
+When understatement is material, normalize upward with the same evidentiary discipline used
+for downward normalization, and route a genuine step-up through the
+`Earnings Base Re-basing Gate`.
 
 ## 4) Financial Quality Scoring
 

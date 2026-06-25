@@ -20,7 +20,9 @@ Core principle: **先做行业分型，再做估值，再做仓位建议**。不
 5. Load shared references from this skill.
 6. Build source map, evidence ledger, and any needed structural overlay.
 7. Run the structural re-rating gate when new evidence changes revenue visibility,
-   earnings volatility, contract durability, capital intensity, or risk premium.
+   earnings volatility, contract durability, capital intensity, or risk premium, and
+   run the `Earnings Base Re-basing Gate` when the latest-quarter annualized run-rate
+   diverges materially from the trailing full-year or TTM earnings base.
 8. Produce the unified report with stance and position sizing.
 
 Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selection is incomplete.
@@ -63,6 +65,22 @@ If the company is mixed:
 - Use the secondary industry skill only to enrich KPI, risk, and monitor discussion.
 - Do not let the secondary industry override primary valuation method unless the business is truly split and you explicitly switch to a sum-of-parts approach.
 
+### Conglomerates and holding companies
+
+When the business is genuinely multi-segment with no single dominant economic engine —
+typically when a second segment with different economics holds more than ~1/3 of value, or
+for investment/operating holding companies — do not force one route's valuation family onto
+the whole. Use a **sum-of-parts (SOTP)**:
+
+- Value each material segment with its own industry route and valuation family.
+- Net out holdco-level items: central costs, cross-holdings, parent-level net debt, and minority interests.
+- Apply a **holding-company discount** where control, liquidity, or capital-allocation frictions
+  warrant it, and state the assumed discount explicitly.
+- State which segments drive value and which route governs each, then reconcile to one per-share number.
+
+Use a single primary route only when one segment clearly dominates value; otherwise the SOTP
+is the primary method, not an afterthought.
+
 ## Step 3: Determine `analysis family` and `valuation family`
 
 Use the industry route plus subtype to choose the family that governs diagnostics and valuation.
@@ -95,10 +113,13 @@ Always load these references from this skill:
 - [business-moat](references/business-moat.md)
 - [financial-diagnostics](references/financial-diagnostics.md)
 - [capital-allocation](references/capital-allocation.md)
+- [macro-overlay](references/macro-overlay.md)
 - [valuation-router](references/valuation-router.md)
 - [valuation-scenarios](references/valuation-scenarios.md)
 - [value-investing-lens](references/value-investing-lens.md)
+- [risk-register](references/risk-register.md)
 - [portfolio-sizing](references/portfolio-sizing.md)
+- [portfolio-construction](references/portfolio-construction.md)
 - [report-template](references/report-template.md)
 
 ## Step 5: Build Source Map and Evidence Ledger
@@ -122,14 +143,26 @@ Always load these references from this skill:
 - Use [business-moat](references/business-moat.md) for business model and moat.
 - Use [financial-diagnostics](references/financial-diagnostics.md) for the route-appropriate diagnostic family rather than one generic three-statement template.
 - Use [capital-allocation](references/capital-allocation.md) for management and deployment of capital.
+- Use [macro-overlay](references/macro-overlay.md) for the regime-aware adjustment to discount
+  rate, growth, FX, and commodity-cycle inputs before finalizing assumptions; record the
+  one-line macro regime summary at the top of report Section 7.1.
 - Use [valuation-router](references/valuation-router.md) plus the industry skill to confirm the `valuation family`.
 - Use [valuation-scenarios](references/valuation-scenarios.md) for the route-appropriate `Bear / Base / Bull` method set and sensitivity design.
 - Use the `Structural Re-rating Gate` in [valuation-scenarios](references/valuation-scenarios.md)
   whenever business-model visibility or earnings volatility changes. Do not leave a
   plausible re-rating thesis only inside vague Bull-case prose.
+- Use the `Earnings Base Re-basing Gate` in [valuation-scenarios](references/valuation-scenarios.md)
+  whenever the latest-quarter annualized run-rate diverges materially from the trailing
+  full-year or TTM base, so a genuine profit-center inflection is not valued on
+  unrepresentative trailing earnings. Re-rating changes the multiple; re-basing changes
+  the earnings base level.
 - Use [value-investing-lens](references/value-investing-lens.md) for downside framing, value-trap checks, and market-implied expectations.
 - Reverse DCF is required only for steady-state operating companies. For other families, use the closest market-implied expectation check instead.
+- Use [risk-register](references/risk-register.md) to complete the mandatory eight-bucket risk
+  sweep that feeds the Red-Team Gate (report Section 9.0) and the risk table (report Section 10.1).
 - Use [portfolio-sizing](references/portfolio-sizing.md) for `Core / Starter / Speculative / Watch-Avoid`.
+- Use [portfolio-construction](references/portfolio-construction.md) to convert the per-name tier
+  into a portfolio-adjusted size (sector caps, KPI-driver correlation, factor tilt) for report Section 9.1.
 
 ## Step 7: Produce the Unified Report
 

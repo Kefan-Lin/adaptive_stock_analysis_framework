@@ -18,6 +18,7 @@ Match valuation method to industry economics instead of defaulting to one generi
 | `$analyzing-real-estate` | NAV | FFO/AFFO multiple | occupancy, lease rollover, LTV, debt ladder |
 | `$analyzing-healthcare-biotech` | SOTP or rNPV | Peer multiple | pipeline probability, peak sales, runway, dilution |
 | `$analyzing-utilities-telecom` | DCF or DDM | EV/EBITDA | regulated return, asset base, ARPU, churn, dividend cover |
+| Conglomerate / holding company (multi-segment, no dominant engine) | Sum-of-parts (SOTP) | Per-segment family + holdco bridge | segment value, holdco net debt, central cost, holding-company discount |
 
 ## Hard Rules
 
@@ -25,6 +26,8 @@ Match valuation method to industry economics instead of defaulting to one generi
 2. Commodity or cyclical businesses must use mid-cycle or through-cycle normalization.
 3. Biotech and similar asset portfolios must probability-adjust asset values.
 4. Asset-heavy real estate must anchor on NAV or FFO/AFFO logic.
+5. Genuine multi-segment conglomerates and holding companies must use sum-of-parts: value each
+   material segment with its own family, then net holdco items and any holding-company discount.
 
 ## Required Output Block
 
