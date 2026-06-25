@@ -131,6 +131,23 @@
 - 是否进入 headline Base case：
 - 若仅作为 sensitivity，触发进入 Base case 的证据：
 
+### 7.4 盈利基准 re-basing（盈利拐点/中枢上移时必填）
+
+当最近一个季度的年化 run-rate 与 trailing 全年/TTM 盈利基准出现显著背离时必须填本节
+（参见 financial-diagnostics 的 earnings-base representativeness 检查与 valuation-scenarios
+的 `Earnings Base Re-basing Gate`）。若不适用，写 `N/A - trailing base representative`。
+注意：re-rating 改的是倍数，re-basing 改的是盈利基数水平，二者独立，可同时发生。
+
+| Item | trailing 基准（FY/TTM） | forward run-rate 基准 | 背离幅度 | 证据强度 |
+| --- | ---: | ---: | ---: | --- |
+| 营收/盈利基数 |  |  |  |  |
+
+- 背离归类：`结构性跳档（re-base 至 forward run-rate）` / `一次性·峰值·提前确认（维持 trailing 归一化基准）`
+- 季节性方向（强劲季度是否本为季节性弱季）：
+- 支持向上 re-basing 的佐证（新产能投产 / 在手订单 backlog / 价格·渠道确认 / 毛利可持续性 / 现金转化）：
+- 估值实际采用的盈利基数（trailing 还是 forward run-rate）：
+- 是否进入 headline Base：`是 / 否（仅作上行 sensitivity）`
+
 ## 8. 安全边际、市场预期反推、价值陷阱判断
 
 | 场景 | 内在价值 | 当前价 | 安全边际 |
@@ -150,7 +167,7 @@
 
 ### 9.0 Red-Team Gate（sign-off 前必答，不可留空）
 
-在写下最终 Stance 之前，完成以下三项强制falsification检查：
+在写下最终 Stance 之前，完成以下四项强制falsification检查：
 
 1. **最高风险桶驱动的反转场景**：如果 `risk-register.md` 中评级最高的一个桶演变成现实，
    Stance 将如何变化？（例如："监管风险升为高 → 营收下降 20% → DCF 价值降至 Bear 场景以下 → Stance 降为 Avoid"）
@@ -162,7 +179,13 @@
 3. **确认偏误检查**：写出一条最容易让当前论点显得比实际更强的证据（过度加权的证据、遗漏的反驳）。
    结论：
 
-如果三条中有任一条导致论点无法支持当前 Stance，必须将 Stance 至少降低一档后再继续。
+4. **盈利中枢上移证伪（双向）**：如果最近季度 run-rate 显著高于 trailing 基准，必须做双向证伪——
+   正向：若结构性 re-basing 的佐证不成立（只是 one favorable quarter），forward-based 估值是否过度乐观？
+   反向：若盈利中枢确已上移，当前 trailing-based 估值是否系统性低估，从而错误地 Avoid/Reduce 一个拐点标的？
+   （若 run-rate 与 trailing 无显著背离，写 `N/A - trailing base representative`。）
+   结论：
+
+如果四条中有任一条导致论点无法支持当前 Stance，必须将 Stance 至少降低一档后再继续。
 
 ### 9.1 投资结论
 

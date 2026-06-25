@@ -56,7 +56,11 @@ State:
 - Secondary: EV/Sales or EV/EBITDA depending on maturity
 - Critical assumptions: cycle position, normalized gross margin, utilization, capex reset path,
   contract coverage, volatility compression, and re-rating from lower cycle risk
-- Avoid: peak-demand annualization or trough-margin extrapolation without cycle context
+- Avoid: peak-demand annualization or trough-margin extrapolation without cycle context —
+  but separate a cyclical peak quarter from a **structural earnings re-basing** (new
+  node or product ramp, durable design-win backlog). A re-basing warrants moving the Base
+  toward a forward run-rate once the Earnings Base Re-basing Gate evidence is met, rather
+  than being dismissed as a peak.
 - If long-term agreements materially reduce cycle exposure, run an old-cycle vs
   contract-backed re-rating sensitivity before deciding whether the Base multiple changes.
 

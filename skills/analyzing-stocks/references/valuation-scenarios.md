@@ -63,6 +63,38 @@ Do not bury this inside the Bull case when it could plausibly affect Base valuat
 State whether the evidence is strong enough to update the headline Base case or only
 strong enough for an upside/downside sensitivity.
 
+### Earnings Base Re-basing Gate
+
+The Structural Re-rating Gate above governs the *multiple or discount rate*. This
+gate governs the *earnings or cash-flow base level itself*.
+**Re-rating changes the multiple; re-basing changes the earnings base level.** Both
+can happen at once, and both must be tested.
+
+Trigger this gate whenever the latest-quarter annualized run-rate diverges materially
+from the trailing full-year or TTM base (see the earnings-base representativeness check
+in [financial-diagnostics](financial-diagnostics.md)). This is the symmetric counterpart
+to peak-earnings normalization: just as a cyclical peak means trailing earnings
+*overstate* steady-state power, a genuine inflection means **trailing earnings
+understate forward earnings power**, and a multiple anchored on the trailing base will
+systematically undervalue the company.
+
+Required handling:
+
+1. Classify the divergence as a **structural step-change** (re-base toward a forward
+   run-rate base) or a **one-off / peak / pulled-forward** event (keep the normalized
+   trailing base). Do not default to skepticism: a strong quarter is not automatically
+   noise, and is not automatically signal.
+2. Re-basing earnings **up** requires corroborating evidence beyond the reported
+   number — for example new capacity online, signed contracts or backlog, order book,
+   price or channel confirmation, gross-margin sustainability, and cash conversion of
+   the new profit. The evidentiary bar is the same one used to resist over-re-rating;
+   do not clear it on **one favorable quarter** alone.
+3. If the evidence supports a step-change, set the headline Base on the forward
+   run-rate base (not on trailing earnings) and say so; if it only supports a possible
+   step-change, carry it as an upside sensitivity while Base holds the trailing base.
+4. Record the result in the report's earnings-base re-basing block so the numerator
+   used for valuation is never silently the trailing figure.
+
 ## 2) Valuation Families
 
 ### Cash-flow-and-multiples

@@ -95,6 +95,15 @@ A cheap multiple is not enough. Run these checks:
 
 Any two severe failures should block a positive value-investing verdict.
 
+**Inflection caveat (avoid the omission-style trap):** when the
+`Earnings Base Re-basing Gate` confirms a structural re-basing, run the value-trap
+and market-implied checks on the **forward run-rate** base, not the trailing base.
+A high *trailing* multiple is computed on an unrepresentatively low denominator, so
+**a high trailing multiple is not by itself a value-trap signal** for a confirmed
+inflection — judging it as one is itself a trap of omission. Conversely, if the
+re-basing is unconfirmed, hold the trailing base and treat the optical cheapness or
+richness accordingly.
+
 ## 7) Market-Implied Expectations Check
 
 Derive the expectation embedded in market price with the route-appropriate method:
@@ -105,6 +114,9 @@ Derive the expectation embedded in market price with the route-appropriate metho
 4. Binary healthcare: implied probability of success or value attributed to the lead asset
 
 If implied assumptions are already very optimistic, margin of safety is likely overstated.
+For a confirmed inflection, back out market expectations against the forward run-rate base;
+backing them out against trailing earnings will overstate how optimistic the market looks
+and can falsely flag a fairly priced re-rating as a bubble.
 
 ## 8) Decision Matrix
 

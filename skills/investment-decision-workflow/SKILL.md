@@ -122,6 +122,7 @@ Update only what new evidence justifies:
 - keep Bear/Base/Bull if valuation drivers did not change
 - update Bear/Base/Bull only for changed fundamentals, discount rate, multiple, net debt, share count, capital action, regulation, litigation, financing, or structural regime evidence
 - run the Structural Re-rating Gate when revenue visibility, earnings volatility, contract quality, reinvestment economics, or risk premium changed
+- run the Earnings Base Re-basing Gate when the latest-quarter annualized run-rate diverges materially from the trailing full-year or TTM earnings base, so a profit-center inflection is re-based onto a forward run-rate instead of being valued on unrepresentative trailing earnings (re-rating changes the multiple; re-basing changes the earnings base level)
 - update margin of safety, market-implied expectations, and position discipline for price moves
 - re-check Red-Team Gate, value-trap status, Add-on Trigger, Trim/Exit Trigger, and Position Size
 
@@ -136,6 +137,7 @@ Evidence that may justify a WFV change:
 - management guidance raised with verifiable support from backlog, customer contracts, constrained capacity, take-or-pay agreements, PPAs, long-term supply agreements, or similar evidence
 - industry structure change such as HBM long-term agreements, optical networking order durability, power PPA / capacity revenue lock-in, or other supply-demand evidence
 - discount-rate, risk-premium, share-count, net-debt, litigation, regulation, financing, or capital-allocation changes
+- a structural earnings-base re-basing: the latest-quarter annualized run-rate exceeds the trailing base AND corroborating evidence (new capacity online, signed backlog or order book, price/channel confirmation, gross-margin sustainability, cash conversion) clears the Earnings Base Re-basing Gate — one favorable quarter alone does not
 
 If the only new evidence is price action, sell-side target-price upgrade, or sentiment, trigger reassessment and market-implied-expectations analysis, but keep WFV unchanged until fundamentals support the change.
 
@@ -293,6 +295,7 @@ For new ideas, use the current `$analyzing-stocks` output or state that full val
 - `Valuation Evidence Gate`:
 - `Margin of Safety update`:
 - `Structural Re-rating Gate`:
+- `Earnings Base Re-basing Gate`:
 - `Red-Team / value-trap update`:
 - `Add-on / Trim-Exit trigger status`:
 

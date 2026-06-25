@@ -10,8 +10,9 @@ analysts from anchoring only on the most-salient risk and missing structural thr
 
 Complete this register at the end of the diagnostics phase, before writing the
 Investment Conclusion (Section 9 of the report template).
-A register with two or more `High` entries blocks a `Buy` or `Core` stance unless
-offsetting margin-of-safety or catalyst evidence is explicitly documented.
+Two or more `High` entries require documented mitigation or offsetting margin-of-safety
+or catalyst evidence; absent that documentation, reduce stance by at least one tier and
+block any `Buy` or `Core` stance.
 
 ## Risk Taxonomy
 
@@ -92,7 +93,7 @@ After completing all eight categories:
 | Risk count | Highest rating present | Directive |
 | --- | --- | --- |
 | 0–1 High entries | — | Proceed normally; document in Section 10.1 |
-| 2+ High entries | — | Must document mitigation or reduce stance by at least one tier |
+| 2+ High entries | — | Require documented mitigation or offsetting margin-of-safety / catalyst evidence; absent that, reduce stance by at least one tier and block `Buy`/`Core` |
 | Any High + Low margin of safety | — | Stance cannot exceed `Hold`; size cannot exceed `Starter` |
 
 - Overall risk level: `Low / Medium / High`
