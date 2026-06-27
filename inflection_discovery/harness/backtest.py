@@ -113,16 +113,22 @@ def summarize(results: Dict) -> Dict:
             ref = max(pd.Timestamp(d["as_of"]) for d in r["dates"])  # t_star - 1mo
             lead_m = round((ref - earliest).days / 30.0) + 1
             leads.append(lead_m)
+        hit_elig = hit_day["eligible_n"] if hit_day else None
         pos_detail.append({"ticker": r["ticker"], "type": r["type"],
-                           "hit": is_hit, "lead_months": lead_m})
+                           "hit": is_hit, "lead_months": lead_m,
+                           "eligible_n_at_hit_date": hit_elig})
 
-    # --- negatives: trap if in topN at ANY tested date ---
+    # --- negatives: collapse to per-ticker (one trap episode per name) so the
+    #     unit matches the per-event positives and a name sampled at several
+    #     dates is not double-counted (which would also falsely narrow the CI) ---
     neg = find("negative")
-    neg_with_data = [r for r in neg if not r["no_data"]]
-    traps = sum(1 for r in neg_with_data if any(d["in_topN"] for d in r["dates"]))
-    neg_detail = [{"ticker": r["ticker"], "type": r["type"],
-                   "trap": any(d["in_topN"] for d in r["dates"])}
-                  for r in neg_with_data]
+    neg_rows = [r for r in neg if not r["no_data"]]
+    neg_by_ticker: Dict[str, bool] = {}
+    for r in neg_rows:
+        flagged = any(d["in_topN"] for d in r["dates"])
+        neg_by_ticker[r["ticker"]] = neg_by_ticker.get(r["ticker"], False) or flagged
+    traps = sum(1 for v in neg_by_ticker.values() if v)
+    neg_detail = [{"ticker": t, "trap": v} for t, v in neg_by_ticker.items()]
 
     # --- controls (plumbing): must NOT appear ---
     ctrl = find("control")
@@ -146,15 +152,30 @@ def summarize(results: Dict) -> Dict:
         hd = next((d for d in r["dates"] if d["is_hit_date"] and d["in_topN"]), None)
         if hd:
             hit_picks.append((r["ticker"], hd["as_of"]))
-    base_date = "2023-06-30"
     picks_fwd6 = fwd(hit_picks, 6)
     picks_fwd12 = fwd(hit_picks, 12)
-    ctrl_fwd6 = mean([forward_return(t, base_date, 6) for t in control])
-    ctrl_fwd12 = mean([forward_return(t, base_date, 12) for t in control])
+    # Control measured at the SAME distribution of entry dates as the picks, so the
+    # comparison isolates stock selection from entry-timing / market regime (#1).
+    pick_dates = [d for (_, d) in hit_picks]
+
+    def ctrl_matched(months):
+        per_date = []
+        for d in pick_dates:
+            m = mean([forward_return(c, d, months) for c in control])
+            if m == m:  # not NaN
+                per_date.append(m)
+        return mean(per_date)
+
+    ctrl_fwd6 = ctrl_matched(6)
+    ctrl_fwd12 = ctrl_matched(12)
 
     n_pos = len(pos_with_data)
-    n_neg = len(neg_with_data)
+    n_neg = len(neg_by_ticker)
+    all_elig = sorted(d["eligible_n"] for r in rows for d in r["dates"]
+                      if d.get("eligible_n") is not None)
+    median_elig = all_elig[len(all_elig) // 2] if all_elig else None
     return {
+        "median_eligible_n": median_elig,
         "top_n": top_n,
         "control_n": len(control),
         "positives": {

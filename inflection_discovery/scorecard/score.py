@@ -78,8 +78,9 @@ def score_A(prices: pd.DataFrame, fund: Optional[Fundamentals] = None) -> dict:
     if close.empty:
         return {"score": None, "gate": False, "evidence": ["no price data"]}
     price = float(close.iloc[-1])
-    hi = float(close.tail(tx.A_HIGH_WINDOW_DAYS).max())
-    low = float(close.tail(tx.A_LOW_WINDOW_DAYS).min())
+    ref = close.index[-1]
+    hi = float(close[close.index > ref - pd.Timedelta(days=tx.A_HIGH_WINDOW_DAYS)].max())
+    low = float(close[close.index > ref - pd.Timedelta(days=tx.A_LOW_WINDOW_DAYS)].min())
     drawdown = 1.0 - price / hi if hi > 0 else 0.0
     prox = price / low - 1.0 if low > 0 else 9.9
     dd_score = _clip(drawdown / tx.A_DRAWDOWN_FULL)
@@ -104,17 +105,19 @@ def score_B(fund: Fundamentals) -> dict:
     subs: List[float] = []
     turning = False
 
-    # revenue YoY acceleration (seasonally robust); suppressed if too short
+    # revenue YoY acceleration (seasonally robust); suppressed if too short.
+    # _yoy().diff() needs >=5 quarters (a quarter, its year-ago match, and a prior
+    # quarter's YoY), so the gate matches what the signal actually requires and the
+    # suppression is always reported when accel can't be computed (review #3).
     yoy = _yoy(fund.revenue_q)
-    if fund.n_quarters >= tx.MIN_QUARTERS_SEASONAL and len(yoy) >= 2:
-        accel = yoy.diff().dropna()
-        if len(accel):
-            a = float(accel.iloc[-1])
-            subs.append(_logistic(a / tx.B_ACCEL_SCALE))
-            turning = turning or a > 0
-            ev.append(f"rev YoY accel {a:+.1%} (YoY now {yoy.iloc[-1]:+.1%})")
+    accel = yoy.diff().dropna() if len(yoy) >= 2 else pd.Series(dtype=float)
+    if fund.n_quarters >= tx.MIN_QUARTERS_SEASONAL and len(accel):
+        a = float(accel.iloc[-1])
+        subs.append(_logistic(a / tx.B_ACCEL_SCALE))
+        turning = turning or a > 0
+        ev.append(f"rev YoY accel {a:+.1%} (YoY now {yoy.iloc[-1]:+.1%})")
     else:
-        ev.append("short history: seasonal/accel signal suppressed")
+        ev.append("short history: revenue-acceleration signal suppressed (insufficient quarters)")
 
     # gross-margin inflection (guard against nonsensical margins for pre-scale
     # companies, where COGS >> tiny revenue produces e.g. -1300% "margins")

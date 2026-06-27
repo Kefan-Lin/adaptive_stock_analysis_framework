@@ -9,8 +9,8 @@ from __future__ import annotations
 # --- Dimension A: depressed base (HARD GATE) ---
 A_GATE_MIN_DRAWDOWN = 0.30      # must be >=30% below its 3y high to count as depressed
 A_DRAWDOWN_FULL = 0.60         # 60%+ drawdown -> full depressedness on that sub-signal
-A_HIGH_WINDOW_DAYS = 756       # ~3 trading years for the "high" reference
-A_LOW_WINDOW_DAYS = 252        # 52 weeks for the "low" reference
+A_HIGH_WINDOW_DAYS = 1095      # 3 CALENDAR years for the "high" reference (sliced by date)
+A_LOW_WINDOW_DAYS = 365        # 52 weeks for the "low" reference (sliced by date)
 A_LOW_PROX_NEAR = 0.10         # within 10% of the 52w low -> full
 A_LOW_PROX_FAR = 1.00          # 100%+ above the low -> zero
 VAL_MIN_QUARTERS = 8           # need >=8 quarters to compute a P/S-vs-history percentile
@@ -20,7 +20,7 @@ B_ACCEL_SCALE = 0.05           # YoY-growth acceleration scale for the logistic
 B_MARGIN_DELTA_SCALE = 0.02    # gross-margin QoQ delta scale
 B_MARGIN_TROUGH_WINDOW = 8     # quarters to define the margin trough
 B_MARGIN_TROUGH_FULL = 0.10    # +10pp off the trough -> full off-trough credit
-MIN_QUARTERS_SEASONAL = 3      # below this, suppress the seasonal/accel signal (short-history fallback)
+MIN_QUARTERS_SEASONAL = 5      # need >=5 quarters for YoY-of-YoY accel; below this it is suppressed
 YOY_TOLERANCE_DAYS = 45        # how close to 365d-ago a quarter match must be
 DAYS_PER_QUARTER = 91.25
 
