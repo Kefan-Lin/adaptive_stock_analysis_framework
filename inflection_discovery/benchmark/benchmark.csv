@@ -1,0 +1,35 @@
+ticker,label,t_star,as_of,inflection_type,notes
+AXTI,positive,2024-09-30,,earnings,InP/datacenter substrate recovery
+BB,positive,2021-03-31,,narrative,cyber/IoT/QNX pivot; weak earnings confirmation (tests C engine)
+NOK,positive,2024-12-31,,narrative+earnings,AI networking + new CEO
+LITE,positive,2024-03-31,,earnings,AI datacom transceiver recovery
+MU,positive,2023-12-31,,earnings,HBM/AI memory upcycle
+MU,positive,2016-12-31,,earnings,2016 memory cycle bottom
+SNDK,positive,2025-06-30,,earnings+special,NAND spin from WDC; pre-spin history in WDC (lead-time capped)
+AMD,positive,2016-09-30,,earnings,Zen turnaround from ~$2
+NVDA,positive,2019-10-31,,earnings,post-crypto-bust recovery
+META,positive,2023-02-01,,earnings+narrative,year of efficiency; bottomed Nov 2022
+NFLX,positive,2022-10-31,,earnings,subscriber re-acceleration; bottomed May 2022
+COHR,positive,2024-03-31,,earnings,AI datacom + post-merger deleveraging
+BILI,positive,2024-11-30,,earnings+narrative,first non-GAAP profit (ADR; may lack us-gaap XBRL)
+INTC,positive,2025-06-30,,earnings,real turn under new CEO (2025)
+BBBY,negative,,2022-09-30,trap,pre-bankruptcy value trap (delisted; exercises survivorship)
+LUMN,negative,,2022-09-30,trap,cheap telecom kept sinking
+LUMN,negative,,2023-06-30,trap,cheap telecom kept sinking
+PTON,negative,,2022-09-30,trap,post-COVID collapse / recurring hype
+PTON,negative,,2023-06-30,trap,post-COVID collapse / recurring hype
+FOSL,negative,,2019-12-31,trap,perennially cheap, no turn
+FOSL,negative,,2023-06-30,trap,perennially cheap, no turn
+WBA,negative,,2023-09-30,trap,cheap, kept declining
+WBA,negative,,2024-03-31,trap,cheap, kept declining
+LCID,negative,,2023-06-30,trap,EV cash burn / chronic dilution
+FFAI,negative,,2023-06-30,trap,story-stock SPAC / serial diluter
+BLNK,negative,,2023-06-30,trap,EV-charging cash burn
+ZM,negative,,2023-06-30,deadmoney,cheap+profitable but second derivative never turned
+ZM,negative,,2024-03-31,deadmoney,cheap+profitable but second derivative never turned
+INTC,negative,,2022-09-30,fakestart,cheap+hated, repeated fake starts
+INTC,negative,,2023-09-30,fakestart,cheap+hated, repeated fake starts
+INTC,negative,,2024-06-30,fakestart,cheap+hated, repeated fake starts
+CRDO,control,,2024-06-30,gate-exclude,never depressed growth; must fail A gate (plumbing)
+NBIS,control,,2025-06-30,gate-exclude,hypergrowth AI cloud; must fail A gate (plumbing)
+SWKS,borderline,,2024-06-30,borderline,moderate drawdown near A-gate threshold

@@ -5,3 +5,5 @@ __pycache__/
 tmp/
 dist/
 .omx/
+.venv/
+.cache_inflection/
