@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inflection Discovery — Backtest Results</title>
+<style>
+  :root { --fg:#0f172a; --mut:#64748b; --line:#e2e8f0; --bg:#ffffff; --soft:#f8fafc; }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg:#e5e7eb; --mut:#9ca3af; --line:#27303f; --bg:#0b0f17; --soft:#111827; }
+  }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+    color:var(--fg); background:var(--bg); margin:0; line-height:1.5; }
+  .wrap { max-width:880px; margin:0 auto; padding:32px 20px 64px; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  h2 { font-size:16px; margin:34px 0 12px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+  .meta { color:var(--mut); font-size:13px; margin-bottom:18px; }
+  .banner { background:var(--soft); border:1px solid var(--line); border-left:3px solid #2563eb;
+    border-radius:8px; padding:12px 14px; font-size:13.5px; color:var(--fg); }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:14px 0; }
+  .card { border:1px solid var(--line); border-radius:10px; padding:14px; background:var(--soft); }
+  .card .ct { font-size:12px; color:var(--mut); }
+  .card .cv { font-size:26px; font-weight:700; margin:4px 0 2px; }
+  .card .cs { font-size:12px; color:var(--mut); }
+  .card.good .cv { color:#16a34a; } .card.warn .cv { color:#dc2626; }
+  .row { display:flex; align-items:center; gap:10px; margin:7px 0; }
+  .rl { width:160px; font-size:13px; color:var(--mut); text-align:right; }
+  .rt { position:relative; flex:1; background:var(--soft); border-radius:6px; height:26px; border:1px solid var(--line); }
+  .fill { height:100%; border-radius:6px 0 0 6px; }
+  .val { position:absolute; left:8px; top:0; line-height:26px; font-size:12.5px; font-weight:600; }
+  table { width:100%; border-collapse:collapse; font-size:13px; margin-top:6px; }
+  th,td { text-align:left; padding:7px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--mut); font-weight:600; font-size:12px; }
+  td.c { text-align:center; } td.tk { font-weight:600; } td.ty { color:var(--mut); }
+  .hit { color:#16a34a; font-weight:700; } .miss { color:var(--mut); }
+  .good { color:#16a34a; } .bad { color:#dc2626; }
+  .note { font-size:13px; color:var(--mut); }
+  .note li { margin:4px 0; }
+  .legend { font-size:12px; color:var(--mut); margin-top:6px; }
+  .sw { display:inline-block; width:10px; height:10px; border-radius:2px; vertical-align:middle; margin:0 4px 0 10px; }
+</style></head>
+<body><div class="wrap">
+  <h1>Inflection Discovery — Backtest Results</h1>
+  <div class="meta">Engine B · point-in-time · free data · 2026-06-28</div>
+  <div class="banner"><b>Read first:</b> a discrimination <b>smoke-test, not generalizable accuracy</b>.
+    n = 14 positive events / 9 trap tickers; every rate carries a wide
+    95% CI. PIT integrity is verified at runtime (4-canary leak battery passes; 131 tests pass).</div>
+
+  <h2>The selectivity correction</h2>
+  <div class="note">v1 used a thin 30-name control arm (median ~13 eligible/date),
+    so "top-10" was barely selective and the hit rate was inflated. v2 uses a realistic
+    65-name arm (median ~28 eligible/date). Top-10 hit rate:</div>
+  <div class="row">
+      <div class="rl">v1 (thin, 30 ctrl)</div>
+      <div class="rt"><div class="fill" style="width:57.1%;background:#94a3b8"></div>
+        <span class="val">57%</span></div>
+    </div>
+  <div class="row">
+      <div class="rl">v2 (realistic, 65 ctrl)</div>
+      <div class="rt"><div class="fill" style="width:21.4%;background:#2563eb"></div>
+        <span class="val">21%</span></div>
+    </div>
+  <div class="note legend">The drop from 57% → 21% is the honest finding: D does not push the
+    specific inflections into the absolute top-10 against ~28 depressed peers.</div>
+
+  <h2>Headline metrics (v2, realistic universe)</h2>
+  <div class="cards">
+    <div class="card neutral"><div class="ct">Hit rate · top-10</div>
+      <div class="cv">21%</div><div class="cs">3/14 · CI 8%–48%</div></div>
+    <div class="card neutral"><div class="ct">Hit rate · top-20</div>
+      <div class="cv">43%</div><div class="cs">6/14 · CI 21%–67%</div></div>
+    <div class="card warn"><div class="ct">Trap rate · top-10</div>
+      <div class="cv">44%</div><div class="cs">4/9 · lower=better</div></div>
+    <div class="card good"><div class="ct">Fwd return 12m</div>
+      <div class="cv">+78%</div><div class="cs">picks vs +18% control</div></div>
+  </div>
+
+  <h2>Forward return — picks vs control universe</h2>
+  <div class="row">
+      <div class="rl">Picks · 6 months</div>
+      <div class="rt"><div class="fill" style="width:29.0%;background:#2563eb"></div>
+        <span class="val">23%</span></div>
+    </div>
+  <div class="row">
+      <div class="rl">Control · 6 months</div>
+      <div class="rt"><div class="fill" style="width:22.6%;background:#94a3b8"></div>
+        <span class="val">18%</span></div>
+    </div>
+  <div class="row">
+      <div class="rl">Picks · 12 months</div>
+      <div class="rt"><div class="fill" style="width:100.0%;background:#2563eb"></div>
+        <span class="val">78%</span></div>
+    </div>
+  <div class="row">
+      <div class="rl">Control · 12 months</div>
+      <div class="rt"><div class="fill" style="width:23.4%;background:#94a3b8"></div>
+        <span class="val">18%</span></div>
+    </div>
+  <div class="legend"><span class="sw" style="background:#2563eb"></span>top-N picks
+    <span class="sw" style="background:#94a3b8"></span>depressed control universe ·
+    the top of the ranking outperforms even though top-10 recall is modest.</div>
+
+  <h2>Positives — did it surface the inflection?</h2>
+  <table><thead><tr><th>Ticker</th><th>Type</th><th>top-10</th><th>top-20</th><th>Lead (mo)</th></tr></thead>
+  <tbody><tr><td class='tk'>AXTI</td><td class='ty'>earnings</td><td class='c'><span class="hit">✓</span></td><td class='c'><span class="hit">✓</span></td><td class='c'>6</td></tr>
+<tr><td class='tk'>BB</td><td class='ty'>narrative</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="miss">·</span></td><td class='c'>—</td></tr>
+<tr><td class='tk'>NOK</td><td class='ty'>narrative+earnings</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="miss">·</span></td><td class='c'>—</td></tr>
+<tr><td class='tk'>LITE</td><td class='ty'>earnings</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="hit">✓</span></td><td class='c'>3</td></tr>
+<tr><td class='tk'>MU</td><td class='ty'>earnings</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="hit">✓</span></td><td class='c'>6</td></tr>
+<tr><td class='tk'>MU</td><td class='ty'>earnings</td><td class='c'><span class="hit">✓</span></td><td class='c'><span class="hit">✓</span></td><td class='c'>6</td></tr>
+<tr><td class='tk'>SNDK</td><td class='ty'>earnings+special</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="miss">·</span></td><td class='c'>—</td></tr>
+<tr><td class='tk'>AMD</td><td class='ty'>earnings</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="miss">·</span></td><td class='c'>—</td></tr>
+<tr><td class='tk'>NVDA</td><td class='ty'>earnings</td><td class='c'><span class="hit">✓</span></td><td class='c'><span class="hit">✓</span></td><td class='c'>6</td></tr>
+<tr><td class='tk'>META</td><td class='ty'>earnings+narrative</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="miss">·</span></td><td class='c'>—</td></tr>
+<tr><td class='tk'>NFLX</td><td class='ty'>earnings</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="hit">✓</span></td><td class='c'>6</td></tr>
+<tr><td class='tk'>COHR</td><td class='ty'>earnings</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="miss">·</span></td><td class='c'>—</td></tr>
+<tr><td class='tk'>BILI</td><td class='ty'>earnings+narrative</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="miss">·</span></td><td class='c'>—</td></tr>
+<tr><td class='tk'>INTC</td><td class='ty'>earnings</td><td class='c'><span class="miss">·</span></td><td class='c'><span class="miss">·</span></td><td class='c'>—</td></tr></tbody></table>
+
+  <h2>Negatives — did it avoid the trap?</h2>
+  <table><thead><tr><th>Ticker</th><th>top-10</th><th>top-20</th></tr></thead>
+  <tbody><tr><td class='tk'>BBBY</td><td class='c'><span class="good">avoided</span></td><td class='c'><span class="good">avoided</span></td></tr>
+<tr><td class='tk'>LUMN</td><td class='c'><span class="good">avoided</span></td><td class='c'><span class="bad">flagged</span></td></tr>
+<tr><td class='tk'>PTON</td><td class='c'><span class="bad">flagged</span></td><td class='c'><span class="bad">flagged</span></td></tr>
+<tr><td class='tk'>FOSL</td><td class='c'><span class="bad">flagged</span></td><td class='c'><span class="bad">flagged</span></td></tr>
+<tr><td class='tk'>LCID</td><td class='c'><span class="good">avoided</span></td><td class='c'><span class="good">avoided</span></td></tr>
+<tr><td class='tk'>FFAI</td><td class='c'><span class="good">avoided</span></td><td class='c'><span class="good">avoided</span></td></tr>
+<tr><td class='tk'>BLNK</td><td class='c'><span class="good">avoided</span></td><td class='c'><span class="good">avoided</span></td></tr>
+<tr><td class='tk'>ZM</td><td class='c'><span class="bad">flagged</span></td><td class='c'><span class="bad">flagged</span></td></tr>
+<tr><td class='tk'>INTC</td><td class='c'><span class="bad">flagged</span></td><td class='c'><span class="bad">flagged</span></td></tr></tbody></table>
+  <div class="legend">Plumbing controls (CRDO, NBIS) correctly never surfaced — the A gate excludes loved growth.
+    Excluded (no PIT data): WBA.</div>
+
+  <h2>Honest limitations</h2>
+  <ul class="note">
+    <li><b>Weak top-10 recall (21%):</b> D surfaces the strongest inflections (AXTI, MU, NVDA) but doesn't out-rank all depressed peers.</li>
+    <li><b>Hard traps persist:</b> PTON (margin bounce off a deep trough), ZM (cheap+flat "dead money"), INTC-fakestart (depressed + rich AI/foundry narrative).</li>
+    <li><b>Value traps vs real turnarounds are not separable on free numeric signals</b> — richer (LLM / Implementation A) judgment is the real next step.</li>
+    <li>Forward return is regime-noisy (small n); foreign-filer quarterly gap & post-spin gating remain.</li>
+  </ul>
+  <div class="meta" style="margin-top:24px">Source: reports/backtest_results_v2.json · regenerate via reports/make_report_html.py</div>
+</div></body></html>
