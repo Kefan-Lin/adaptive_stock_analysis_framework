@@ -1,7 +1,7 @@
 #!/usr/bin/env python
-"""Per-stock price curves around the detection point (T): 6 months before and 6
+"""Per-stock price curves around the detection point (T): 6 months before and 18
 months after. Normalized to 100 at T, with a vertical marker at T. Colored by the
-post-T 6-month outcome (green up / red down). Self-contained HTML, opens offline.
+post-T outcome (green up / red down). Self-contained HTML, opens offline.
 
 T per name = the detection anchor: positives use t*-3mo (the hit date); negatives
 use their as-of evaluation date. Prices via yfinance (split-adjusted, consistent
@@ -25,7 +25,7 @@ from inflection_discovery.pit.prices import _raw_history  # noqa: E402
 HERE = ROOT / "reports"
 V2 = json.loads((HERE / "backtest_results_v2.json").read_text())
 GREEN, RED, ACC, MUT = "#16a34a", "#dc2626", "#2563eb", "#94a3b8"
-WIN = 183  # ~6 months each side
+PRE, POST = 183, 548  # 6 months before T, 18 months after T
 
 
 def verdicts():
@@ -35,9 +35,12 @@ def verdicts():
 
 
 def curve_svg(close: pd.Series, T: pd.Timestamp) -> str:
-    w = close[(close.index >= T - pd.Timedelta(days=WIN)) & (close.index <= T + pd.Timedelta(days=WIN))].dropna()
+    w = close[(close.index >= T - pd.Timedelta(days=PRE)) & (close.index <= T + pd.Timedelta(days=POST))].dropna()
     if len(w) < 10:
-        return ""
+        return None, "no price data"
+    n_pre = int((w.index < T).sum())
+    if n_pre < 30:
+        return None, "short history pre-T (unreliable base)"
     base = w.asof(T)
     if pd.isna(base) or base <= 0:
         base = float(w.iloc[0])
@@ -61,15 +64,18 @@ def curve_svg(close: pd.Series, T: pd.Timestamp) -> str:
     post_pts = " ".join(f"{X(i):.1f},{Y(norm[i]):.1f}" for i in range(it, n))
     post_ret = norm[-1] / norm[it] - 1.0 if norm[it] else 0.0
     pre_ret = norm[it] / norm[0] - 1.0 if norm[0] else 0.0
+    if abs(post_ret) > 8.0:
+        return None, f"suspect data ({post_ret*100:+.0f}%, likely split/spin artifact)"
     pcol = GREEN if post_ret >= 0 else RED
     xt = X(it)
     y100 = Y(100.0)
-    return f"""<svg viewBox="0 0 {W} {H}" width="100%" preserveAspectRatio="none" style="display:block;height:84px;width:100%">
+    svg = f"""<svg viewBox="0 0 {W} {H}" width="100%" preserveAspectRatio="none" style="display:block;height:84px;width:100%">
       <line x1="{pl}" y1="{y100:.1f}" x2="{W-pr}" y2="{y100:.1f}" stroke="var(--line)" stroke-dasharray="2 3"/>
       <line x1="{xt:.1f}" y1="{pt}" x2="{xt:.1f}" y2="{H-pb}" stroke="{MUT}" stroke-width="1"/>
       <polyline points="{pre_pts}" fill="none" stroke="{MUT}" stroke-width="1.4"/>
       <polyline points="{post_pts}" fill="none" stroke="{pcol}" stroke-width="1.8"/>
-    </svg>""", pre_ret, post_ret
+    </svg>"""
+    return (svg, pre_ret, post_ret), None
 
 
 def card(ticker, sub, chip_html, svg, pre_ret, post_ret):
@@ -78,8 +84,8 @@ def card(ticker, sub, chip_html, svg, pre_ret, post_ret):
       <div class="hd"><span class="tk">{ticker}</span> {chip_html}</div>
       <div class="sub">{sub}</div>
       {svg}
-      <div class="rets"><span class="pre">pre {pre_ret*100:+.0f}%</span>
-        <span class="post" style="color:{pcol}">post {post_ret*100:+.0f}%</span></div>
+      <div class="rets"><span class="pre">pre 6m {pre_ret*100:+.0f}%</span>
+        <span class="post" style="color:{pcol}">post 18m {post_ret*100:+.0f}%</span></div>
     </div>"""
 
 
@@ -98,13 +104,16 @@ for r in rows:
     if T is None:
         continue
     close = _raw_history(r.ticker)
-    out = curve_svg(close["Close"], T) if (close is not None and not close.empty and "Close" in close) else ""
-    if not out:
-        skipped.append(f"{r.ticker} ({r.label})")
+    if close is not None and not close.empty and "Close" in close:
+        res, reason = curve_svg(close["Close"], T)
+    else:
+        res, reason = None, "no price data"
+    if res is None:
+        skipped.append(f"{r.ticker} ({reason})")
         if r.label == "positive":
             pos_i += 1
         continue
-    svg, pre, post = out
+    svg, pre, post = res
     sub = f"{r.inflection_type} · T={T.date()}"
     if r.label == "positive":
         hit = pos_detail[pos_i]["hit"] if pos_i < len(pos_detail) else False
@@ -136,8 +145,9 @@ html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
   .rets{{display:flex;justify-content:space-between;font-size:11.5px;margin-top:4px}} .pre{{color:var(--mut)}} .post{{font-weight:700}}
 </style></head><body><div class="wrap">
   <h1>Price curves around the detection point</h1>
-  <div class="meta">Each curve: 6 months before → T (detection) → 6 months after. Normalized to 100 at T;
-    grey = pre-T, colored = post-T (green up / red down). Vertical line = T.</div>
+  <div class="meta">Each curve: 6 months before → T (detection) → 18 months after. Normalized to 100 at T;
+    grey = pre-T, colored = post-T (green up / red down). Vertical line = T.
+    Recent names (2025 T) have a shorter realized post-window — the line ends at the latest data.</div>
   <div class="legend"><span class="sw" style="border-color:{MUT}"></span>before T (setup)
     <span class="sw" style="border-color:{GREEN}"></span>after T, up
     <span class="sw" style="border-color:{RED}"></span>after T, down</div>
