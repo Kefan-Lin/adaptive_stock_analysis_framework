@@ -2,8 +2,8 @@
 
   python -m inflection_discovery.cli canary
   python -m inflection_discovery.cli backtest --top-n 10 [--with-text] [--out results.json]
-  python -m inflection_discovery.cli discover --tickers BILI,NOK,MU      # live (non-PIT)
-  python -m inflection_discovery.cli ashare-backtest                     # China A-share PIT
+  python -m inflection_discovery.cli discover --tickers BILI,NOK,MU      # US/ADR live (non-PIT)
+  python -m inflection_discovery.cli ashare-discover --tickers 601919,002594  # A-share live
 """
 from __future__ import annotations
 
@@ -16,7 +16,7 @@ from .harness import run_backtest, summarize, run_battery
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("cmd", choices=["backtest", "canary", "discover", "ashare-backtest"])
+    ap.add_argument("cmd", choices=["backtest", "canary", "discover", "ashare-discover"])
     ap.add_argument("--top-n", type=int, default=10)
     ap.add_argument("--with-text", action="store_true")
     ap.add_argument("--control-keep", type=int, default=30)
@@ -43,9 +43,16 @@ def main() -> int:
                   f"C={'NA' if s['C'] is None else round(s['C'],2)} | {c.evidence['source'][0]}")
         return 0
 
-    if a.cmd == "ashare-backtest":
-        from .ashare.backtest import run_ashare_backtest
-        print(json.dumps(run_ashare_backtest(), default=str, indent=2))
+    if a.cmd == "ashare-discover":
+        from .ashare.discover import discover_ashare
+        codes = [t.strip() for t in a.tickers.split(",") if t.strip()]
+        eligible, _ = discover_ashare(codes, top_n=a.top_n)
+        print("A-share LIVE discovery (NON-PIT; akshare restated values). Ranked:")
+        for c in eligible[: a.top_n]:
+            s = c.scores
+            print(f"  #{c.rank} {c.ticker:8} D={s['D']:.2f} A={s['A']:.2f} "
+                  f"B={'NA' if s['B'] is None else round(s['B'],2)} "
+                  f"trap={s['trap_risk']:.2f}")
         return 0
 
     res = run_backtest(top_n=a.top_n, with_text=a.with_text, control_keep=a.control_keep)
