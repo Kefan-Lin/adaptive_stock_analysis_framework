@@ -1,7 +1,12 @@
+# Primary dependency source is the repo-root pyproject.toml (managed by uv):
+#   uv sync            # create/refresh .venv from pyproject.toml + uv.lock
+#   .venv/bin/python   # run with the uv-managed interpreter
+# This file is a plain-pip fallback for environments without uv.
 numpy>=1.26
 pandas>=2.0
 yfinance>=0.2
 requests>=2.31
 lxml>=5.0
 beautifulsoup4>=4.12
+akshare>=1.18
 pytest>=7.0

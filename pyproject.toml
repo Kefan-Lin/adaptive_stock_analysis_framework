@@ -1,0 +1,20 @@
+[project]
+name = "inflection-discovery"
+version = "0.1.0"
+description = "Upstream discovery stage that surfaces earnings/narrative inflection candidates and routes them into analyzing-stocks."
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "yfinance>=0.2",
+    "requests>=2.31",
+    "lxml>=5.0",
+    "beautifulsoup4>=4.12",
+    "akshare>=1.18",
+    "pytest>=7.0",
+]
+
+# Non-package project: uv manages the .venv and dependencies, but does not try to
+# build/install inflection_discovery itself (it is imported via the repo root).
+[tool.uv]
+package = false
