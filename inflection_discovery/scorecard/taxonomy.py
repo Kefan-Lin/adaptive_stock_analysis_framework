@@ -32,7 +32,14 @@ INFLECTION_KEYWORDS = [
     "strategic review", "restructuring", "cost reduction", "new chief executive",
     "spin-off", "spinoff", "share repurchase", "return to growth", "inflection",
     "ramp", "backlog", "book-to-bill", "bookings", "5g", "optical",
-    "transceiver", "accelerat", "turnaround",
+    "transceiver", "accelerating", "turnaround",
+]
+# Cover-page / glossary boilerplate stripped before keyword matching so it does
+# not inflate C (e.g. "large accelerated filer", "FedRAMP") — review A-vs-B finding.
+C_BOILERPLATE = [
+    "large accelerated filer", "non-accelerated filer", "accelerated filer",
+    "smaller reporting company", "emerging growth company",
+    "well-known seasoned issuer",
 ]
 C_KEYWORD_FULL = 8             # distinct keywords present for full "presence" credit
 C_DELTA_SCALE = 5.0            # change in total keyword hits vs prior filing
@@ -45,8 +52,8 @@ TRAP_SECULAR_CAGR = -0.05      # 3y revenue CAGR below this, with no acceleratio
 TRAP_CEILING = 0.70            # candidates above this trap_risk are not surfaced
 
 # --- D (ranker) and composite weights ---
-D_W_A = 0.5                    # weight on depressedness
-D_W_TURN = 0.4                 # weight on max(B, C)
+D_W_A = 0.4                    # weight on depressedness (reduced: rank on the turn, not raw cheapness)
+D_W_TURN = 0.5                 # weight on max(B, C)
 D_W_MOM = 0.1                  # weight on early price-reclaim momentum
 D_TRAP_PENALTY = 0.4          # D is scaled down by up to this fraction by trap_risk
 SMA_FAST = 50                  # fast moving average for the early-momentum check

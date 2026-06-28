@@ -11,6 +11,7 @@ very long filing histories would need the paginated overflow files. For the
 """
 from __future__ import annotations
 
+import hashlib
 from typing import List, Optional
 
 import pandas as pd
@@ -18,7 +19,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from .. import edgar
-from ..config import HTTP_TIMEOUT, SEC_USER_AGENT
+from ..config import CACHE_DIR, HTTP_TIMEOUT, SEC_USER_AGENT
 
 
 def recent_filings(
@@ -65,6 +66,9 @@ def fetch_filing_text(filing: dict, max_chars: int = 400_000) -> str:
     cik = str(int(filing["cik"]))
     acc = filing["accession"].replace("-", "")
     url = f"https://www.sec.gov/Archives/edgar/data/{cik}/{acc}/{filing['primary_doc']}"
+    cache = CACHE_DIR / f"filingtext_{hashlib.sha1(url.encode()).hexdigest()[:16]}.txt"
+    if cache.exists():
+        return cache.read_text()[:max_chars]
     try:
         edgar._throttle()
         r = requests.get(url, headers={"User-Agent": SEC_USER_AGENT}, timeout=HTTP_TIMEOUT)
@@ -72,6 +76,7 @@ def fetch_filing_text(filing: dict, max_chars: int = 400_000) -> str:
             return ""
         soup = BeautifulSoup(r.content, "lxml")
         text = soup.get_text(" ", strip=True)
+        cache.write_text(text)
         return text[:max_chars]
     except Exception:
         return ""

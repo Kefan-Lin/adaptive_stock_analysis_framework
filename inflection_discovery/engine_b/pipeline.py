@@ -66,6 +66,11 @@ def score_universe(tickers: Sequence[str], T, top_n: int = 20,
         c = score_one(t, T, with_text=with_text)
         if c is not None:
             scored.append(c)
+    # Eligibility = passes A gate AND trap_risk under ceiling. (A turn-strength
+    # gate on max(B,C) was tried and removed: on this data, deeply-depressed real
+    # turnarounds — META/NVDA/NFLX at their troughs — have turn scores that overlap
+    # the value traps, so any threshold that excludes traps also kills positives.
+    # Discrimination is left to ¬trap + ranking by D, not a hard turn gate.)
     eligible = [
         c for c in scored
         if c.passes_A_gate and (c.scores.get("trap_risk") or 0.0) <= tx.TRAP_CEILING

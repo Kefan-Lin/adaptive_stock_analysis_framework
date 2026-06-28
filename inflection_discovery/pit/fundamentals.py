@@ -36,6 +36,14 @@ OCF_CONCEPTS = ["NetCashProvidedByUsedInOperatingActivities"]
 SHARES_CONCEPTS = ["CommonStockSharesOutstanding", "CommonStockSharesIssued"]
 SHARES_DEI = ["EntityCommonStockSharesOutstanding"]
 
+# IFRS fallbacks for foreign private issuers (e.g. NOK) that file ifrs-full, not
+# us-gaap. (Note: foreign issuers often report only annual/semi-annual XBRL, so a
+# quarterly B signal may still be unavailable even with these — documented.)
+IFRS_REVENUE = ["Revenue", "RevenueFromContractsWithCustomers"]
+IFRS_GROSS_PROFIT = ["GrossProfit"]
+IFRS_COGS = ["CostOfSales"]
+IFRS_UNITS = ("EUR", "USD", "CNY", "GBP", "SEK")
+
 _QUARTER_MIN, _QUARTER_MAX = 80, 100  # days; one fiscal quarter (13-14 weeks)
 
 
@@ -127,12 +135,20 @@ def pit_fundamentals(ticker: str, T, cf: Optional[dict] = None) -> Fundamentals:
     shares = _merged_series(cf, SHARES_CONCEPTS, T, "instant", ("shares",))
     if shares.empty:
         shares = _merged_series(cf, SHARES_DEI, T, "instant", ("shares",), taxonomy="dei")
+
+    revenue = _merged_series(cf, REVENUE_CONCEPTS, T, "duration", ("USD",))
+    gross_profit = _merged_series(cf, GROSS_PROFIT_CONCEPTS, T, "duration", ("USD",))
+    cogs = _merged_series(cf, COGS_CONCEPTS, T, "duration", ("USD",))
+    if revenue.empty:  # foreign private issuer -> try IFRS taxonomy
+        revenue = _merged_series(cf, IFRS_REVENUE, T, "duration", IFRS_UNITS, taxonomy="ifrs-full")
+        gross_profit = _merged_series(cf, IFRS_GROSS_PROFIT, T, "duration", IFRS_UNITS, taxonomy="ifrs-full")
+        cogs = _merged_series(cf, IFRS_COGS, T, "duration", IFRS_UNITS, taxonomy="ifrs-full")
     return Fundamentals(
         ticker=ticker,
         as_of=T,
-        revenue_q=_merged_series(cf, REVENUE_CONCEPTS, T, "duration", ("USD",)),
-        gross_profit_q=_merged_series(cf, GROSS_PROFIT_CONCEPTS, T, "duration", ("USD",)),
-        cogs_q=_merged_series(cf, COGS_CONCEPTS, T, "duration", ("USD",)),
+        revenue_q=revenue,
+        gross_profit_q=gross_profit,
+        cogs_q=cogs,
         inventory=_merged_series(cf, INVENTORY_CONCEPTS, T, "instant", ("USD",)),
         eps_q=_merged_series(cf, EPS_CONCEPTS, T, "duration", ("USD/shares",)),
         shares=shares,

@@ -7,6 +7,7 @@ are PIT; this module only turns them into 0-1 scores per the taxonomy.
 from __future__ import annotations
 
 import math
+import re
 from typing import Dict, List, Optional, Tuple
 
 import pandas as pd
@@ -144,10 +145,33 @@ def score_B(fund: Fundamentals) -> dict:
 
 # --------------------------------------------------------------------------- C
 def _keyword_hits(text: str) -> Tuple[int, int]:
+    """Word-boundary keyword counts after stripping cover-page/glossary boilerplate.
+
+    Fixes the A-vs-B false positives: 'FedRAMP' no longer matches 'ramp', and
+    'large accelerated filer' is removed before matching 'accelerating'.
+    """
     t = (text or "").lower()
-    total = sum(t.count(k) for k in tx.INFLECTION_KEYWORDS)
-    distinct = sum(1 for k in tx.INFLECTION_KEYWORDS if k in t)
+    for bp in tx.C_BOILERPLATE:
+        t = t.replace(bp, " ")
+    total = 0
+    distinct = 0
+    for k in tx.INFLECTION_KEYWORDS:
+        n = len(re.findall(r"(?<![a-z0-9])" + re.escape(k) + r"(?![a-z0-9])", t))
+        total += n
+        if n > 0:
+            distinct += 1
     return total, distinct
+
+
+def _present_keywords(text: str) -> List[str]:
+    t = (text or "").lower()
+    for bp in tx.C_BOILERPLATE:
+        t = t.replace(bp, " ")
+    out = []
+    for k in tx.INFLECTION_KEYWORDS:
+        if re.search(r"(?<![a-z0-9])" + re.escape(k) + r"(?![a-z0-9])", t):
+            out.append(k)
+    return out
 
 
 def score_C(text_now: str, text_prev: str = "") -> dict:
@@ -160,7 +184,7 @@ def score_C(text_now: str, text_prev: str = "") -> dict:
         tot_prev, _ = _keyword_hits(text_prev)
         delta = float(tot_now - tot_prev)
     score = _clip(0.6 * present + 0.4 * _logistic(delta / tx.C_DELTA_SCALE))
-    present_kw = [k for k in tx.INFLECTION_KEYWORDS if k in text_now.lower()][:8]
+    present_kw = _present_keywords(text_now)[:8]
     return {"score": score, "evidence": [f"narrative keywords: {', '.join(present_kw)}",
                                          f"keyword-hit delta vs prior filing: {delta:+.0f}"]}
 
@@ -189,7 +213,14 @@ def trap_risk(fund: Optional[Fundamentals], prices: Optional[pd.DataFrame]) -> d
                 if runway < tx.TRAP_RUNWAY_QUARTERS:
                     comps.append(_clip((tx.TRAP_RUNWAY_QUARTERS - runway) / tx.TRAP_RUNWAY_QUARTERS))
                     ev.append(f"runway ~{runway:.1f}q at current burn")
-        # secular decline (3y revenue CAGR < threshold and not accelerating)
+        # secular decline (3y revenue CAGR < threshold and not accelerating).
+        # NOTE: this is intentionally conservative. A more aggressive
+        # date-matched secular detector was tried (to catch slow-bleed traps like
+        # LUMN/BBBY) but was reverted: on free data a multi-year revenue decline
+        # does not distinguish a structural decliner from a cyclical trough, so it
+        # false-flagged real turnarounds (LITE, INTC-2025) whose revenue was still
+        # down at the test date. Separating those needs richer judgment than free
+        # numeric signals provide -- see the report's ¬trap limitation.
         ttm = _ttm(fund.revenue_q)
         if len(ttm) >= 13:
             now, past = float(ttm.iloc[-1]), float(ttm.iloc[-13])
@@ -239,7 +270,7 @@ def compute_dimensions(ticker: str, T, with_text: bool = True,
     c = {"score": None, "evidence": ["text not fetched"]}
     if with_text:
         try:
-            filings = recent_filings(ticker, T, ("10-K", "10-Q"), limit=2)
+            filings = recent_filings(ticker, T, ("10-K", "10-Q", "20-F", "6-K"), limit=2)
             text_now = fetch_filing_text(filings[0]) if filings else ""
             text_prev = fetch_filing_text(filings[1]) if len(filings) > 1 else ""
             c = score_C(text_now, text_prev)
