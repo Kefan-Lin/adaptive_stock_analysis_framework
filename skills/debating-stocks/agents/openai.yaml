@@ -1,0 +1,4 @@
+interface:
+  display_name: "Debating Stocks"
+  short_description: "Fact-checked adversarial bull/bear debate engine for equity theses and decisions"
+  default_prompt: "Use $debating-stocks to stress-test an equity thesis, judge an event's impact, or decide a position via a fact-checked bull/bear debate; it powers the Red-Team Gate of $analyzing-stocks."

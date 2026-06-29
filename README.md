@@ -6,6 +6,7 @@ Adaptive Stock Analysis Framework is a multi-skill equity research framework bui
 
 - `investment-decision-workflow` as the end-to-end decision orchestrator
 - `analyzing-stocks` as the research and valuation controller skill
+- `debating-stocks` as the fact-checked adversarial bull/bear debate engine for contested theses, events, and positions
 - 10 industry companion skills
 - shared references for source policy, diagnostics, valuation, portfolio sizing, and report structure
 - OpenAI-oriented metadata in `agents/openai.yaml`
@@ -60,6 +61,8 @@ adaptive_stock_analysis_framework/
 ## Skill Topology
 
 `investment-decision-workflow` routes new ideas, existing reports, live positions, and events through research, valuation, stale checks, incremental valuation updates, decision briefs, and execution sheets.
+
+`debating-stocks` runs a fact-checked bull/bear (or multi-stakeholder) debate to stress-test a contested thesis, judge a corporate-action or event impact, or decide a live position; `analyzing-stocks` and `investment-decision-workflow` escalate to it for the Red-Team / value-trap gate.
 
 `analyzing-stocks` routes companies into one primary industry path:
 

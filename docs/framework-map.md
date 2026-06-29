@@ -2,7 +2,7 @@
 
 ## Core Structure
 
-The framework has one end-to-end decision workflow, one research controller skill, and ten industry companion skills.
+The framework has one end-to-end decision workflow, one research controller skill, ten industry companion skills, and one cross-cutting adversarial debate engine.
 
 ```text
 investment-decision-workflow
@@ -22,6 +22,9 @@ analyzing-stocks
 │   ├── portfolio-sizing.md
 │   └── report-template.md
 └── routes to one primary industry skill
+
+debating-stocks
+└── fact-checked bull/bear (or multi-stakeholder) debate engine; powers the Red-Team / value-trap gate
 ```
 
 ## Decision Workflow Skill
@@ -46,6 +49,18 @@ analyzing-stocks
 - enforcing evidence quality
 - producing the unified 10-block report
 - merging primary and secondary sector overlays into one stable contract
+
+## Adversarial Debate Skill
+
+`debating-stocks` is a cross-cutting engine, not an industry route. It is responsible for:
+
+- framing a contested question as a debatable resolution and assigning bull/bear or multi-stakeholder sides
+- running independent debater subagents that each do their own live research, then a cross-rebuttal round
+- running a mandatory neutral fact-check that verifies every material claim and re-does key arithmetic
+- synthesizing a verdict with cruxes, confidence, Bear/Base/Bull expected returns from the current price, and flip/trim triggers
+- mapping that verdict back onto `analyzing-stocks` Stance, value-trap judgment, Red-Team Gate, and Position Size
+
+It reuses the `analyzing-stocks` references and is invoked by `analyzing-stocks` (as the Red-Team Gate engine) or by `investment-decision-workflow` (as an optional stress-test before the Decision Brief).
 
 ## Industry Companion Skills
 
@@ -83,6 +98,8 @@ These skills should not replace the controller. They provide only:
 5. The controller identifies the primary business model and routes to the right industry companion skill.
 6. The workflow performs stale check or incremental valuation update when using prior material.
 7. The final output is a decision brief plus execution sheet.
+
+When a thesis is contested, high-stakes, or a top portfolio driver, either skill can escalate to `debating-stocks` for a fact-checked adversarial debate, then fold its verdict back into the Red-Team Gate and Stance.
 
 ## Shared-Reference Contract
 

@@ -160,6 +160,11 @@ Always load these references from this skill:
 - Reverse DCF is required only for steady-state operating companies. For other families, use the closest market-implied expectation check instead.
 - Use [risk-register](references/risk-register.md) to complete the mandatory eight-bucket risk
   sweep that feeds the Red-Team Gate (report Section 9.0) and the risk table (report Section 10.1).
+- When the thesis is contested, the value-trap risk is live, or the name is a top portfolio
+  driver, run `$debating-stocks` to execute the Red-Team Gate (Section 9.0) as a fact-checked
+  adversarial bull/bear debate rather than a single-analyst sweep; carry its cruxes, confidence,
+  and flip conditions into the conclusion. It reuses these same references, so its verdict maps
+  straight onto Stance, value-trap judgment, and the Bear/Base/Bull scenarios.
 - Use [portfolio-sizing](references/portfolio-sizing.md) for `Core / Starter / Speculative / Watch-Avoid`.
 - Use [portfolio-construction](references/portfolio-construction.md) to convert the per-name tier
   into a portfolio-adjusted size (sector caps, KPI-driver correlation, factor tilt) for report Section 9.1.
