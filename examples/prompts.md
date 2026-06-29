@@ -51,3 +51,17 @@ Use $analyzing-stocks to decide whether this should be a Core, Starter, Speculat
 ```text
 Use $analyzing-stocks to build a watchlist note on three names: MercadoLibre, RTX, and Chubb. Route each one explicitly before giving any valuation view.
 ```
+
+## Adversarial Thesis Debate
+
+```text
+Use $debating-stocks to settle whether CMCSA is a golden pit or a value trap at today's price. Run bull vs bear with live research, a neutral fact-check, and give bear/base/bull annualized returns from the current price.
+```
+
+```text
+Use $debating-stocks to judge whether a just-announced spin-off is net positive or negative for the stock's valuation and investment case. Verify the news first, debate both sides, and state the remaining upside from the current post-reaction price.
+```
+
+```text
+Use $debating-stocks for my live position (cost basis, weight, and income goal): debate hold vs trim/sell and give a concrete action with price zones and a dividend-cut sell trigger.
+```

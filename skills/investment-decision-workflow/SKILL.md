@@ -69,6 +69,10 @@ The upstream report must provide or be refreshed to provide:
 
 Do not change Bear/Base/Bull fair values solely because current price changed. Price changes update margin of safety, expected return, market-implied expectations, valuation zone, and execution posture unless valuation drivers changed.
 
+## Adversarial Stress-Test (optional escalation)
+
+When bull and bear cases are both credible, the call is high-stakes or contested, or the name is a top portfolio driver, run `$debating-stocks` before finalizing the Decision Brief. It runs a fact-checked bull/bear (or multi-stakeholder) debate and returns cruxes, confidence, scenario expected returns measured from the current price, and flip conditions. Feed its verdict into the Red-Team / value-trap line of the Decision Brief; it informs `Stance` and `Most likely error` but does not override the Valuation Evidence Gate.
+
 ## Existing Report Path
 
 For `Existing Report to Action`, `Position Review`, and `Event Review`, use this path:
