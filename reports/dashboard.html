@@ -16,13 +16,122 @@
 <body>
   <header><h1>Inflection Discovery — results dashboard</h1>
     <p class="sub">Earnings / narrative turnaround finder · point-in-time backtest (discrimination probe) + live discovery</p></header>
-  <nav><button class="tab on" data-key="backtest">Backtest metrics</button><button class="tab" data-key="us">US price curves</button><button class="tab" data-key="ashare">A-share curves</button>
+  <nav><button class="tab on" data-key="abcompare">A vs B (LLM vs code)</button><button class="tab" data-key="backtest">Backtest metrics (B)</button><button class="tab" data-key="us">US price curves</button><button class="tab" data-key="ashare">A-share curves</button>
     <span class="docs">
       <a href="comparison-report.md">comparison report ↗</a>
       <a href="akshare-integration.md">akshare notes ↗</a>
       <a href="../docs/plans/2026-06-28-inflection-discovery-design.md">design spec ↗</a>
     </span></nav>
-  <iframe class="view" id="f-backtest" srcdoc="<!doctype html>
+  <iframe class="view" id="f-abcompare" srcdoc="<!doctype html><html lang=&quot;en&quot;><head><meta charset=&quot;utf-8&quot;>
+<meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;>
+<title>A (LLM) vs B (code) — comparison-mode backtest</title>
+<style>
+  :root { --fg:#0f172a; --mut:#64748b; --line:#e2e8f0; --bg:#fff; --soft:#f8fafc; }
+  @media (prefers-color-scheme:dark){:root{--fg:#e5e7eb;--mut:#9ca3af;--line:#27303f;--bg:#0b0f17;--soft:#111827;}}
+  *{box-sizing:border-box} body{font-family:-apple-system,Segoe UI,Roboto,&quot;PingFang SC&quot;,sans-serif;color:var(--fg);background:var(--bg);margin:0}
+  .wrap{max-width:900px;margin:0 auto;padding:30px 20px 64px}
+  h1{font-size:22px;margin:0 0 4px} h2{font-size:15px;margin:28px 0 10px;border-bottom:1px solid var(--line);padding-bottom:6px}
+  .meta{color:var(--mut);font-size:13px;margin-bottom:14px}
+  .banner{background:var(--soft);border:1px solid var(--line);border-left:3px solid #2563eb;border-radius:8px;padding:11px 13px;font-size:13px;margin-bottom:8px}
+  .warn{border-left-color:#d97706}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:14px 0}
+  .card{border:1px solid var(--line);border-radius:10px;padding:13px;background:var(--soft)}
+  .ct{font-size:12px;color:var(--mut)} .cv{font-size:22px;font-weight:700;margin:5px 0 3px}
+  .cv .a{color:#2563eb} .cv .b{color:#94a3b8} .cv .vs{font-size:12px;color:var(--mut);margin:0 7px;font-weight:400}
+  .cs{font-size:11.5px;color:var(--mut)}
+  .brow{display:flex;gap:12px;align-items:center;margin:9px 0} .bl{width:150px;font-size:13px;color:var(--mut);text-align:right}
+  .bwrap{flex:1;display:flex;flex-direction:column;gap:4px}
+  .btrack{position:relative;background:var(--soft);border:1px solid var(--line);border-radius:5px;height:22px}
+  .bfill{height:100%;border-radius:5px 0 0 5px} .btrack span{position:absolute;left:7px;top:0;line-height:22px;font-size:11.5px;font-weight:600}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:600;font-size:11.5px} td.c{text-align:center} td.tk{font-weight:600} td.ty{color:var(--mut);font-size:11.5px}
+  .hit{color:#16a34a;font-weight:700} .miss{color:var(--mut)} .good{color:#16a34a;font-size:11.5px} .bad{color:#dc2626;font-size:11.5px;font-weight:600}
+  .grp{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+</style></head><body><div class=&quot;wrap&quot;>
+  <h1>A (LLM judgment) vs B (code features) — comparison-mode backtest</h1>
+  <div class=&quot;meta&quot;>Same frozen ≤T EDGAR corpus · same A-gate, momentum, 65-name control arm, D-formula &amp; metrics · only B/C/trap judgment is swapped.</div>
+  <div class=&quot;banner&quot;><b>What changed vs the engine-B run.</b> B here is <b>recomputed in the same harness</b> and
+    reproduces the stored v2 numbers exactly (top-10 3/14 hit, 4/9 trap; top-20 6/14, 5/9) — proving the only
+    variable is the engine. B ran text-free (numeric only); A adds earnings + <b>narrative</b> + trap judgment read
+    from the same filings.</div>
+  <div class=&quot;banner warn&quot;><b>Read as an upper bound.</b> The LLM already knows these outcomes, so A's benchmark
+    rates are <b>memorization-contaminated</b> — a discrimination probe, not generalizable accuracy. The control arm
+    stays B-scored on purpose (LLM-scoring 65 random tickers would be <i>more</i> biased). Positives scored at the
+    fixed hit-date (t*−3mo); per-A lead-time not measured. n = 14 positives / 9 traps, wide Wilson CIs.</div>
+
+  <h2>Headline — A vs B</h2>
+  <div class=&quot;grp&quot;>top-10</div>
+  <div class=&quot;cards&quot;>
+    <div class=&quot;card&quot;>
+      <div class=&quot;ct&quot;>Hit rate · top-10</div>
+      <div class=&quot;cv&quot;><span class=&quot;a&quot;>36%</span>
+        <span class=&quot;vs&quot;>vs</span><span class=&quot;b&quot;>21%</span></div>
+      <div class=&quot;cs&quot;>5/14 vs 3/14 · A wins</div>
+    </div>
+    <div class=&quot;card&quot;>
+      <div class=&quot;ct&quot;>Trap rate · top-10</div>
+      <div class=&quot;cv&quot;><span class=&quot;a&quot;>0%</span>
+        <span class=&quot;vs&quot;>vs</span><span class=&quot;b&quot;>44%</span></div>
+      <div class=&quot;cs&quot;>0/9 vs 4/9 · lower better · A wins</div>
+    </div>
+  </div>
+  <div class=&quot;grp&quot;>top-20</div>
+  <div class=&quot;cards&quot;>
+    <div class=&quot;card&quot;>
+      <div class=&quot;ct&quot;>Hit rate · top-20</div>
+      <div class=&quot;cv&quot;><span class=&quot;a&quot;>71%</span>
+        <span class=&quot;vs&quot;>vs</span><span class=&quot;b&quot;>43%</span></div>
+      <div class=&quot;cs&quot;>10/14 vs 6/14 · A wins</div>
+    </div>
+    <div class=&quot;card&quot;>
+      <div class=&quot;ct&quot;>Trap rate · top-20</div>
+      <div class=&quot;cv&quot;><span class=&quot;a&quot;>22%</span>
+        <span class=&quot;vs&quot;>vs</span><span class=&quot;b&quot;>56%</span></div>
+      <div class=&quot;cs&quot;>2/9 vs 5/9 · lower better · A wins</div>
+    </div>
+  </div>
+
+  <h2>Recall &amp;amp; trap-avoidance (A blue / B grey)</h2>
+  <div class=&quot;brow&quot;><div class=&quot;bl&quot;>Hit rate · top-10</div>
+      <div class=&quot;bwrap&quot;>
+        <div class=&quot;btrack&quot;><div class=&quot;bfill&quot; style=&quot;width:36%;background:#2563eb&quot;></div><span>A 36%</span></div>
+        <div class=&quot;btrack&quot;><div class=&quot;bfill&quot; style=&quot;width:21%;background:#94a3b8&quot;></div><span>B 21%</span></div>
+      </div></div>
+  <div class=&quot;brow&quot;><div class=&quot;bl&quot;>Hit rate · top-20</div>
+      <div class=&quot;bwrap&quot;>
+        <div class=&quot;btrack&quot;><div class=&quot;bfill&quot; style=&quot;width:71%;background:#2563eb&quot;></div><span>A 71%</span></div>
+        <div class=&quot;btrack&quot;><div class=&quot;bfill&quot; style=&quot;width:43%;background:#94a3b8&quot;></div><span>B 43%</span></div>
+      </div></div>
+  <div class=&quot;brow&quot;><div class=&quot;bl&quot;>Trap rate · top-10 (lower=better)</div>
+      <div class=&quot;bwrap&quot;>
+        <div class=&quot;btrack&quot;><div class=&quot;bfill&quot; style=&quot;width:1%;background:#2563eb&quot;></div><span>A 0%</span></div>
+        <div class=&quot;btrack&quot;><div class=&quot;bfill&quot; style=&quot;width:44%;background:#94a3b8&quot;></div><span>B 44%</span></div>
+      </div></div>
+  <div class=&quot;brow&quot;><div class=&quot;bl&quot;>Trap rate · top-20 (lower=better)</div>
+      <div class=&quot;bwrap&quot;>
+        <div class=&quot;btrack&quot;><div class=&quot;bfill&quot; style=&quot;width:22%;background:#2563eb&quot;></div><span>A 22%</span></div>
+        <div class=&quot;btrack&quot;><div class=&quot;bfill&quot; style=&quot;width:56%;background:#94a3b8&quot;></div><span>B 56%</span></div>
+      </div></div>
+  <div class=&quot;meta&quot; style=&quot;margin-top:10px&quot;>Forward return 12m, top-10 picks vs depressed control: <b>A +78%</b> (5 picks)
+    vs control +14% · B +78% (3 picks) vs +18%. A's wider recall did not dilute pick quality.</div>
+
+  <h2>Positives — did it surface the inflection?</h2>
+  <table><thead><tr><th>Ticker</th><th>Type</th><th>A·top10</th><th>A·top20</th><th>B·top10</th><th>B·top20</th></tr></thead>
+  <tbody><tr><td class='tk'>AXTI</td><td class='ty'>earnings</td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td></tr><tr><td class='tk'>BB</td><td class='ty'>narrative</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td></tr><tr><td class='tk'>NOK</td><td class='ty'>narrative+earnings</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td></tr><tr><td class='tk'>LITE</td><td class='ty'>earnings</td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td></tr><tr><td class='tk'>MU</td><td class='ty'>earnings</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td></tr><tr><td class='tk'>MU</td><td class='ty'>earnings</td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td></tr><tr><td class='tk'>SNDK</td><td class='ty'>earnings+special</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td></tr><tr><td class='tk'>AMD</td><td class='ty'>earnings</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td></tr><tr><td class='tk'>NVDA</td><td class='ty'>earnings</td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td></tr><tr><td class='tk'>META</td><td class='ty'>earnings+narrative</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td></tr><tr><td class='tk'>NFLX</td><td class='ty'>earnings</td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td></tr><tr><td class='tk'>COHR</td><td class='ty'>earnings</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td></tr><tr><td class='tk'>BILI</td><td class='ty'>earnings+narrative</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td></tr><tr><td class='tk'>INTC</td><td class='ty'>earnings</td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;hit&quot;>✓</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td><td class='c'><span class=&quot;miss&quot;>·</span></td></tr></tbody></table>
+  <div class=&quot;meta&quot;>A's extra recall (BB, NOK, COHR, INTC-2025, LITE, NFLX) is the narrative/earnings judgment B can't make text-free.
+    Shared misses: SNDK &amp;amp; AMD fail the depressed-base A gate (post-spin / already-rallied); META's catalyst post-dates T; BILI is a quarterly-XBRL-less ADR.</div>
+
+  <h2>Negatives — did it avoid the trap?</h2>
+  <table><thead><tr><th>Ticker</th><th>A·top10</th><th>A·top20</th><th>B·top10</th><th>B·top20</th></tr></thead>
+  <tbody><tr><td class='tk'>BBBY</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td></tr><tr><td class='tk'>LUMN</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td></tr><tr><td class='tk'>PTON</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td></tr><tr><td class='tk'>FOSL</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td></tr><tr><td class='tk'>LCID</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td></tr><tr><td class='tk'>FFAI</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td></tr><tr><td class='tk'>BLNK</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;good&quot;>avoided</span></td></tr><tr><td class='tk'>ZM</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td></tr><tr><td class='tk'>INTC</td><td class='c'><span class=&quot;good&quot;>avoided</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td><td class='c'><span class=&quot;bad&quot;>surfaced</span></td></tr></tbody></table>
+  <div class=&quot;meta&quot;><b>A's structural-decline judgment</b> avoids LUMN / PTON / FOSL that B's mechanical filter surfaced.
+    A's two residual misses are the intrinsically-hard cases the design predicted: <b>ZM</b> (dead-money with a
+    pristine balance sheet — no trap signal, only &quot;no turn&quot;) and <b>INTC-2023 fake-start</b> (reads like a real
+    trough on the as-of numbers). Even the LLM gets these two wrong — that is the honest floor.</div>
+
+  <div class=&quot;meta&quot; style=&quot;margin-top:22px&quot;>Source: reports/backtest_results_A*.json · authored judgments reports/llm_scores.json · regenerate via reports/make_ab_compare.py</div>
+</div></body></html>" title="A vs B (LLM vs code)" style="display:block"></iframe><iframe class="view" id="f-backtest" srcdoc="<!doctype html>
 <html lang=&quot;en&quot;><head><meta charset=&quot;utf-8&quot;>
 <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;>
 <title>Inflection Discovery — Backtest Results</title>
@@ -162,7 +271,7 @@
     <li>Forward return is regime-noisy (small n); foreign-filer quarterly gap &amp; post-spin gating remain.</li>
   </ul>
   <div class=&quot;meta&quot; style=&quot;margin-top:24px&quot;>Source: reports/backtest_results_v2.json · regenerate via reports/make_report_html.py</div>
-</div></body></html>" title="Backtest metrics" style="display:block"></iframe><iframe class="view" id="f-us" srcdoc="<!doctype html><html lang=&quot;en&quot;><head><meta charset=&quot;utf-8&quot;>
+</div></body></html>" title="Backtest metrics (B)" style="display:none"></iframe><iframe class="view" id="f-us" srcdoc="<!doctype html><html lang=&quot;en&quot;><head><meta charset=&quot;utf-8&quot;>
 <meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;>
 <title>Inflection Discovery — price curves around detection</title>
 <style>

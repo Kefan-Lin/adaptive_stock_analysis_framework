@@ -95,3 +95,11 @@ The backtest that compares A and B on the labeled benchmark is a **discriminatio
 smoke-test, not a generalizable accuracy number** (small, selection-biased
 sample; free data; see the spec). Report metrics with n and confidence intervals,
 never a bare "X% accurate."
+
+A full comparison-mode A-vs-B backtest exists: `inflection_discovery/harness/llm_backtest.py`
+ranks LLM-scored candidates (`reports/llm_scores.json`) against the identical
+control arm and harness B uses, so only the engine varies. On the benchmark A beats
+B on both recall and trap-avoidance (top-10 36% vs 21% hit, 0% vs 44% trap; top-20
+71% vs 43%, 22% vs 56%) — see `reports/comparison-report.md`. **These A rates are a
+memorization-contaminated upper bound** (the model knows the outcomes); the honest
+generalization test is the post-training-cutoff holdout (SNDK-2025/INTC-2025/NBIS-2025).

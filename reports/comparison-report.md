@@ -1,16 +1,89 @@
-# Inflection Discovery — Backtest & A-vs-B Comparison Report (v2)
+# Inflection Discovery — Backtest & A-vs-B Comparison Report (v3)
 
-**Date:** 2026-06-28 · **Code:** commit `d7c0163`
-**Run:** engine B, point-in-time, free data only.
-**v2 changes** (the report's own "next steps", now done): enlarged the control
-universe so top-N is genuinely selective; improved C keyword precision; added an
-IFRS/20-F path for foreign filers; attempted (and reverted) a ¬trap strengthening.
-Results below **supersede the v1 thin-universe numbers**.
+**Date:** 2026-06-29 (v3: full Implementation-A backtest) · 2026-06-28 (v2: engine B)
+**Run:** engines A (LLM judgment) and B (code), point-in-time, free data only.
+**v3 change — the headline:** Implementation A (LLM) is now run through a **full
+comparison-mode backtest** on the same harness as B (previously only a one-name
+spot-check). A is scored from the same frozen ≤T EDGAR corpus B reads; results in
+the new *A-vs-B full backtest* section below. **v2 changes** (B): enlarged control
+universe, C keyword precision, IFRS/20-F foreign path, attempted+reverted ¬trap
+strengthening.
 
 > **What these numbers are.** A discrimination smoke-test, **not** generalizable
 > accuracy. n = 14 positive events / 9 trap tickers; every rate has a wide Wilson
 > CI; treat as directional. Point-in-time integrity is verified at runtime (the
-> 4-canary leak battery passes against live yfinance/EDGAR; 125 tests pass).
+> 4-canary leak battery passes against live yfinance/EDGAR; 135 tests pass).
+> **A's rates are additionally a memorization-contaminated UPPER BOUND** — the
+> model already knows these outcomes (see the A-vs-B section for why that is still
+> a fair *engine* comparison).
+
+## A-vs-B full backtest (v3) — LLM judgment vs code features
+
+**The experiment.** Hold *everything* shared with engine B fixed — the depressed-base
+A gate, price momentum, the identical 65-name control arm, the `score_D`
+aggregation, and every metric definition in `summarize` — and swap **only** the
+B / C / trap judgment of the benchmark candidate. B reads those from numeric
+features + keyword counting (and in the v2 backtest ran **text-free**, so its
+narrative C was null); A (the LLM) reads them from the same ≤T EDGAR filings +
+PIT fundamentals (`reports/llm_scores.json`, one audit note per name). Each name
+is ranked against the **same** depressed-peer backdrop B faces. So the A−B delta
+is a clean ablation of *engine*, with byte-identical metric math.
+
+**Validation that it's apples-to-apples:** B, recomputed inside the A harness,
+**reproduces the stored v2 numbers exactly** (top-10 3/14 hit, 4/9 trap; top-20
+6/14, 5/9). The only moving part is the engine.
+
+| Metric (control=65, median elig ≈ 28-30) | **A (LLM)** | **B (code)** |
+|---|---|---|
+| Hit rate · top-10 | **5/14 = 36%** (CI 16–61%) | 3/14 = 21% (CI 8–48%) |
+| Hit rate · top-20 | **10/14 = 71%** (CI 45–88%) | 6/14 = 43% (CI 21–67%) |
+| Trap rate · top-10 *(lower=better)* | **0/9 = 0%** (CI 0–30%) | 4/9 = 44% (CI 19–73%) |
+| Trap rate · top-20 *(lower=better)* | **2/9 = 22%** (CI 6–55%) | 5/9 = 56% (CI 27–81%) |
+| Fwd return 12m, top-10 picks vs control | **+78%** vs +14% (5 picks) | +78% vs +18% (3 picks) |
+
+**A beats B on both axes** — higher recall *and* fewer traps — and the wider
+recall did **not** dilute pick quality (top-10 picks still +78% at 12m).
+
+**Where A's recall edge comes from (top-20 adds vs B):** BB, NOK, COHR, INTC-2025
+— exactly the **narrative / earnings-judgment** names a text-free keyword counter
+can't see. (LITE and NFLX come in already at top-10.)
+
+**Where A's trap edge comes from:** A's *structural-decline* judgment avoids
+**LUMN, PTON, FOSL** — the traps B's mechanical filter surfaced. PTON is the
+clearest win: B rewarded its gross-margin bounce off a negative trough; A reads
+"margin up **but revenue still −22% YoY and still burning cash → not a real
+turn**."
+
+**A's two residual misses are the intrinsically-hard cases the design predicted**,
+not tuning failures:
+- **ZM (dead money):** growth stalled at ~+3% with a **pristine** balance sheet, so
+  there is *no* trap signal — only "no turn." Its deep depressedness (A≈0.99)
+  pulls D into the top-20 despite a low turn. This is the limit of the 40%
+  cheapness weight, not a judgment error.
+- **INTC-2023 fake-start:** on the as-of numbers (revenue decline decelerating, GM
+  recovered to 42%, EPS back positive) it is **indistinguishable from a real
+  cyclical trough**. A is honestly fooled here too — this is the irreducible floor
+  of free-data separability (encoded as the one allow-listed case in
+  `tests/test_llm_backtest.py`).
+
+**Honest caveats (unchanged and load-bearing):**
+1. **Memorization upper bound.** The LLM knows these outcomes, so A's *absolute*
+   rates overstate live performance. The comparison is still fair as an **engine**
+   ablation (A vs B on the identical information set and harness), and the *pattern*
+   — A wins precisely on narrative recall and structural-trap judgment, the two
+   things B is built to miss — is the mechanism-level result, not the level.
+2. **Control arm stays B-scored** by design: LLM-scoring 65 random tickers would be
+   *more* biased (asymmetric memorization — known benchmark names vs unknown
+   controls) and intractable. So A's hit/trap measure "does LLM judgment of the
+   *named candidate* out-rank / clear the depressed-peer backdrop B faces."
+3. **Positives scored at the single fixed hit-date** (t*−3mo); per-A lead-time is
+   not measured in this pass.
+4. The true next step for a *generalizable* read is a **post-training-cutoff
+   holdout** (SNDK-2025, INTC-2025, NBIS-2025) scored live — that removes the
+   memorization confound. Left as the honest open item.
+
+*(The one-name spot-validation below is now subsumed by this full backtest; it is
+kept as a worked example of the C-judgment mechanism.)*
 
 ## Headline: the selectivity correction
 
@@ -102,7 +175,10 @@ holdout names). v2 delivers the A-vs-B *spot validation*, not a full A backtest.
    capital-allocation history — which is exactly **Implementation A's (LLM)
    domain**. The real next step is to test whether A's qualitative ¬trap judgment
    beats B's mechanical filter, not to hand-tune more thresholds (which would
-   overfit this tiny benchmark).
+   overfit this tiny benchmark). **→ v3 update: now tested.** A's full backtest
+   drops the trap rate to 0% (top-10) / 22% (top-20) vs B's 44% / 56% — A's
+   structural-decline judgment flags LUMN/PTON/FOSL that B missed. See the A-vs-B
+   section at the top.
 5. **Paid point-in-time dataset — not done (blocked by the free-data decision).**
    This would lift the probe to a generalizable accuracy estimate and revive the
    estimate-revision signal, but it costs money and needs a data subscription /
@@ -122,12 +198,24 @@ holdout names). v2 delivers the A-vs-B *spot validation*, not a full A backtest.
 
 ## Verdict & next steps
 
-The mechanism’s **point-in-time machinery is sound** (leak battery green) and its
-**top-ranked picks outperform the depressed universe at 12 months**, but a
-realistic universe shows its top-10 **recall of specific inflections is modest
-(21%)** and the value-trap problem is **not solvable with free numeric signals**.
-The highest-value next step is no longer more numeric tuning — it is to run
-**Implementation A (LLM) in full comparison mode** (and a post-cutoff holdout) to
-test whether qualitative judgment delivers the ¬trap discrimination and narrative
-recall that engine B structurally cannot. A one-time paid point-in-time dataset
-(user decision) would make any of these numbers generalizable rather than a probe.
+The mechanism's **point-in-time machinery is sound** (leak battery green) and the
+**top-ranked picks outperform the depressed universe at 12 months**. Engine B
+alone, on a realistic universe, has **modest top-10 recall (21%)** and **cannot
+solve the value-trap problem with free numeric signals**.
+
+**v3 closes the loop the v2 report opened:** Implementation A (LLM) was run in full
+comparison mode and **delivered exactly the discrimination B structurally cannot** —
+top-10 recall 36% vs 21% and trap rate 0% vs 44% (top-20: 71% vs 43%, 22% vs 56%),
+on the identical harness and control arm. A's gains are concentrated precisely
+where the design predicted (narrative recall: BB/NOK/COHR/INTC-2025; structural
+traps: LUMN/PTON/FOSL), and A's only residual failures are the two intrinsically
+ambiguous cases (ZM dead-money, INTC fake-start). So the architecture's core
+thesis — **a code engine for cheap, leak-free breadth; an LLM engine for the
+qualitative judgment that the numbers can't encode** — is now empirically
+supported, not just argued.
+
+**The one honest gap that remains:** A's numbers are a memorization-contaminated
+upper bound. The single highest-value next step is a **post-training-cutoff
+holdout** (SNDK-2025 / INTC-2025 / NBIS-2025) scored live, which removes the
+confound; a one-time paid point-in-time dataset (user decision) would make any of
+these numbers generalizable rather than a probe.

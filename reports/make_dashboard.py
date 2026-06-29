@@ -23,7 +23,8 @@ def load(name: str) -> str:
     return esc(p.read_text()) if p.exists() else "<p style='padding:20px'>missing: " + name + "</p>"
 
 TABS = [
-    ("backtest", "Backtest metrics", "backtest.html"),
+    ("abcompare", "A vs B (LLM vs code)", "ab_compare.html"),
+    ("backtest", "Backtest metrics (B)", "backtest.html"),
     ("us", "US price curves", "price_curves.html"),
     ("ashare", "A-share curves", "ashare_curves.html"),
 ]
