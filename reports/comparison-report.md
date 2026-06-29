@@ -85,6 +85,54 @@ not tuning failures:
 *(The one-name spot-validation below is now subsumed by this full backtest; it is
 kept as a worked example of the C-judgment mechanism.)*
 
+## Post-cutoff holdout (v3) — the memorization confound, removed
+
+The single honest gap in the section above is that the LLM **already knows** the
+benchmark outcomes. So I ran a genuine holdout where the outcome is blind: **T =
+2026-01-31** (after the model's Jan-2026 knowledge cutoff), a **fresh** universe of
+16 depressed names sampled at random with **zero overlap** with the benchmark or
+control arm, scored A (LLM) and B from ≤T evidence **before any forward return was
+computed** (`reports/llm_holdout_scores.json`), then measured the realized **~5-month
+forward return** (T → today). Most names are obscure micro-caps I have near-zero
+priors on, so this is about as blind as a free-data test gets.
+
+| ~5-month forward return (T=2026-01-31) | result |
+|---|---|
+| **A top-5 by D** (CNS, TRIP, FIP, LEAT, FLUT) | **+2%** |
+| **B top-5 by D** (TRIP, FLUT, JBGS, SYRA, LEAT) | **+113%** |
+| Depressed-pool base rate (all 16) | **+72%** |
+| **A trap-CLEARED** (10 eligible names) | **+125%** |
+| **A trap-FLAGGED** (6 names, trap>ceiling) | **−17%** |
+
+**This is a deliberately unflattering, honest result, and it splits cleanly:**
+
+- **What generalized — the binary trap / quality screen.** A's *cleared* names
+  returned **+125%** vs *flagged* **−17%** — a real out-of-sample spread. Of the 6
+  A flagged as un-investable (shells / SPAC-collapses / serial diluters), 5 were
+  flat-to-disastrous (JTAI −75%, SGLY −45%, AMST −40%, ALDA/ANKM ~0%); the one miss
+  was GUTS (+62%, a flagged shell that popped anyway). So "don't step on the dead
+  shells" — the core ¬trap judgment — **held up blind**.
+- **What did NOT generalize — the fine-grained D ranking.** A's top-5 (+2%)
+  **underperformed both B's top-5 (+113%) and the pool (+72%)**. The biggest winners
+  (LESL +600%, SYRA +575%, PVLA +93%) were ranked **low** by A (ranks 6, 7, 10):
+  its quality/safety tilt pushed the volatile small-caps down, and two of its actual
+  picks fell (FLUT −37%, FIP −15%). The benchmark's headline "A out-ranks B" did
+  **not** reproduce here.
+- **Regime + n caveat (load-bearing).** A +72% pool base rate over 5 months is a
+  **violent small-cap/junk rally** — exactly the regime where the junkiest survivors
+  rip and quality lags. With **n = 5 picks over one 5-month regime**, neither
+  engine's *ranking* result is statistically meaningful. B's win is essentially one
+  name (SYRA, +575%, in B's top-5 but not A's).
+
+**Honest bottom line.** The memorization-free holdout confirms A's **trap/quality
+discrimination** carries real out-of-sample signal, but provides **no evidence** that
+A's *ranking* adds forward alpha over B or the depressed universe — and one (noisy,
+regime-specific) data point where it underperformed by tilting too defensive. So the
+benchmark's A-beats-B *ranking* margin should be read as **memorization-flavored, not
+confirmed**; the durable, generalizing win is the qualitative **"is this a real
+business or a trap"** call. A larger, multi-regime holdout is the real way to settle
+the ranking question. *(Reproduce: `reports/run_holdout.py`.)*
+
 ## Headline: the selectivity correction
 
 The single most important v2 finding. v1 used a 30-name control arm (median ~13
@@ -214,8 +262,14 @@ thesis — **a code engine for cheap, leak-free breadth; an LLM engine for the
 qualitative judgment that the numbers can't encode** — is now empirically
 supported, not just argued.
 
-**The one honest gap that remains:** A's numbers are a memorization-contaminated
-upper bound. The single highest-value next step is a **post-training-cutoff
-holdout** (SNDK-2025 / INTC-2025 / NBIS-2025) scored live, which removes the
-confound; a one-time paid point-in-time dataset (user decision) would make any of
-these numbers generalizable rather than a probe.
+**The memorization confound was then tested directly** (post-cutoff holdout,
+above), and it matters: blind, A's **trap/quality screen survived** (+125% cleared
+vs −17% flagged) but its **ranking edge did not** (top-5 +2% vs B +113% vs pool
++72%, in a junk-rally regime, n tiny). So the durable, generalizing claim is the
+qualitative *"real business vs trap"* judgment — **not** that A out-ranks B. The
+benchmark ranking margin is memorization-flavored.
+
+**What remains:** a **larger, multi-regime holdout** (more names, more T-dates,
+not one risk-on window) is the only way to settle whether A's ranking adds forward
+alpha; a one-time paid point-in-time dataset (user decision) would let the labeled
+hit/trap backtest itself be run on post-cutoff data rather than a probe.

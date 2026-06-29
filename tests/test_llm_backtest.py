@@ -6,12 +6,17 @@ them via the SHARED score_D / contract is valid and on the same [0,1] scale as B
 """
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pandas as pd
 
 from inflection_discovery.benchmark import load_benchmark
 from inflection_discovery.contract import validate
 from inflection_discovery.harness.llm_backtest import load_llm_scores
 from inflection_discovery.scorecard import score as sc
+
+REPORTS = Path(__file__).resolve().parents[1] / "reports"
 
 NO_DATA = {"WBA"}  # delisted on yfinance — both engines exclude (see report)
 
@@ -88,3 +93,17 @@ def test_traps_score_high_or_low_turn():
         f"undocumented trap(s) scored like a clean turnaround: {set(offenders) - AMBIGUOUS_TRAPS}")
     assert AMBIGUOUS_TRAPS <= set(offenders), (
         "the documented fake-start is no longer ambiguous — update AMBIGUOUS_TRAPS")
+
+
+def test_holdout_scores_cover_universe():
+    """The post-cutoff holdout scores stay in sync with the sampled universe and
+    are well-formed (so reports/run_holdout.py is reproducible)."""
+    uni = json.loads((REPORTS / "holdout_universe.json").read_text())
+    scores = {r["ticker"]: r for r in json.loads((REPORTS / "llm_holdout_scores.json").read_text())["scores"]}
+    missing = [t for t in uni if t not in scores]
+    assert not missing, f"llm_holdout_scores.json missing: {missing}"
+    for t, r in scores.items():
+        for k in ("B", "C", "trap_risk"):
+            v = r[k]
+            assert isinstance(v, (int, float)) and 0.0 <= v <= 1.0, f"{t} {k}={v!r}"
+        assert r.get("note"), f"{t} missing audit note"

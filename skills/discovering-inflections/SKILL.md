@@ -101,5 +101,11 @@ ranks LLM-scored candidates (`reports/llm_scores.json`) against the identical
 control arm and harness B uses, so only the engine varies. On the benchmark A beats
 B on both recall and trap-avoidance (top-10 36% vs 21% hit, 0% vs 44% trap; top-20
 71% vs 43%, 22% vs 56%) — see `reports/comparison-report.md`. **These A rates are a
-memorization-contaminated upper bound** (the model knows the outcomes); the honest
-generalization test is the post-training-cutoff holdout (SNDK-2025/INTC-2025/NBIS-2025).
+memorization-contaminated upper bound** (the model knows the outcomes).
+
+A **post-cutoff holdout** (`reports/run_holdout.py`, T=2026-01-31, fresh blind
+universe) tested that confound and split the result: A's **trap/quality screen
+generalized** (cleared +125% vs flagged −17% forward) but its **ranking edge did
+not** (top-5 +2% vs B +113% vs pool +72%, junk-rally regime, n tiny). So treat the
+durable claim as the qualitative *real-business-vs-trap* judgment, **not** that A
+out-ranks B; a larger multi-regime holdout is needed to settle the ranking question.

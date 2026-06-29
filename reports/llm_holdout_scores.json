@@ -1,0 +1,43 @@
+{
+ "_meta": {
+  "engine": "A",
+  "mode": "POST-CUTOFF HOLDOUT — scored BLIND to forward outcome (T=2026-01-31 > Jan-2026 cutoff)",
+  "scorer": "LLM (Claude), reading only <=T PIT fundamentals + filing keyword contexts",
+  "discipline": "Authored from scratchpad/holdout_evidence.json (<=T only, NO forward returns) BEFORE running reports/run_holdout.py. Most names are obscure micro-caps with ~zero model priors, so judgment leans entirely on the dumped evidence.",
+  "rubric": "same as reports/llm_scores.json (B=earnings 2nd-deriv, C=narrative re-rating, trap_risk structural/cash-burn; ineligible above ceiling 0.70)"
+ },
+ "scores": [
+  {"ticker": "ALDA", "B": 0.05, "C": 0.10, "trap_risk": 0.85,
+   "note": "no-revenue shell (revenue 0 across history, EPS ~-0.04, ocf ~-38k, 2.46M shares flat); 97% drawdown; no business to inflect."},
+  {"ticker": "PVLA", "B": 0.10, "C": 0.25, "trap_risk": 0.65,
+   "note": "revenue collapsed to 0 (was $20M in 2023), rev_yoy -1.0; biotech-like, $64M cash burning ~$7M/q (~9q runway); already +491% off 52w low so not deeply depressed; no earnings turn."},
+  {"ticker": "FIP", "B": 0.70, "C": 0.45, "trap_risk": 0.45,
+   "note": "clear revenue acceleration 83M->140M, rev_yoy +16%->+44%->+69%, accel positive; infrastructure ramp; momentum on; BUT heavy ocf burn (-$85M/q) + leverage typical of infra -> moderate trap."},
+  {"ticker": "GUTS", "B": 0.05, "C": 0.20, "trap_risk": 0.90,
+   "note": "pre-revenue (rev 14-72k), massive dilution (49M->132M shares in one quarter), deep cash burn; classic story-stock trap."},
+  {"ticker": "JTAI", "B": 0.05, "C": 0.25, "trap_risk": 0.95,
+   "note": "SPAC-collapse air-mobility: revenue declining 3.9M->1.7M, negative gross margin, reverse-split history (EPS -137), $3.5M cash burning; extreme trap."},
+  {"ticker": "AMST", "B": 0.10, "C": 0.20, "trap_risk": 0.80,
+   "note": "micro shell/biotech (rev ~10-200k, accel noise off tiny base), $1.8M cash burning, dilution 2.8M->4.6M; trap."},
+  {"ticker": "FLUT", "B": 0.40, "C": 0.40, "trap_risk": 0.15,
+   "note": "Flutter: quality large-cap ~46% off high; revenue ~$3.8B growing ~17% (decelerated from 27%), margins flat, $1.7B cash, buyback, profitable-ish (one Q charge -3.91 EPS); no clear 2nd-deriv turn but decisively not a trap."},
+  {"ticker": "CNS", "B": 0.40, "C": 0.30, "trap_risk": 0.15,
+   "note": "Cohen & Steers asset manager ~40% off high; revenue steady +6-12%, EPS stable ~0.80 (profitable), clean balance sheet, dividend; modest growth, momentum on; no strong catalyst."},
+  {"ticker": "LEAT", "B": 0.60, "C": 0.40, "trap_risk": 0.15,
+   "note": "real small turnaround: revenue 10M->16M (rev_yoy +45/+60%), EPS flipped positive 0.17/0.18, inventory destocking, share-repurchase in filing; clean -> low trap."},
+  {"ticker": "JBGS", "B": 0.20, "C": 0.30, "trap_risk": 0.55,
+   "note": "JBG Smith office REIT: revenue declining 152M->124M (rev_yoy -5 to -17%), secular WFH pressure + leverage; large buyback (84M->59M shares) signals mgmt confidence but no business turn -> moderate trap."},
+  {"ticker": "SGLY", "B": 0.10, "C": 0.20, "trap_risk": 0.80,
+   "note": "China micro-cap, revenue tiny & declining (300-900k), erratic/negative margins, dilution; 94% drawdown; trap."},
+  {"ticker": "LESL", "B": 0.20, "C": 0.25, "trap_risk": 0.70,
+   "note": "Leslie's pools: revenue flat-to-down, heavy LBO leverage, seasonal cash burn (ocf -71 to -105M), reverse split (9.2M->185M->9.3M); levered declining retail -> trap at ceiling."},
+  {"ticker": "WVVIP", "B": 0.15, "C": 0.15, "trap_risk": 0.70,
+   "note": "Willamette Valley Vineyards PREFERRED (yield instrument, not a turnaround equity): revenue flat ~$8-10M, inventory bloating 463->933 days, $0.37M cash, negative ocf; price tracks rates/credit not an inflection -> trap."},
+  {"ticker": "TRIP", "B": 0.45, "C": 0.55, "trap_risk": 0.20,
+   "note": "TripAdvisor ~53% off high: revenue modestly growing, EPS recovering 0.28/0.43, ~92% margin, $1.2B cash, buyback; filing shows cost-reduction + restructuring + 'accelerating monetization' (Viator) -> genuine narrative, low trap."},
+  {"ticker": "SYRA", "B": 0.35, "C": 0.25, "trap_risk": 0.55,
+   "note": "micro-cap: gross margin improving 13%->39%, EPS losses narrowing to ~0, ocf turned positive — early operational improvement, BUT revenue declining last 2Q + dilution + $2M cash -> moderate trap."},
+  {"ticker": "ANKM", "B": 0.05, "C": 0.15, "trap_risk": 0.90,
+   "note": "micro shell: revenue ~0-165k erratic (last Q 0), $24k cash (!), nonsense margins; +200% off low already; trap."}
+ ]
+}
