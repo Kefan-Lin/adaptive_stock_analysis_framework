@@ -18,12 +18,13 @@ scoring (P2), and the inflection-discovery pipeline (P3) all build on this layer
 
 Owner usage facts that shaped the design (from the owner's real research archive):
 
-- Research sessions already accumulate in `personal_projects/investment/`
+- Research sessions already accumulate in the owner's private research directory
   (`equity_research_YYYY-MM-DD/` folders) — that directory becomes the state home;
-  no new location is introduced.
-- Reports are frequently **multi-name** (e.g. one decision-workflow report covering
-  `301396`, `603186`, `01308`), so a record is **per symbol per decision**, not per
-  report file.
+  no new location is introduced. Its actual path lives only in the private
+  pointer file (§1), never in this repo.
+- Reports are frequently **multi-name** (one decision-workflow report covering
+  several A-share/HK/US names at once), so a record is **per symbol per
+  decision**, not per report file.
 - Holdings span US, China A-share, and Hong Kong markets.
 - The owner explicitly wants a **per-stock chronological view**: today one stock's
   analyses are scattered across date folders, so its thesis evolution cannot be
@@ -60,17 +61,20 @@ Owner usage facts that shaped the design (from the owner's real research archive
 
 ### 1. State home and discovery
 
-The state home is the owner's existing research directory
-(`~/Desktop/personal_projects/investment/`). Recommended (not enforced) to be a
-private git repository for backup/sync.
+The state home is the owner's existing private research directory — the one
+already holding the `equity_research_*` folders. Its path is written only into
+the pointer file, not into this repo. Recommended (not enforced) to be a private
+git repository for backup/sync.
 
 Skills discover it via a **pointer file** `~/.investing-home` containing a single
 line: the absolute path of the state home. Resolution contract (defined in the new
 shared reference, used by all skills that touch state):
 
 1. Read `~/.investing-home`; trim whitespace; the result is the state home path.
-2. If the pointer file is missing, ask the user once, offer to create both the
-   pointer file and the state-home skeleton, then continue.
+2. If the pointer file is missing, ask the user once **per session**, offer to
+   create both the pointer file and the state-home skeleton, then continue. A
+   user who declines runs stateless; there is nowhere to persist the refusal, so
+   a later session may ask again — accepted behavior.
 3. If the pointer exists but the directory is missing/unreadable, say so and fall
    back to stateless behavior (current behavior: ask for inputs, emit
    `Missing Inputs`). Never invent state.
@@ -93,10 +97,24 @@ anywhere), no env-var dependence, trivially portable.
 **Canonical symbol form** (directory names and `symbol:` field):
 
 - US: bare ticker, uppercase — `NVDA`
-- Hong Kong: 4-digit code + `.HK` — `0700.HK` (normalize `00700`/`00883-HK` forms)
+- Hong Kong: HKEX code zero-padded to 4 digits + `.HK` — `0700.HK` (normalize
+  `00700` / `00883-HK` input forms); genuine 5-digit codes (e.g. RMB counters
+  like `80700`) stay 5 digits
 - China A-share: 6-digit code + `.SH` / `.SZ` / `.BJ` — `600519.SH`, `300750.SZ`
 
-This matches yfinance symbol conventions, which P1/P2 will use for price checks.
+The canonical form is an **internal identity**, deliberately the human-dominant
+convention (`.SH` per tushare/Eastmoney usage), not any data provider's format:
+yfinance wants `600519.SS` for Shanghai, akshare wants bare `600519`. P1 owns a
+canonical→provider mapping (a pure function; US and `.HK` forms pass through to
+yfinance unchanged) and must pick an A-share-capable source — akshare is already
+integrated on the inflection branch, and yfinance's `.BJ` coverage is unreliable.
+
+**Dual listings / ADRs**: a record anchors to the tradable line actually analyzed
+(the controller already requires stating that line), so `9988.HK` and `BABA` get
+separate directories. Link them instead of merging: an optional
+`related_symbols: [BABA]` frontmatter field, which the validator mirrors as a
+`See also: [BABA](../BABA/INDEX.md)` line in both symbols' `INDEX.md` headers.
+Different lines can legitimately carry different valuations and stances.
 
 Multiple records for the same symbol accumulate over time; the latest record by
 `date` is the "current" one for stale checks.
@@ -119,14 +137,14 @@ schema: decision-record/v1
 symbol: 0700.HK               # canonical form, §2
 market: HK                    # US | CN | HK
 date: 2026-07-03
-mode: position-review         # new-idea | existing-report | position-review | event-review
+mode: position-review         # new-idea | existing-report | position-review | event-review | research
 price_at_decision: 512.00
 currency: HKD
 
 # Research & valuation (from analyzing-stocks / refreshed upstream report)
 stance: Hold                  # Buy | Add | Hold | Reduce | Avoid
 position_size: Core           # Core | Starter | Speculative | Watch-Avoid
-confidence: medium            # low | medium | high
+confidence: Medium            # High | Medium | Low (report-template vocabulary)
 weighted_fair_value: 610
 scenarios: {bear: 420, base: 600, bull: 760}
 
@@ -167,8 +185,36 @@ Field rules:
   scenarios, position_size, confidence`.
 - Required when the decision workflow ran: `candidate_tier, valuation_zone,
   execution_method, triggers`.
+- `mode: research` marks a standalone `analyzing-stocks` run saved without the
+  decision workflow; workflow-only fields stay absent. The writing skill always
+  sets `review_by` explicitly; default when the user states none:
+  `min(next_earnings, date + 90 days)`.
+- **Record identity is `(symbol, date, mode)`** — also the `INDEX.md` row key. A
+  rerun with the same identity updates the record and row in place (no same-day
+  duplicates). For "latest record" (the stale-check anchor) on a same-date tie,
+  use mode priority `position-review > event-review > existing-report >
+  new-idea > research` — the workflow's own mode-routing priority.
+- A record is written when the session produced at least a `stance` or an
+  `execution_method` for that symbol; a pure `Missing Inputs` / conditional-only
+  outcome creates no record.
+- Enum fields store the skills' **display strings verbatim** (`stance: Hold`,
+  `confidence: Medium`, `candidate_tier: Core Candidate`,
+  `execution_method: No Action`), so contract tests can assert literal sync.
+  The one exception is `mode` (it appears in filenames): filename-safe slugs
+  with a normative slug ↔ display table in the §5.1 reference
+  (`new-idea` ↔ `New Idea Decision`, `existing-report` ↔
+  `Existing Report to Action`, `position-review` ↔ `Position Review`,
+  `event-review` ↔ `Event Review`; `research` and index-only `historical` have
+  no workflow counterpart). `execution_method` vocabulary is pinned to the
+  workflow Output Contract line under `### 5. Execution Sheet`, read as seven
+  distinct values with `Reduce` and `Exit` separate (the process-section bullet
+  `Reduce / Exit` is a combined outcome label, not the vocabulary source).
 - `action_taken` starts `null`; the workflow backfills it (and updates
   `portfolio.yaml`) only after the user confirms an execution happened.
+  `action_taken.action` vocabulary (v1): `bought | added | reduced | exited |
+  sold-put | put-assigned | put-closed`.
+- `source_report` is set only if the linked file already exists in the state
+  home; otherwise leave it `null` (the validator hard-fails dangling paths).
 - Amounts are in `currency`; no FX conversion inside records.
 
 ### 3a. Per-symbol timeline index
@@ -184,12 +230,18 @@ evolution timeline (and renders as a clickable table in Obsidian):
 
 Maintenance contract:
 
-- The workflow appends/updates the symbol's row whenever it writes a record.
+- The workflow appends/updates the symbol's row whenever it writes a record,
+  keyed by the record identity `(symbol, date, mode)`.
 - Record rows are **derived data**: `validate_records.py` checks the
   record ↔ row bijection, and `--reindex` rebuilds record rows from frontmatter.
+- Sort key: `date` ascending; same-date ties order `historical` rows first, then
+  record rows by the §3 mode priority. `--reindex` applies the same key.
 - `historical` rows (§3b) are preserved verbatim by `--reindex`; their only
   integrity check is that the report link resolves. `historical` is an
   index-only mode value; the record `mode` enum in §3 is unchanged.
+- Obsidian note: nested frontmatter (`scenarios`, `triggers`) renders as
+  non-editable "complex" properties in Obsidian's Properties pane — harmless;
+  the INDEX tables and links are the intended browsing surface.
 
 ### 3b. Historical light-index backfill (one-off)
 
@@ -199,7 +251,9 @@ covers (filename plus a quick content skim), then append one `historical` row pe
 symbol — date from the folder name, price/stance where cheaply extractable
 (else `—`), and a link to the untouched original report. No schema conversion,
 no frontmatter, and P2 scoring never reads `historical` rows. Performed once,
-LLM-assisted, during implementation.
+LLM-assisted, during implementation. If an old report is later hand-converted
+into a real record, the conversion **replaces** that report's `historical` row —
+no duplicate timeline entries.
 
 ### 4. Portfolio state format
 
@@ -217,7 +271,7 @@ holdings:
      opened: 2026-04-10, thesis_record: records/0700.HK/2026-07-03-position-review.md}
 option_legs:
   - {kind: cash-secured-put, underlying: NVDA, strike: 140, expiry: 2026-08-15,
-     qty: -1, premium: 4.20, currency: USD, opened: 2026-06-20}
+     qty: -1, premium: 4.20, currency: USD, opened: 2026-06-20, multiplier: 100}
 constraints:                  # feeds Portfolio Risk Budget verbatim
   single_name_cap_pct: 10
   cash_reserve_floor_pct: 15
@@ -228,7 +282,10 @@ constraints:                  # feeds Portfolio Risk Budget verbatim
 Contract: skills treat `portfolio.yaml` as the source of truth when present, but a
 user statement in-session **overrides** it (then the skill updates the file at the
 end with the user's confirmation). Assignment reserve for cash-secured puts is
-computed from `option_legs` (strike × 100 × |qty|), not stored.
+computed from `option_legs` (`strike × multiplier × |qty|`), not stored.
+`underlying` uses the §2 canonical form. `multiplier` defaults to 100 (US equity
+options) and must be set explicitly for markets with other contract sizes (HKEX
+per-underlying sizes; A-share ETF options are 10000).
 
 ### 5. Framework-side changes (this repo — no personal data)
 
@@ -242,9 +299,10 @@ computed from `option_legs` (strike × 100 × |qty|), not stored.
      home, read `portfolio.yaml` and the target symbols' latest records **before**
      declaring `Missing Inputs`; explicit user input overrides file state; missing
      state home falls back to current behavior.
-   - Under `Stale Check`: `Prior report / thesis anchor` resolves automatically
-     from the symbol's latest decision record (user-pasted reports still accepted
-     and take precedence when newer).
+   - In the `Stale Check` process section **and** the Output Contract block
+     `### 2. Stale Check`: the `Prior report / thesis anchor` field resolves
+     automatically from the symbol's latest decision record per the §3 tie-break
+     (user-pasted reports still accepted and take precedence when newer).
    - In `Output Contract`: add section `### 6. Decision Record` — for every symbol
      that received a decision, write/update a record per §3 and its `INDEX.md`
      row per §3a; after the user confirms an execution, backfill `action_taken`
@@ -252,8 +310,9 @@ computed from `option_legs` (strike × 100 × |qty|), not stored.
 
 3. **`skills/analyzing-stocks/SKILL.md`** — Step 7 (Produce the Unified Report):
    when a state home is configured, also emit the §3 frontmatter block at the end
-   of the report and offer to save it as a record, so standalone research runs are
-   archive-ready even without the decision workflow.
+   of the report and offer to save it as a `mode: research` record **plus its
+   `INDEX.md` row (§3a)**, so standalone research runs are archive-ready — and
+   index-consistent — without the decision workflow.
 
 4. **Validation & tests**:
    - `scripts/validate_records.py` — validates a state home (`--home PATH`, default
@@ -261,17 +320,25 @@ computed from `option_legs` (strike × 100 × |qty|), not stored.
      within vocabulary, symbols canonical, dates ISO, `thesis_record`/`source_report`
      paths exist, `INDEX.md` rows ↔ record files consistent (`historical` rows
      only need a resolving report link). `--reindex` rebuilds record-derived
-     index rows from frontmatter, preserving `historical` rows. Exits non-zero
-     with a readable violation list.
+     index rows from frontmatter, preserves `historical` rows, and mirrors
+     `related_symbols` as `See also` lines in both symbols' INDEX headers (§2).
+     Exits non-zero with a readable violation list.
    - `tests/test_decision_records.py` — contract tests in the existing style:
-     enum values in `decision-records.md` stay literally in sync with the
-     vocabulary lines in `analyzing-stocks/SKILL.md`, `report-template.md`, and
-     `investment-decision-workflow/SKILL.md`; validator passes on a good fixture
+     display-string enums in `decision-records.md` stay literally in sync with
+     the vocabulary lines in `analyzing-stocks/SKILL.md`, `report-template.md`,
+     and `investment-decision-workflow/SKILL.md` (execution-method pinned to the
+     workflow's `### 5. Execution Sheet` line), and the `mode` slug ↔ display
+     table maps both directions onto the workflow's mode names; validator passes on a good fixture
      state home and fails on targeted mutations (bad stance, non-canonical symbol,
      missing `review_by`, index row missing for a record). Fixtures use fictional
      data under `tests/fixtures/`.
-   - Wire the new reference into `validate_repo.py`'s required-file list if the
-     full profile enumerates references.
+   - Wire the new reference into `validate_repo.py`'s required-file list (the
+     full profile enumerates reference files).
+   - **Dependencies & CI**: the repo is currently stdlib-only, but the schemas
+     use nested YAML that is not sanely hand-parseable — `validate_records.py`
+     and the fixture tests take **PyYAML** as the one new dependency. Add a
+     `pip install pyyaml` step to `.github/workflows/ci.yml`; the validator must
+     stay compatible with the CI floor (Python 3.9).
 
 ### 6. Privacy & data separation
 
@@ -295,9 +362,10 @@ computed from `option_legs` (strike × 100 × |qty|), not stored.
    session on the same name → confirm it auto-reads the record + portfolio without
    re-dictation, and the stale check references the record's
    `review_by`/`next_earnings`.
-5. After the one-off backfill (§3b): every `equity_research_*` report file is
-   linked from at least one symbol's `INDEX.md`, and every `historical` row's
-   link resolves (spot-check via `validate_records.py`).
+5. After the one-off backfill (§3b): every **stock-specific** `equity_research_*`
+   report file is linked from at least one symbol's `INDEX.md` (sector notes or
+   screens with no single symbol are exempt; this is a manual acceptance check),
+   and every `historical` row's link resolves (`validate_records.py`).
 
 ## Future phases (context, not scope)
 
