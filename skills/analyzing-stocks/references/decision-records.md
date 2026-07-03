@@ -169,10 +169,11 @@ See also: [1234.HK](../1234.HK/INDEX.md)
   record ↔ row bijection and `--reindex` rebuilds them from frontmatter.
 - Sort key: `date` ascending; same-date ties order `historical` rows first,
   then record rows by mode priority. `--reindex` applies the same key.
-- `historical` rows are index-only backfill entries for old reports: preserved
-  verbatim by `--reindex`; their only integrity check is that the report link
-  resolves. If an old report is later hand-converted into a real record, the
-  conversion replaces its `historical` row.
+- `historical` rows are index-only backfill entries for old reports: cell
+  contents preserved by `--reindex` (spacing normalized); their only integrity
+  check is that the report link resolves. If an old report is later
+  hand-converted into a real record, the conversion replaces its `historical`
+  row.
 - Obsidian note: nested frontmatter renders as non-editable "complex"
   properties — harmless; INDEX tables and links are the browsing surface.
 

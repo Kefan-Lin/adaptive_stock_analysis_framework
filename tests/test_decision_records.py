@@ -276,6 +276,15 @@ class IndexValidationTests(StateHomeTestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("See also", result.stdout)
 
+    def test_related_symbol_without_directory_needs_no_see_also(self) -> None:
+        self.mutate(
+            "records/1234.HK/2026-07-02-research.md",
+            "related_symbols: [ACME]",
+            "related_symbols: [ACME, 600001.SH]",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
     def test_malformed_row_reports_itself(self) -> None:
         self.mutate(
             "records/ACME/INDEX.md",
@@ -396,6 +405,12 @@ class ReindexTests(StateHomeTestCase):
         self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
         acme = (self.home / "records" / "ACME" / "INDEX.md").read_text(encoding="utf-8")
         self.assertIn("See also: [1234.HK](../1234.HK/INDEX.md)", acme)
+
+    def test_reindex_notes_dropped_row_for_deleted_record(self) -> None:
+        (self.home / "records" / "ACME" / "2026-07-01-position-review.md").unlink()
+        result = run_validator(self.home, "--reindex")
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+        self.assertIn("dropped row 2026-07-01-position-review", result.stderr)
 
     def test_reindex_refuses_to_drop_malformed_rows(self) -> None:
         self.mutate(

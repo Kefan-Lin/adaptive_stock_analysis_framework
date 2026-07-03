@@ -386,6 +386,8 @@ class Checker:
         for meta in record_metas.values():
             related.update(meta.get("related_symbols") or [])
         for other in sorted(related):
+            if not (symbol_dir.parent / other).is_dir():
+                continue
             expected = f"[{other}](../{other}/INDEX.md)"
             if expected not in index_text:
                 self.err(index_path, f"missing See also link {expected}")
@@ -411,7 +413,11 @@ class Checker:
         return self.errors
 
 
-ROW_REQUIRED_FIELDS = ("date", "mode", "price_at_decision", "currency", "stance")
+def record_path_hint(meta: dict) -> str:
+    try:
+        return f"{as_date(meta['date']).isoformat()}-{meta['mode']}.md"
+    except Exception:
+        return "<unidentified record>"
 
 
 def record_row(meta: dict) -> "tuple[tuple[str, int, int], str]":
@@ -433,9 +439,11 @@ def record_row(meta: dict) -> "tuple[tuple[str, int, int], str]":
 def reindex(home: Path) -> "list[str]":
     """Rebuild INDEX.md files from record frontmatter.
 
-    Historical rows are preserved verbatim; an INDEX containing malformed rows
-    is left untouched (rebuilding would silently drop data). Returns notes for
-    anything skipped.
+    Historical row cell contents are preserved (spacing normalized); an INDEX
+    containing malformed rows is left untouched (rebuilding would silently
+    drop data). Record rows for deleted record files are dropped with a note;
+    writes are non-atomic (git-backed state homes are the recovery path).
+    Returns notes for anything skipped or dropped.
     """
     notes: "list[str]" = []
     records_root = home / "records"
@@ -477,16 +485,24 @@ def reindex(home: Path) -> "list[str]":
             continue
         index_path = symbol_dir / "INDEX.md"
         entries: "list[tuple[tuple[str, int, int], str]]" = []
+        old_record_keys: "set[tuple[str, str]]" = set()
         if index_path.exists():
             rows, _ = Checker.parse_index_rows(index_path)
             for cells in rows:
                 if cells[1] == "historical":
                     entries.append((index_sort_key(cells), "| " + " | ".join(cells) + " |"))
+                else:
+                    old_record_keys.add((cells[0], cells[1]))
+        new_record_keys: "set[tuple[str, str]]" = set()
         for meta in metas_by_symbol[name]:
             try:
-                entries.append(record_row(meta))
+                key, row = record_row(meta)
+                entries.append((key, row))
+                new_record_keys.add((key[0], meta["mode"]))
             except (KeyError, TypeError, ValueError):
-                notes.append(f"{name}: a record has incomplete frontmatter; its row was not rebuilt")
+                notes.append(f"{name}/{record_path_hint(meta)}: incomplete frontmatter; its row was not rebuilt")
+        for dropped in sorted(old_record_keys - new_record_keys):
+            notes.append(f"{name}: dropped row {dropped[0]}-{dropped[1]} (record file absent)")
         entries.sort(key=lambda pair: pair[0])
 
         lines = [f"# {name} — Decision Timeline", ""]
