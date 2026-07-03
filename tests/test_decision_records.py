@@ -258,7 +258,7 @@ class IndexValidationTests(StateHomeTestCase):
         )
         result = run_validator(self.home)
         self.assertEqual(result.returncode, 1)
-        self.assertIn("historical", result.stdout)
+        self.assertIn("report link does not resolve", result.stdout)
 
     def test_unsorted_rows_fail(self) -> None:
         index = self.home / "records" / "ACME" / "INDEX.md"
@@ -275,6 +275,46 @@ class IndexValidationTests(StateHomeTestCase):
         result = run_validator(self.home)
         self.assertEqual(result.returncode, 1)
         self.assertIn("See also", result.stdout)
+
+    def test_malformed_row_reports_itself(self) -> None:
+        self.mutate(
+            "records/ACME/INDEX.md",
+            "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) | — |",
+            "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) |",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("malformed row", result.stdout)
+
+    def test_empty_date_cell_is_malformed_not_ignored(self) -> None:
+        self.mutate(
+            "records/1234.HK/INDEX.md",
+            "| 2026-05-01 | historical |",
+            "|  | historical |",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("malformed row", result.stdout)
+
+    def test_duplicate_identity_rows_fail(self) -> None:
+        index = self.home / "records" / "ACME" / "INDEX.md"
+        row = "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) | — |"
+        index.write_text(index.read_text(encoding="utf-8") + row + "\n", encoding="utf-8")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("duplicate row", result.stdout)
+
+    def test_historical_link_escaping_home_fails(self) -> None:
+        outside = self.home.parent / "outside-report.md"
+        outside.write_text("outside\n", encoding="utf-8")
+        self.mutate(
+            "records/1234.HK/INDEX.md",
+            "[report](../../equity_research_2026-05-01/1234-hk-note.md) |\n| 2026-07-02",
+            "[report](../../../outside-report.md) |\n| 2026-07-02",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("report link does not resolve", result.stdout)
 
 
 if __name__ == "__main__":

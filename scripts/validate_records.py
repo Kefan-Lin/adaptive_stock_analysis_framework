@@ -12,6 +12,7 @@ import argparse
 import datetime
 import re
 import sys
+from collections import Counter
 from pathlib import Path
 
 try:
@@ -36,6 +37,13 @@ MODE_PRIORITY = {
     "position-review": 0, "event-review": 1, "existing-report": 2,
     "new-idea": 3, "research": 4,
 }
+
+
+def index_sort_key(cells: "list[str]") -> "tuple[str, int, int]":
+    kind = 0 if cells[1] == "historical" else 1
+    return (cells[0], kind, MODE_PRIORITY.get(cells[1], 99))
+
+
 ACTIONS = ("bought", "added", "reduced", "exited", "sold-put", "put-assigned", "put-closed")
 TRIGGER_TYPES = ("price", "kpi", "event")
 DIRECTIONS = ("above", "below")
@@ -243,17 +251,26 @@ class Checker:
     # ---------------- index ----------------
 
     @staticmethod
-    def parse_index_rows(path: Path) -> "list[list[str]]":
-        rows = []
+    def parse_index_rows(path: Path) -> "tuple[list[list[str]], list[str]]":
+        rows: "list[list[str]]" = []
+        malformed: "list[str]" = []
         for line in path.read_text(encoding="utf-8").splitlines():
             stripped = line.strip()
             if not stripped.startswith("|"):
                 continue
             cells = [c.strip() for c in stripped.strip("|").split("|")]
-            if len(cells) != 8 or cells[0] == "date" or set(cells[0]) <= {"-", ":", " "}:
+            if cells and cells[0] == "date":
+                continue
+            if cells and cells[0] and set(cells[0]) <= {"-", ":", " "}:
+                continue
+            if len(cells) != 8:
+                malformed.append(f"malformed row (expected 8 cells, got {len(cells)}): {stripped}")
+                continue
+            if not re.match(r"^\d{4}-\d{2}-\d{2}$", cells[0]):
+                malformed.append(f"malformed row (date cell {cells[0]!r} is not YYYY-MM-DD): {stripped}")
                 continue
             rows.append(cells)
-        return rows
+        return rows, malformed
 
     def check_index(self, symbol_dir: Path, record_metas: "dict[tuple[str, str], dict]") -> None:
         index_path = symbol_dir / "INDEX.md"
@@ -261,7 +278,9 @@ class Checker:
             if record_metas:
                 self.err(symbol_dir, "INDEX.md missing but records exist")
             return
-        rows = self.parse_index_rows(index_path)
+        rows, malformed = self.parse_index_rows(index_path)
+        for message in malformed:
+            self.err(index_path, message)
 
         row_keys = []
         for cells in rows:
@@ -269,21 +288,28 @@ class Checker:
             row_keys.append((date_cell, mode_cell))
             if mode_cell == "historical":
                 match = re.search(r"\]\(([^)]+)\)", cells[7])
-                target = (symbol_dir / match.group(1)).resolve() if match else None
-                if target is None or not target.exists():
+                resolves = False
+                if match:
+                    target = (symbol_dir / match.group(1)).resolve()
+                    try:
+                        target.relative_to(self.home.resolve())
+                        resolves = target.exists()
+                    except ValueError:
+                        resolves = False
+                if not resolves:
                     self.err(index_path, f"historical row {date_cell}: report link does not resolve")
             elif (date_cell, mode_cell) not in record_metas:
                 self.err(index_path, f"row ({date_cell}, {mode_cell}) has no record file")
+
+        for key, count in Counter(row_keys).items():
+            if count > 1:
+                self.err(index_path, f"duplicate row for ({key[0]}, {key[1]})")
 
         for key in record_metas:
             if key not in row_keys:
                 self.err(index_path, f"record {key[0]}-{key[1]}.md has no INDEX row")
 
-        def sort_key(cells: "list[str]"):
-            kind = 0 if cells[1] == "historical" else 1
-            return (cells[0], kind, MODE_PRIORITY.get(cells[1], 99))
-
-        if [sort_key(c) for c in rows] != sorted(sort_key(c) for c in rows):
+        if [index_sort_key(c) for c in rows] != sorted(index_sort_key(c) for c in rows):
             self.err(index_path, "rows are not sorted (date asc, historical first, mode priority)")
 
         index_text = index_path.read_text(encoding="utf-8")
