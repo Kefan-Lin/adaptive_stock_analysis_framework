@@ -428,5 +428,23 @@ class ReindexTests(StateHomeTestCase):
         )
 
 
+class WorkflowContractTests(unittest.TestCase):
+    def test_workflow_resolves_state_home(self) -> None:
+        workflow = read(WORKFLOW)
+        self.assertIn("### State Home", workflow)
+        self.assertIn(".investing-home", workflow)
+        self.assertIn("Never invent state", workflow)
+
+    def test_stale_check_auto_anchors_from_records(self) -> None:
+        workflow = read(WORKFLOW)
+        self.assertIn("latest decision record", workflow)
+
+    def test_output_contract_has_decision_record_section(self) -> None:
+        workflow = read(WORKFLOW)
+        self.assertIn("### 6. Decision Record", workflow)
+        self.assertIn("action_taken", workflow)
+        self.assertIn("INDEX.md", workflow)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -46,6 +46,24 @@ Before saying whether an action is executable now, perform `Live Verification`:
 
 If required live or position data is missing, output `Missing Inputs` and give only conditional sizing or conditional execution. Do not invent holdings or assume no existing exposure.
 
+### State Home
+
+Before asking the user for position or prior-report inputs, resolve the private
+state home defined in
+[decision-records](../analyzing-stocks/references/decision-records.md):
+
+1. Read `~/.investing-home`; the trimmed content is the state-home path.
+2. If the pointer file is missing, offer once per session to create it and the
+   state-home skeleton; if declined, continue stateless.
+3. If the pointer exists but the directory is unreadable, say so and continue
+   stateless. Never invent state.
+
+When the state home resolves, read `portfolio.yaml` and each target symbol's
+latest decision record (identity and tie-break rules per decision-records)
+before declaring `Missing Inputs`. An explicit in-session user statement
+overrides file state; write the correction back at session end after user
+confirmation.
+
 ## Research & Valuation Engine
 
 Use `$analyzing-stocks` when a current valuation report is missing, stale, incomplete, or needs a full rerun.
@@ -82,6 +100,11 @@ For `Existing Report to Action`, `Position Review`, and `Event Review`, use this
 ### Stale Check
 
 Decide whether the old report/thesis/action sheet can be used as the starting point.
+
+When a state home is configured, resolve `Prior report / thesis anchor` from
+the symbol's latest decision record automatically (latest by `date`, same-date
+ties by the mode priority in decision-records). A user-pasted report still
+takes precedence when newer.
 
 Check:
 
@@ -329,3 +352,17 @@ For new ideas, use the current `$analyzing-stocks` output or state that full val
 - `Review Trigger`:
 
 Keep execution language concrete. If the evidence does not support a concrete order, say `No Action` or provide conditional branches instead of forcing a trade.
+
+### 6. Decision Record
+
+When a state home is configured, persist the outcome per
+[decision-records](../analyzing-stocks/references/decision-records.md):
+
+- For every symbol that received at least a `Stance` or an `Execution Method`,
+  write or update `records/<SYMBOL>/YYYY-MM-DD-<mode>.md` (record identity
+  `(symbol, date, mode)`; same identity updates in place) and append or update
+  the symbol's `INDEX.md` row.
+- After the user confirms an execution, backfill `action_taken` and update
+  `portfolio.yaml`.
+- A pure `Missing Inputs` / conditional-only outcome creates no record.
+- Without a state home, skip this section (stateless behavior).
