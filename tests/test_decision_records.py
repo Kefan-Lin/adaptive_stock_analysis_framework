@@ -317,5 +317,35 @@ class IndexValidationTests(StateHomeTestCase):
         self.assertIn("report link does not resolve", result.stdout)
 
 
+class PortfolioValidationTests(StateHomeTestCase):
+    def test_bad_portfolio_schema_fails(self) -> None:
+        self.mutate("portfolio.yaml", "schema: portfolio/v1", "schema: portfolio/v9")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("portfolio", result.stdout)
+
+    def test_holding_missing_qty_fails(self) -> None:
+        self.mutate("portfolio.yaml", "qty: 10, ", "")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("qty", result.stdout)
+
+    def test_dangling_thesis_record_fails(self) -> None:
+        self.mutate(
+            "portfolio.yaml",
+            "thesis_record: records/ACME/2026-06-01-new-idea.md",
+            "thesis_record: records/ACME/2020-01-01-new-idea.md",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("thesis_record", result.stdout)
+
+    def test_non_canonical_holding_symbol_fails(self) -> None:
+        self.mutate("portfolio.yaml", "symbol: ACME", "symbol: acme")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("canonical", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

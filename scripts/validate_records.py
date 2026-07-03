@@ -248,6 +248,48 @@ class Checker:
         except (ValueError, TypeError):
             self.err(path, f"action_taken.date is not ISO: {action!r}")
 
+    # ---------------- portfolio ----------------
+
+    def check_portfolio(self) -> None:
+        path = self.home / "portfolio.yaml"
+        if not path.exists():
+            return
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8-sig"))
+        except yaml.YAMLError as exc:
+            self.err(path, f"portfolio is not valid YAML: {exc}")
+            return
+        if not isinstance(data, dict) or data.get("schema") != "portfolio/v1":
+            self.err(path, "portfolio schema must be portfolio/v1")
+            return
+        try:
+            as_date(data.get("as_of"))
+        except (ValueError, TypeError):
+            self.err(path, f"as_of is not ISO: {data.get('as_of')!r}")
+
+        for holding in data.get("holdings") or []:
+            if not isinstance(holding, dict):
+                self.err(path, f"holding must be a mapping: {holding!r}")
+                continue
+            missing = [k for k in ("symbol", "qty", "avg_cost", "currency") if holding.get(k) is None]
+            if missing:
+                self.err(path, f"holding {holding.get('symbol')!r} missing: {', '.join(missing)}")
+            if holding.get("symbol") is not None and not is_canonical(holding["symbol"]):
+                self.err(path, f"holding symbol {holding['symbol']!r} is not canonical")
+            thesis = holding.get("thesis_record")
+            if thesis is not None and not (self.home / str(thesis)).exists():
+                self.err(path, f"thesis_record does not resolve: {thesis!r}")
+
+        for leg in data.get("option_legs") or []:
+            if not isinstance(leg, dict):
+                self.err(path, f"option leg must be a mapping: {leg!r}")
+                continue
+            missing = [k for k in ("kind", "underlying", "strike", "expiry", "qty") if leg.get(k) is None]
+            if missing:
+                self.err(path, f"option leg missing: {', '.join(missing)}")
+            if leg.get("underlying") is not None and not is_canonical(leg["underlying"]):
+                self.err(path, f"option underlying {leg['underlying']!r} is not canonical")
+
     # ---------------- index ----------------
 
     @staticmethod
@@ -324,6 +366,7 @@ class Checker:
     # ---------------- walk ----------------
 
     def run(self) -> "list[str]":
+        self.check_portfolio()
         records_root = self.home / "records"
         if records_root.exists():
             for symbol_dir in sorted(p for p in records_root.iterdir() if p.is_dir()):
