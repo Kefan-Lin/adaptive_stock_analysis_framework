@@ -55,6 +55,9 @@ WORKFLOW_GROUP = ("candidate_tier", "valuation_zone", "execution_method", "trigg
 
 RECORD_FILENAME = re.compile(r"^(\d{4}-\d{2}-\d{2})-([a-z-]+)\.md$")
 CURRENCY = re.compile(r"^[A-Z]{3}$")
+# Anchored fences: the body stops at the first line that is exactly `---`,
+# so `---` inside a quoted YAML value on one line cannot truncate parsing.
+FRONTMATTER = re.compile(r"^---\r?\n(.*?)\r?\n---(?:\r?\n|$)", re.S)
 
 
 def is_number(value: object) -> bool:
@@ -90,12 +93,14 @@ class Checker:
     # ---------------- records ----------------
 
     def load_frontmatter(self, path: Path) -> "dict | None":
-        parts = path.read_text(encoding="utf-8").split("---", 2)
-        if len(parts) < 3 or parts[0].strip():
+        # utf-8-sig strips a leading BOM if present; identical to utf-8 otherwise.
+        text = path.read_text(encoding="utf-8-sig")
+        match = FRONTMATTER.match(text)
+        if not match:
             self.err(path, "missing YAML frontmatter fences")
             return None
         try:
-            meta = yaml.safe_load(parts[1])
+            meta = yaml.safe_load(match.group(1))
         except yaml.YAMLError as exc:
             self.err(path, f"frontmatter is not valid YAML: {exc}")
             return None
@@ -174,8 +179,15 @@ class Checker:
             self.err(path, f"related_symbols must be a list of canonical symbols, got {related!r}")
 
         source = meta.get("source_report")
-        if source is not None and not (self.home / source).exists():
-            self.err(path, f"source_report does not resolve: {source!r}")
+        if source is not None:
+            target = (self.home / str(source)).resolve()
+            try:
+                target.relative_to(self.home.resolve())
+                resolves = target.exists()
+            except ValueError:
+                resolves = False
+            if not resolves:
+                self.err(path, f"source_report does not resolve inside the state home: {source!r}")
 
         return meta
 

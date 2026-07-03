@@ -175,6 +175,53 @@ class RecordValidationTests(StateHomeTestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("source_report", result.stdout)
 
+    def test_frontmatter_with_dashes_in_quoted_value_passes(self) -> None:
+        self.mutate(
+            "records/ACME/2026-06-01-new-idea.md",
+            'text: "fictional KPI deteriorates two quarters running"',
+            'text: "fictional KPI --- deteriorates --- two quarters running"',
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+    def test_bom_prefixed_record_passes(self) -> None:
+        path = self.home / "records" / "ACME" / "2026-06-01-new-idea.md"
+        path.write_text("\ufeff" + path.read_text(encoding="utf-8"), encoding="utf-8")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+    def test_source_report_escaping_home_fails(self) -> None:
+        self.mutate(
+            "records/1234.HK/2026-07-02-research.md",
+            "source_report: equity_research_2026-05-01/1234-hk-note.md",
+            "source_report: ../outside-note.md",
+        )
+        outside = self.home.parent / "outside-note.md"
+        outside.write_text("outside\n", encoding="utf-8")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("source_report", result.stdout)
+
+    def test_bad_price_trigger_fails(self) -> None:
+        self.mutate(
+            "records/ACME/2026-06-01-new-idea.md",
+            "{type: price, level: 90, direction: below}",
+            "{type: price, level: 90, direction: sideways}",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("price trigger", result.stdout)
+
+    def test_bad_scenarios_fails(self) -> None:
+        self.mutate(
+            "records/ACME/2026-06-01-new-idea.md",
+            "scenarios: {bear: 80, base: 135, bull: 190}",
+            "scenarios: {bear: 80, base: 135}",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("scenarios", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
