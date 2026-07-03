@@ -223,5 +223,59 @@ class RecordValidationTests(StateHomeTestCase):
         self.assertIn("scenarios", result.stdout)
 
 
+class IndexValidationTests(StateHomeTestCase):
+    def test_missing_index_row_for_record_fails(self) -> None:
+        self.mutate(
+            "records/ACME/INDEX.md",
+            "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) | — |\n",
+            "",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("no INDEX row", result.stdout)
+
+    def test_index_row_without_record_fails(self) -> None:
+        self.mutate(
+            "records/ACME/INDEX.md",
+            "| 2026-07-01 | position-review |",
+            "| 2026-07-03 | position-review |",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("no record file", result.stdout)
+
+    def test_missing_index_file_fails(self) -> None:
+        (self.home / "records" / "ACME" / "INDEX.md").unlink()
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("INDEX.md missing", result.stdout)
+
+    def test_dangling_historical_link_fails(self) -> None:
+        self.mutate(
+            "records/1234.HK/INDEX.md",
+            "[report](../../equity_research_2026-05-01/1234-hk-note.md) |\n| 2026-07-02",
+            "[report](../../equity_research_2026-05-01/gone.md) |\n| 2026-07-02",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("historical", result.stdout)
+
+    def test_unsorted_rows_fail(self) -> None:
+        index = self.home / "records" / "ACME" / "INDEX.md"
+        text = index.read_text(encoding="utf-8")
+        row1 = "| 2026-06-01 | new-idea | 100.0 USD | Buy | 140 | Stage buy | [record](2026-06-01-new-idea.md) | — |"
+        row2 = "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) | — |"
+        index.write_text(text.replace(row1 + "\n" + row2, row2 + "\n" + row1), encoding="utf-8")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("sorted", result.stdout)
+
+    def test_missing_see_also_fails(self) -> None:
+        self.mutate("records/ACME/INDEX.md", "See also: [1234.HK](../1234.HK/INDEX.md)\n", "")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("See also", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

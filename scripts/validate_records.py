@@ -240,6 +240,61 @@ class Checker:
         except (ValueError, TypeError):
             self.err(path, f"action_taken.date is not ISO: {action!r}")
 
+    # ---------------- index ----------------
+
+    @staticmethod
+    def parse_index_rows(path: Path) -> "list[list[str]]":
+        rows = []
+        for line in path.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip()
+            if not stripped.startswith("|"):
+                continue
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            if len(cells) != 8 or cells[0] == "date" or set(cells[0]) <= {"-", ":", " "}:
+                continue
+            rows.append(cells)
+        return rows
+
+    def check_index(self, symbol_dir: Path, record_metas: "dict[tuple[str, str], dict]") -> None:
+        index_path = symbol_dir / "INDEX.md"
+        if not index_path.exists():
+            if record_metas:
+                self.err(symbol_dir, "INDEX.md missing but records exist")
+            return
+        rows = self.parse_index_rows(index_path)
+
+        row_keys = []
+        for cells in rows:
+            date_cell, mode_cell = cells[0], cells[1]
+            row_keys.append((date_cell, mode_cell))
+            if mode_cell == "historical":
+                match = re.search(r"\]\(([^)]+)\)", cells[7])
+                target = (symbol_dir / match.group(1)).resolve() if match else None
+                if target is None or not target.exists():
+                    self.err(index_path, f"historical row {date_cell}: report link does not resolve")
+            elif (date_cell, mode_cell) not in record_metas:
+                self.err(index_path, f"row ({date_cell}, {mode_cell}) has no record file")
+
+        for key in record_metas:
+            if key not in row_keys:
+                self.err(index_path, f"record {key[0]}-{key[1]}.md has no INDEX row")
+
+        def sort_key(cells: "list[str]"):
+            kind = 0 if cells[1] == "historical" else 1
+            return (cells[0], kind, MODE_PRIORITY.get(cells[1], 99))
+
+        if [sort_key(c) for c in rows] != sorted(sort_key(c) for c in rows):
+            self.err(index_path, "rows are not sorted (date asc, historical first, mode priority)")
+
+        index_text = index_path.read_text(encoding="utf-8")
+        related = set()
+        for meta in record_metas.values():
+            related.update(meta.get("related_symbols") or [])
+        for other in sorted(related):
+            expected = f"[{other}](../{other}/INDEX.md)"
+            if expected not in index_text:
+                self.err(index_path, f"missing See also link {expected}")
+
     # ---------------- walk ----------------
 
     def run(self) -> "list[str]":
@@ -248,10 +303,15 @@ class Checker:
             for symbol_dir in sorted(p for p in records_root.iterdir() if p.is_dir()):
                 if not is_canonical(symbol_dir.name):
                     self.err(symbol_dir, f"directory name {symbol_dir.name!r} is not a canonical symbol")
+                record_metas: dict[tuple[str, str], dict] = {}
                 for record_path in sorted(symbol_dir.glob("*.md")):
                     if record_path.name == "INDEX.md":
                         continue
-                    self.check_record(record_path, symbol_dir.name)
+                    meta = self.check_record(record_path, symbol_dir.name)
+                    match = RECORD_FILENAME.match(record_path.name)
+                    if meta is not None and match:
+                        record_metas[(match.group(1), match.group(2))] = meta
+                self.check_index(symbol_dir, record_metas)
         return self.errors
 
 
