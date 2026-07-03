@@ -25,8 +25,13 @@ Owner usage facts that shaped the design (from the owner's real research archive
   `301396`, `603186`, `01308`), so a record is **per symbol per decision**, not per
   report file.
 - Holdings span US, China A-share, and Hong Kong markets.
-- The owner chose: separate private state home (not committed to this public repo),
-  forward-only accumulation (no mandatory backfill of old reports).
+- The owner explicitly wants a **per-stock chronological view**: today one stock's
+  analyses are scattered across date folders, so its thesis evolution cannot be
+  read in one place. `records/<SYMBOL>/` plus the timeline index (§3a) is the
+  answer; the primary browsing dimension is the stock, not the session date.
+- The owner chose: separate private state home (not committed to this public
+  repo); records accumulate forward-only, plus a one-off **index-only** backfill
+  of old reports (§3b) so historical analyses are also reachable per symbol.
 
 ## Goals
 
@@ -46,9 +51,10 @@ Owner usage facts that shaped the design (from the owner's real research archive
 - No outcome scoring / calibration reports (P2) — but the record schema must carry
   enough structure (dates, prices, structured price triggers) for P2 to be a pure
   consumer.
-- No backfill tooling for the ~30 existing `equity_research_*` folders. Old reports
-  may be converted opportunistically by hand later; converted records join the
-  system with no special handling.
+- No full record-backfill of the ~30 existing `equity_research_*` folders — they
+  get index rows only (§3b). Old reports may still be converted to real records
+  opportunistically by hand later; converted records join the system with no
+  special handling.
 
 ## Design
 
@@ -79,6 +85,7 @@ anywhere), no env-var dependence, trivially portable.
 ├── portfolio.yaml              # single portfolio snapshot (see §4)
 ├── records/
 │   └── <SYMBOL>/               # canonical symbol, one dir per name
+│       ├── INDEX.md            # per-symbol decision timeline (see §3a)
 │       └── YYYY-MM-DD-<mode>.md    # one decision record (see §3)
 └── equity_research_*/          # existing report folders, unchanged
 ```
@@ -97,9 +104,12 @@ Multiple records for the same symbol accumulate over time; the latest record by
 ### 3. Decision record format
 
 One markdown file per **symbol × decision**. YAML frontmatter carries the machine
-fields; the body carries the human content (for single-name runs, the full report;
-for multi-name runs, at least the per-name conclusion/trigger/monitor blocks, with
-`source_report` linking the full session report).
+fields; the body must be **self-contained**: for single-name runs, the full
+report; for multi-name runs, that symbol's complete per-name sections. Duplicating
+content out of the session report is accepted — the records directory is the
+canonical per-stock view, and reading a symbol's directory front-to-back must
+reconstruct the thesis evolution without opening other files. `source_report`
+still links the full session report for shared context.
 
 All enum values reuse the skills' exact vocabulary (contract-tested, see §6).
 
@@ -161,6 +171,36 @@ Field rules:
   `portfolio.yaml`) only after the user confirms an execution happened.
 - Amounts are in `currency`; no FX conversion inside records.
 
+### 3a. Per-symbol timeline index
+
+Each `records/<SYMBOL>/` directory holds an `INDEX.md`: one table row per
+decision, **oldest first**, so the file reads top-to-bottom as the thesis
+evolution timeline (and renders as a clickable table in Obsidian):
+
+| date | mode | price | stance | WFV | execution | record | report |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-10 | historical | 480 HKD | Buy | — | — | — | [report](../../equity_research_2026-04-10/0700-hk-....md) |
+| 2026-07-03 | position-review | 512 HKD | Hold | 610 | No Action | [record](2026-07-03-position-review.md) | [report](../../equity_research_2026-07-03/....md) |
+
+Maintenance contract:
+
+- The workflow appends/updates the symbol's row whenever it writes a record.
+- Record rows are **derived data**: `validate_records.py` checks the
+  record ↔ row bijection, and `--reindex` rebuilds record rows from frontmatter.
+- `historical` rows (§3b) are preserved verbatim by `--reindex`; their only
+  integrity check is that the report link resolves. `historical` is an
+  index-only mode value; the record `mode` enum in §3 is unchanged.
+
+### 3b. Historical light-index backfill (one-off)
+
+The ~30 existing `equity_research_*` folders are wired into the per-symbol
+timelines **as index rows only**: for each old report, identify the symbols it
+covers (filename plus a quick content skim), then append one `historical` row per
+symbol — date from the folder name, price/stance where cheaply extractable
+(else `—`), and a link to the untouched original report. No schema conversion,
+no frontmatter, and P2 scoring never reads `historical` rows. Performed once,
+LLM-assisted, during implementation.
+
 ### 4. Portfolio state format
 
 Single `portfolio.yaml` at the state-home root — the fields the workflow's
@@ -206,8 +246,9 @@ computed from `option_legs` (strike × 100 × |qty|), not stored.
      from the symbol's latest decision record (user-pasted reports still accepted
      and take precedence when newer).
    - In `Output Contract`: add section `### 6. Decision Record` — for every symbol
-     that received a decision, write/update a record per §3; after the user
-     confirms an execution, backfill `action_taken` and update `portfolio.yaml`.
+     that received a decision, write/update a record per §3 and its `INDEX.md`
+     row per §3a; after the user confirms an execution, backfill `action_taken`
+     and update `portfolio.yaml`.
 
 3. **`skills/analyzing-stocks/SKILL.md`** — Step 7 (Produce the Unified Report):
    when a state home is configured, also emit the §3 frontmatter block at the end
@@ -218,13 +259,17 @@ computed from `option_legs` (strike × 100 × |qty|), not stored.
    - `scripts/validate_records.py` — validates a state home (`--home PATH`, default
      resolves `~/.investing-home`): YAML parses, required fields present, enums
      within vocabulary, symbols canonical, dates ISO, `thesis_record`/`source_report`
-     paths exist. Exits non-zero with a readable violation list.
+     paths exist, `INDEX.md` rows ↔ record files consistent (`historical` rows
+     only need a resolving report link). `--reindex` rebuilds record-derived
+     index rows from frontmatter, preserving `historical` rows. Exits non-zero
+     with a readable violation list.
    - `tests/test_decision_records.py` — contract tests in the existing style:
      enum values in `decision-records.md` stay literally in sync with the
      vocabulary lines in `analyzing-stocks/SKILL.md`, `report-template.md`, and
      `investment-decision-workflow/SKILL.md`; validator passes on a good fixture
      state home and fails on targeted mutations (bad stance, non-canonical symbol,
-     missing `review_by`). Fixtures use fictional data under `tests/fixtures/`.
+     missing `review_by`, index row missing for a record). Fixtures use fictional
+     data under `tests/fixtures/`.
    - Wire the new reference into `validate_repo.py`'s required-file list if the
      full profile enumerates references.
 
@@ -245,10 +290,14 @@ computed from `option_legs` (strike × 100 × |qty|), not stored.
 3. `python3 scripts/validate_records.py --home tests/fixtures/state-home` — passes;
    mutated fixtures fail with readable errors.
 4. End-to-end (manual, in a real session): create `~/.investing-home` → run
-   `investment-decision-workflow` on one real name → confirm the record file lands
-   in the state home with valid schema → run a second session on the same name →
-   confirm it auto-reads the record + portfolio without re-dictation, and the stale
-   check references the record's `review_by`/`next_earnings`.
+   `investment-decision-workflow` on one real name → confirm the record file and
+   its `INDEX.md` row land in the state home with valid schema → run a second
+   session on the same name → confirm it auto-reads the record + portfolio without
+   re-dictation, and the stale check references the record's
+   `review_by`/`next_earnings`.
+5. After the one-off backfill (§3b): every `equity_research_*` report file is
+   linked from at least one symbol's `INDEX.md`, and every `historical` row's
+   link resolves (spot-check via `validate_records.py`).
 
 ## Future phases (context, not scope)
 
