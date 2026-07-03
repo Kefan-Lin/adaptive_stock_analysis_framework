@@ -5,6 +5,10 @@ Normative doc under test: skills/analyzing-stocks/references/decision-records.md
 """
 
 import pathlib
+import shutil
+import subprocess
+import sys
+import tempfile
 import unittest
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -89,6 +93,87 @@ class RepoWiringTests(unittest.TestCase):
         self.assertIn(
             "skills/analyzing-stocks/references/decision-records.md", validator
         )
+
+
+FIXTURE_HOME = REPO_ROOT / "tests" / "fixtures" / "state-home"
+VALIDATOR = REPO_ROOT / "scripts" / "validate_records.py"
+
+
+def run_validator(home: pathlib.Path, *extra: str) -> "subprocess.CompletedProcess[str]":
+    return subprocess.run(
+        [sys.executable, str(VALIDATOR), "--home", str(home), *extra],
+        capture_output=True,
+        text=True,
+    )
+
+
+class StateHomeTestCase(unittest.TestCase):
+    """Copies the fixture home to a temp dir so mutations are isolated."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.home = pathlib.Path(self._tmp.name) / "home"
+        shutil.copytree(FIXTURE_HOME, self.home)
+        self.addCleanup(self._tmp.cleanup)
+
+    def mutate(self, relative_path: str, old: str, new: str) -> None:
+        path = self.home / relative_path
+        text = path.read_text(encoding="utf-8")
+        assert old in text, f"mutation target not found in {relative_path}: {old!r}"
+        path.write_text(text.replace(old, new), encoding="utf-8")
+
+
+class RecordValidationTests(StateHomeTestCase):
+    def test_good_fixture_home_passes(self) -> None:
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+    def test_bad_stance_fails(self) -> None:
+        self.mutate("records/ACME/2026-06-01-new-idea.md", "stance: Buy", "stance: StrongBuy")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("stance", result.stdout)
+
+    def test_missing_review_by_fails(self) -> None:
+        self.mutate("records/ACME/2026-06-01-new-idea.md", "review_by: 2026-09-01", "reviewed: 2026-09-01")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("review_by", result.stdout)
+
+    def test_non_canonical_symbol_dir_fails(self) -> None:
+        (self.home / "records" / "1234.HK").rename(self.home / "records" / "01234-HK")
+        self.mutate("records/01234-HK/2026-07-02-research.md", "symbol: 1234.HK", "symbol: 01234-HK")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("canonical", result.stdout)
+
+    def test_filename_identity_mismatch_fails(self) -> None:
+        (self.home / "records" / "ACME" / "2026-06-01-new-idea.md").rename(
+            self.home / "records" / "ACME" / "2026-06-02-new-idea.md"
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("identity", result.stdout)
+
+    def test_incomplete_workflow_group_fails(self) -> None:
+        self.mutate(
+            "records/ACME/2026-07-01-position-review.md",
+            "candidate_tier: Core Candidate\n",
+            "",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("candidate_tier", result.stdout)
+
+    def test_dangling_source_report_fails(self) -> None:
+        self.mutate(
+            "records/1234.HK/2026-07-02-research.md",
+            "source_report: equity_research_2026-05-01/1234-hk-note.md",
+            "source_report: equity_research_2026-05-01/missing.md",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("source_report", result.stdout)
 
 
 if __name__ == "__main__":

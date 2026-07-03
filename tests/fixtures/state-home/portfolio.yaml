@@ -1,0 +1,13 @@
+schema: portfolio/v1
+as_of: 2026-07-01
+base_currency: USD
+cash: {USD: 10000, HKD: 20000}
+holdings:
+  - {symbol: ACME, qty: 10, avg_cost: 101.5, currency: USD,
+     opened: 2026-06-02, thesis_record: records/ACME/2026-06-01-new-idea.md}
+option_legs:
+  - {kind: cash-secured-put, underlying: ACME, strike: 90, expiry: 2026-09-18,
+     qty: -1, premium: 3.5, currency: USD, opened: 2026-06-15, multiplier: 100}
+constraints:
+  single_name_cap_pct: 10
+  cash_reserve_floor_pct: 15
