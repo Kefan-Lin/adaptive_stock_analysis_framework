@@ -266,6 +266,9 @@ class Checker:
             as_date(data.get("as_of"))
         except (ValueError, TypeError):
             self.err(path, f"as_of is not ISO: {data.get('as_of')!r}")
+        base = data.get("base_currency")
+        if base is not None and not (isinstance(base, str) and CURRENCY.match(base)):
+            self.err(path, f"base_currency must be a 3-letter code, got {base!r}")
 
         for holding in data.get("holdings") or []:
             if not isinstance(holding, dict):
@@ -274,19 +277,43 @@ class Checker:
             missing = [k for k in ("symbol", "qty", "avg_cost", "currency") if holding.get(k) is None]
             if missing:
                 self.err(path, f"holding {holding.get('symbol')!r} missing: {', '.join(missing)}")
+            for k in ("qty", "avg_cost"):
+                if holding.get(k) is not None and not is_number(holding[k]):
+                    self.err(path, f"holding {holding.get('symbol')!r} {k} must be numeric, got {holding[k]!r}")
+            if is_number(holding.get("avg_cost")) and holding["avg_cost"] <= 0:
+                self.err(path, f"holding {holding.get('symbol')!r} avg_cost must be positive, got {holding['avg_cost']!r}")
+            cur = holding.get("currency")
+            if cur is not None and not (isinstance(cur, str) and CURRENCY.match(cur)):
+                self.err(path, f"holding {holding.get('symbol')!r} currency must be a 3-letter code, got {cur!r}")
             if holding.get("symbol") is not None and not is_canonical(holding["symbol"]):
                 self.err(path, f"holding symbol {holding['symbol']!r} is not canonical")
             thesis = holding.get("thesis_record")
-            if thesis is not None and not (self.home / str(thesis)).exists():
-                self.err(path, f"thesis_record does not resolve: {thesis!r}")
+            if thesis is not None:
+                target = (self.home / str(thesis)).resolve()
+                try:
+                    target.relative_to(self.home.resolve())
+                    resolves = target.exists()
+                except ValueError:
+                    resolves = False
+                if not resolves:
+                    self.err(path, f"thesis_record does not resolve inside the state home: {thesis!r}")
 
         for leg in data.get("option_legs") or []:
             if not isinstance(leg, dict):
                 self.err(path, f"option leg must be a mapping: {leg!r}")
                 continue
+            leg_id = f"{leg.get('underlying')!r} {leg.get('expiry')!r}"
             missing = [k for k in ("kind", "underlying", "strike", "expiry", "qty") if leg.get(k) is None]
             if missing:
-                self.err(path, f"option leg missing: {', '.join(missing)}")
+                self.err(path, f"option leg {leg_id} missing: {', '.join(missing)}")
+            for k in ("strike", "qty", "multiplier", "premium"):
+                if leg.get(k) is not None and not is_number(leg[k]):
+                    self.err(path, f"option leg {leg_id} {k} must be numeric, got {leg[k]!r}")
+            if is_number(leg.get("strike")) and leg["strike"] <= 0:
+                self.err(path, f"option leg {leg_id} strike must be positive, got {leg['strike']!r}")
+            cur = leg.get("currency")
+            if cur is not None and not (isinstance(cur, str) and CURRENCY.match(cur)):
+                self.err(path, f"option leg {leg_id} currency must be a 3-letter code, got {cur!r}")
             if leg.get("underlying") is not None and not is_canonical(leg["underlying"]):
                 self.err(path, f"option underlying {leg['underlying']!r} is not canonical")
 

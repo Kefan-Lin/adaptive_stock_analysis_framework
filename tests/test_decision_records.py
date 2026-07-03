@@ -346,6 +346,30 @@ class PortfolioValidationTests(StateHomeTestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("canonical", result.stdout)
 
+    def test_thesis_record_escaping_home_fails(self) -> None:
+        outside = self.home.parent / "outside-thesis.md"
+        outside.write_text("outside\n", encoding="utf-8")
+        self.mutate(
+            "portfolio.yaml",
+            "thesis_record: records/ACME/2026-06-01-new-idea.md",
+            "thesis_record: ../outside-thesis.md",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("thesis_record", result.stdout)
+
+    def test_non_numeric_qty_fails(self) -> None:
+        self.mutate("portfolio.yaml", "qty: 10, ", "qty: ten, ")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("must be numeric", result.stdout)
+
+    def test_bad_base_currency_fails(self) -> None:
+        self.mutate("portfolio.yaml", "base_currency: USD", "base_currency: dollars")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("base_currency", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
