@@ -411,6 +411,97 @@ class Checker:
         return self.errors
 
 
+ROW_REQUIRED_FIELDS = ("date", "mode", "price_at_decision", "currency", "stance")
+
+
+def record_row(meta: dict) -> "tuple[tuple[str, int, int], str]":
+    date = as_date(meta["date"]).isoformat()
+    mode = meta["mode"]
+    price = f"{meta['price_at_decision']} {meta['currency']}"
+    wfv = meta.get("weighted_fair_value")
+    execution = meta.get("execution_method")
+    source = meta.get("source_report")
+    report_cell = f"[report](../../{source})" if source else "—"
+    row = (
+        f"| {date} | {mode} | {price} | {meta['stance']} | "
+        f"{wfv if wfv is not None else '—'} | {execution or '—'} | "
+        f"[record]({date}-{mode}.md) | {report_cell} |"
+    )
+    return index_sort_key([date, mode]), row
+
+
+def reindex(home: Path) -> "list[str]":
+    """Rebuild INDEX.md files from record frontmatter.
+
+    Historical rows are preserved verbatim; an INDEX containing malformed rows
+    is left untouched (rebuilding would silently drop data). Returns notes for
+    anything skipped.
+    """
+    notes: "list[str]" = []
+    records_root = home / "records"
+    if not records_root.exists():
+        return notes
+    symbol_dirs = sorted(p for p in records_root.iterdir() if p.is_dir())
+
+    loader = Checker(home)  # frontmatter loader only; its errors surface in the validation pass
+    metas_by_symbol: "dict[str, list[dict]]" = {}
+    skip: "set[str]" = set()
+    for symbol_dir in symbol_dirs:
+        metas = []
+        for record_path in sorted(symbol_dir.glob("*.md")):
+            if record_path.name == "INDEX.md":
+                continue
+            meta = loader.load_frontmatter(record_path)
+            if meta is not None:
+                metas.append(meta)
+        metas_by_symbol[symbol_dir.name] = metas
+        index_path = symbol_dir / "INDEX.md"
+        if index_path.exists():
+            _, malformed = Checker.parse_index_rows(index_path)
+            if malformed:
+                skip.add(symbol_dir.name)
+                notes.append(
+                    f"{symbol_dir.name}: INDEX has malformed rows; not rebuilt (fix or remove them first)"
+                )
+
+    related_by_symbol: "dict[str, set[str]]" = {name: set() for name in metas_by_symbol}
+    for name, metas in metas_by_symbol.items():
+        for meta in metas:
+            for other in meta.get("related_symbols") or []:
+                related_by_symbol.setdefault(name, set()).add(other)
+                related_by_symbol.setdefault(other, set()).add(name)
+
+    for symbol_dir in symbol_dirs:
+        name = symbol_dir.name
+        if name in skip:
+            continue
+        index_path = symbol_dir / "INDEX.md"
+        entries: "list[tuple[tuple[str, int, int], str]]" = []
+        if index_path.exists():
+            rows, _ = Checker.parse_index_rows(index_path)
+            for cells in rows:
+                if cells[1] == "historical":
+                    entries.append((index_sort_key(cells), "| " + " | ".join(cells) + " |"))
+        for meta in metas_by_symbol[name]:
+            try:
+                entries.append(record_row(meta))
+            except (KeyError, TypeError, ValueError):
+                notes.append(f"{name}: a record has incomplete frontmatter; its row was not rebuilt")
+        entries.sort(key=lambda pair: pair[0])
+
+        lines = [f"# {name} — Decision Timeline", ""]
+        see_also = sorted(o for o in related_by_symbol.get(name, set()) if o in metas_by_symbol)
+        for other in see_also:
+            lines.append(f"See also: [{other}](../{other}/INDEX.md)")
+        if see_also:
+            lines.append("")
+        lines.append("| date | mode | price | stance | WFV | execution | record | report |")
+        lines.append("| --- | --- | --- | --- | --- | --- | --- | --- |")
+        lines.extend(row for _, row in entries)
+        index_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return notes
+
+
 def resolve_home(arg: "str | None") -> Path:
     if arg:
         return Path(arg).expanduser()
@@ -430,6 +521,10 @@ def main() -> int:
     if not home.is_dir():
         print(f"state home is not a directory: {home}", file=sys.stderr)
         return 2
+
+    if args.reindex:
+        for note in reindex(home):
+            print(f"note: {note}", file=sys.stderr)
 
     errors = Checker(home).run()
     if errors:

@@ -371,5 +371,47 @@ class PortfolioValidationTests(StateHomeTestCase):
         self.assertIn("base_currency", result.stdout)
 
 
+class ReindexTests(StateHomeTestCase):
+    def test_reindex_restores_deleted_record_row(self) -> None:
+        self.mutate(
+            "records/ACME/INDEX.md",
+            "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) | — |\n",
+            "",
+        )
+        result = run_validator(self.home, "--reindex")
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+        index = (self.home / "records" / "ACME" / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn("[record](2026-07-01-position-review.md)", index)
+
+    def test_reindex_preserves_historical_rows(self) -> None:
+        result = run_validator(self.home, "--reindex")
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+        index = (self.home / "records" / "1234.HK" / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn("| 2026-05-01 | historical |", index)
+        self.assertIn("[report](../../equity_research_2026-05-01/1234-hk-note.md)", index)
+
+    def test_reindex_writes_see_also_in_both_directions(self) -> None:
+        self.mutate("records/ACME/INDEX.md", "See also: [1234.HK](../1234.HK/INDEX.md)\n", "")
+        result = run_validator(self.home, "--reindex")
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+        acme = (self.home / "records" / "ACME" / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn("See also: [1234.HK](../1234.HK/INDEX.md)", acme)
+
+    def test_reindex_refuses_to_drop_malformed_rows(self) -> None:
+        self.mutate(
+            "records/ACME/INDEX.md",
+            "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) | — |",
+            "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) |",
+        )
+        result = run_validator(self.home, "--reindex")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("malformed row", result.stdout)
+        index = (self.home / "records" / "ACME" / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn(
+            "| 2026-07-01 | position-review | 110.0 USD | Hold | 140 | No Action | [record](2026-07-01-position-review.md) |\n",
+            index,
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
