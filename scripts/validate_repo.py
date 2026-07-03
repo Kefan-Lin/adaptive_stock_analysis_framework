@@ -23,6 +23,7 @@ FULL_REQUIRED = [
     "skills/analyzing-stocks/agents/openai.yaml",
     "skills/analyzing-stocks/references/business-moat.md",
     "skills/analyzing-stocks/references/capital-allocation.md",
+    "skills/analyzing-stocks/references/decision-records.md",
     "skills/analyzing-stocks/references/financial-diagnostics.md",
     "skills/analyzing-stocks/references/industry-playbooks.md",
     "skills/analyzing-stocks/references/industry-structure.md",
