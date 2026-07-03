@@ -121,6 +121,8 @@ Always load these references from this skill:
 - [portfolio-sizing](references/portfolio-sizing.md)
 - [portfolio-construction](references/portfolio-construction.md)
 - [report-template](references/report-template.md)
+- [decision-records](references/decision-records.md) — required only when a
+  private state home is configured (see that file's resolution rules)
 
 ## Step 5: Build Source Map and Evidence Ledger
 
@@ -184,6 +186,11 @@ Always load these references from this skill:
   - `Add-on Trigger`
   - `Trim/Exit Trigger`
   - the fixed closing line from the template
+- When a private state home is configured (see
+  [decision-records](references/decision-records.md)), emit the decision-record
+  frontmatter block at the end of the report and offer to save it as a
+  `mode: research` record plus its `INDEX.md` row, so standalone research runs
+  are archive-ready without the decision workflow.
 
 ## Hard Rules
 

@@ -446,5 +446,15 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("INDEX.md", workflow)
 
 
+class ControllerContractTests(unittest.TestCase):
+    def test_controller_loads_decision_records_reference(self) -> None:
+        self.assertIn("decision-records", read(CONTROLLER))
+
+    def test_controller_step7_emits_archive_ready_record(self) -> None:
+        controller = read(CONTROLLER)
+        self.assertIn("mode: research", controller)
+        self.assertIn("archive-ready", controller)
+
+
 if __name__ == "__main__":
     unittest.main()
