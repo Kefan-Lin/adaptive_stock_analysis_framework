@@ -167,6 +167,11 @@ See also: [1234.HK](../1234.HK/INDEX.md)
 
 - The writing skill appends/updates the row keyed by `(symbol, date, mode)`
   whenever it writes a record.
+- Write cells as the canonical render, not a prettified display: the price cell
+  is `<price_at_decision> <currency>` (e.g. `390.49 USD`) and WFV is the bare
+  number — no currency symbols, no thousands separators (`2425000 KRW`, not
+  `KRW 2,425,000`). `--reindex` canonicalizes rows to exactly this render, so
+  writing them this way keeps diffs quiet.
 - Record rows are derived data: `scripts/validate_records.py` checks the
   record ↔ row bijection and `--reindex` rebuilds them from frontmatter.
 - Sort key: `date` ascending; same-date ties order `historical` rows first,

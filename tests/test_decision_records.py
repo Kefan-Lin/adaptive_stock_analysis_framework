@@ -89,6 +89,11 @@ class VocabularySyncTests(unittest.TestCase):
         ):
             self.assertIn(expected, doc)
 
+    def test_index_row_cell_format_is_stated_for_writers(self) -> None:
+        doc = read(DECISION_RECORDS)
+        self.assertIn("<price_at_decision> <currency>", doc)
+        self.assertIn("no thousands separators", doc)
+
 
 class RepoWiringTests(unittest.TestCase):
     def test_full_profile_requires_decision_records_reference(self) -> None:
