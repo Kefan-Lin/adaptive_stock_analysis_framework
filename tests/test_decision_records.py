@@ -424,6 +424,52 @@ class IndexValidationTests(StateHomeTestCase):
         self.assertIn("report link does not resolve", result.stdout)
 
 
+class SeeAlsoSymmetryTests(StateHomeTestCase):
+    """See-also links are derived data: an INDEX link not backed by any record's
+    related_symbols is flagged, mirroring what --reindex would remove."""
+
+    def _blank_all_related_symbols(self) -> None:
+        # Both ACME records and the sole 1234.HK record declare related_symbols;
+        # blanking all three leaves the See-also lines in both INDEX files
+        # underived, so each becomes an unexpected (stale) link.
+        for rel, old in (
+            ("records/ACME/2026-06-01-new-idea.md", "related_symbols: [1234.HK]"),
+            ("records/ACME/2026-07-01-position-review.md", "related_symbols: [1234.HK]"),
+            ("records/1234.HK/2026-07-02-research.md", "related_symbols: [ACME]"),
+        ):
+            self.mutate(rel, old, "related_symbols: []")
+
+    def test_stale_see_also_without_related_symbols_fails(self) -> None:
+        self._blank_all_related_symbols()
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1, msg=result.stdout + result.stderr)
+        self.assertIn("unexpected See also link [1234.HK](../1234.HK/INDEX.md)", result.stdout)
+
+    def test_dangling_see_also_target_fails(self) -> None:
+        # ZZZZ has no directory and no record declares it as related.
+        self.mutate(
+            "records/ACME/INDEX.md",
+            "See also: [1234.HK](../1234.HK/INDEX.md)\n",
+            "See also: [1234.HK](../1234.HK/INDEX.md)\nSee also: [ZZZZ](../ZZZZ/INDEX.md)\n",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1, msg=result.stdout + result.stderr)
+        self.assertIn("unexpected See also link [ZZZZ](../ZZZZ/INDEX.md)", result.stdout)
+
+    def test_legit_see_also_pair_is_not_flagged(self) -> None:
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+        self.assertNotIn("unexpected See also link", result.stdout)
+
+    def test_reindex_clears_stale_see_also(self) -> None:
+        self._blank_all_related_symbols()
+        reindexed = run_validator(self.home, "--reindex")
+        self.assertEqual(reindexed.returncode, 0, msg=reindexed.stdout + reindexed.stderr)
+        # The gap is closed end to end: plain validate is clean afterwards too.
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+
 class PortfolioValidationTests(StateHomeTestCase):
     def test_bad_portfolio_schema_fails(self) -> None:
         self.mutate("portfolio.yaml", "schema: portfolio/v1", "schema: portfolio/v9")

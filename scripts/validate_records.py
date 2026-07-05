@@ -387,12 +387,19 @@ class Checker:
         related = set()
         for meta in record_metas.values():
             related.update(meta.get("related_symbols") or [])
-        for other in sorted(related):
-            if not (symbol_dir.parent / other).is_dir():
-                continue
+        expected_targets = {other for other in related if (symbol_dir.parent / other).is_dir()}
+        for other in sorted(expected_targets):
             expected = f"[{other}](../{other}/INDEX.md)"
             if expected not in index_text:
                 self.err(index_path, f"missing See also link {expected}")
+        for target in re.findall(r"\[([^\]]+)\]\(\.\./([^/)]+)/INDEX\.md\)", index_text):
+            other = target[1]
+            if other not in expected_targets:
+                self.err(
+                    index_path,
+                    f"unexpected See also link [{target[0]}](../{other}/INDEX.md) "
+                    f"(no record declares related_symbols: {other})",
+                )
 
     # ---------------- walk ----------------
 
