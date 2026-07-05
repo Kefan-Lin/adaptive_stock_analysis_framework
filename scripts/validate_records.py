@@ -52,6 +52,8 @@ SYMBOL_PATTERNS = {
     "US": re.compile(r"^[A-Z]{1,6}([.\-][A-Z]{1,2})?$"),
     "HK": re.compile(r"^\d{4,5}\.HK$"),
     "CN": re.compile(r"^\d{6}\.(SH|SZ|BJ)$"),
+    "KR": re.compile(r"^\d{6}\.(KS|KQ)$"),
+    "AU": re.compile(r"^[A-Z0-9]{1,6}\.AX$"),
 }
 
 REQUIRED_ALWAYS = (
@@ -133,7 +135,7 @@ class Checker:
             self.err(path, f"symbol {symbol!r} does not match directory {symbol_dir!r}")
         market = meta.get("market")
         if market not in SYMBOL_PATTERNS:
-            self.err(path, f"market must be one of US/CN/HK, got {market!r}")
+            self.err(path, f"market must be one of {'/'.join(SYMBOL_PATTERNS)}, got {market!r}")
         elif not (isinstance(symbol, str) and SYMBOL_PATTERNS[market].match(symbol)):
             self.err(path, f"symbol {symbol!r} is not canonical for market {market}")
 

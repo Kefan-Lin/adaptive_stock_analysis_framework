@@ -42,6 +42,8 @@ Directory names and the `symbol:` field use one canonical form:
   (normalize `00700` / `00883-HK` input forms); genuine 5-digit codes
   (e.g. RMB counters) stay 5 digits
 - China A-share: 6-digit code + `.SH` / `.SZ` / `.BJ` — `600519.SH`
+- Korea: 6-digit KRX code + `.KS` (KOSPI) / `.KQ` (KOSDAQ) — `000660.KS`
+- Australia: ASX code (letters/digits) + `.AX` — `BC8.AX`
 
 The canonical form is an internal identity (human-dominant convention), not a
 data-provider format: yfinance wants `600519.SS` for Shanghai, akshare wants
@@ -74,7 +76,7 @@ links the full session report when it exists in the state home (else `null`).
 ---
 schema: decision-record/v1
 symbol: ACME                  # canonical form
-market: US                    # US | CN | HK
+market: US                    # US | CN | HK | KR | AU
 date: 2026-06-01
 mode: new-idea                # new-idea | existing-report | position-review | event-review | research
 price_at_decision: 100.0

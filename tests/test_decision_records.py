@@ -83,7 +83,10 @@ class VocabularySyncTests(unittest.TestCase):
 
     def test_canonical_symbol_rules_are_stated(self) -> None:
         doc = read(DECISION_RECORDS)
-        for expected in ("`NVDA`", "`0700.HK`", "`600519.SH`", "related_symbols"):
+        for expected in (
+            "`NVDA`", "`0700.HK`", "`600519.SH`",
+            "`000660.KS`", "`BC8.AX`", "related_symbols",
+        ):
             self.assertIn(expected, doc)
 
 
@@ -121,6 +124,42 @@ class StateHomeTestCase(unittest.TestCase):
         text = path.read_text(encoding="utf-8")
         assert old in text, f"mutation target not found in {relative_path}: {old!r}"
         path.write_text(text.replace(old, new), encoding="utf-8")
+
+    def add_research_record(self, symbol: str, market: str, *, date: str = "2026-07-04") -> None:
+        """Create a minimal `research` record dir (record + INDEX) in the temp home.
+
+        Mirrors the fixture's standalone research record so the record ↔ INDEX-row
+        bijection holds; `symbol` is used verbatim so callers can exercise
+        non-canonical values.
+        """
+        symbol_dir = self.home / "records" / symbol
+        symbol_dir.mkdir(parents=True, exist_ok=True)
+        # Quote the symbol so a bare leading-zero code (e.g. 000660) reaches the
+        # validator as a string, not a YAML-parsed octal int.
+        (symbol_dir / f"{date}-research.md").write_text(
+            "---\n"
+            "schema: decision-record/v1\n"
+            f'symbol: "{symbol}"\n'
+            f"market: {market}\n"
+            f"date: {date}\n"
+            "mode: research\n"
+            "price_at_decision: 25.0\n"
+            "currency: USD\n"
+            "stance: Hold\n"
+            f"review_by: {date}\n"
+            "---\n\n"
+            f"# {symbol} — research (fixture)\n\n"
+            "Fictional standalone research record.\n",
+            encoding="utf-8",
+        )
+        (symbol_dir / "INDEX.md").write_text(
+            f"# {symbol} — Decision Timeline\n\n"
+            "| date | mode | price | stance | WFV | execution | record | report |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            f"| {date} | research | 25.0 USD | Hold | — | — | "
+            f"[record]({date}-research.md) | — |\n",
+            encoding="utf-8",
+        )
 
 
 class RecordValidationTests(StateHomeTestCase):
@@ -221,6 +260,60 @@ class RecordValidationTests(StateHomeTestCase):
         result = run_validator(self.home)
         self.assertEqual(result.returncode, 1)
         self.assertIn("scenarios", result.stdout)
+
+
+class KoreaAustraliaSymbolTests(StateHomeTestCase):
+    """Canonical symbol forms extended to Korea (KRX) and Australia (ASX)."""
+
+    def test_korea_ks_record_passes(self) -> None:
+        self.add_research_record("000660.KS", "KR")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+    def test_australia_ax_record_passes(self) -> None:
+        self.add_research_record("BC8.AX", "AU")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+    def test_korea_bare_code_is_not_canonical(self) -> None:
+        self.add_research_record("000660", "KR")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("canonical", result.stdout)
+
+    def test_australia_bare_code_is_not_canonical(self) -> None:
+        self.add_research_record("BC8", "AU")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("canonical", result.stdout)
+
+    def test_portfolio_holding_korea_ks_passes(self) -> None:
+        self.mutate(
+            "portfolio.yaml",
+            "  - {symbol: ACME, qty: 10,",
+            "  - {symbol: 000660.KS, qty: 5, avg_cost: 100.0, currency: KRW}\n"
+            "  - {symbol: ACME, qty: 10,",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+    def test_portfolio_holding_australia_bare_is_flagged(self) -> None:
+        self.mutate(
+            "portfolio.yaml",
+            "  - {symbol: ACME, qty: 10,",
+            "  - {symbol: BC8, qty: 5, avg_cost: 1.0, currency: AUD}\n"
+            "  - {symbol: ACME, qty: 10,",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("canonical", result.stdout)
+
+    def test_market_enum_error_lists_new_markets(self) -> None:
+        self.add_research_record("000660.KS", "XX")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("KR", result.stdout)
+        self.assertIn("AU", result.stdout)
 
 
 class IndexValidationTests(StateHomeTestCase):
