@@ -42,7 +42,7 @@
 - Modify: `.github/workflows/ci.yml`
 - Modify: `.gitignore`
 
-- [ ] **Step 1: Add the install step to CI**
+- [x] **Step 1: Add the install step to CI**
 
 In `.github/workflows/ci.yml`, insert between the `Show versions` step and the `Unit + contract + e2e tests` step:
 
@@ -51,7 +51,7 @@ In `.github/workflows/ci.yml`, insert between the `Show versions` step and the `
         run: pip install pyyaml
 ```
 
-- [ ] **Step 2: Ignore local virtualenvs**
+- [x] **Step 2: Ignore local virtualenvs**
 
 Append to `.gitignore` (it currently ends with `.omx/`):
 
@@ -59,7 +59,7 @@ Append to `.gitignore` (it currently ends with `.omx/`):
 .venv/
 ```
 
-- [ ] **Step 3: Create the local venv and install PyYAML**
+- [x] **Step 3: Create the local venv and install PyYAML**
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install --quiet pyyaml
@@ -68,7 +68,7 @@ python3 -m venv .venv && .venv/bin/pip install --quiet pyyaml
 
 Expected: a version number prints (e.g. `6.0.x`), no traceback.
 
-- [ ] **Step 4: Confirm existing suite still passes under the venv interpreter**
+- [x] **Step 4: Confirm existing suite still passes under the venv interpreter**
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
@@ -76,7 +76,7 @@ Expected: a version number prints (e.g. `6.0.x`), no traceback.
 
 Expected: all existing tests PASS (no new tests yet).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add .github/workflows/ci.yml .gitignore
@@ -92,7 +92,7 @@ git commit -m "Add PyYAML test dependency to CI; ignore local venv"
 - Modify: `scripts/validate_repo.py` (FULL_REQUIRED list)
 - Test: `tests/test_decision_records.py` (new file, first test classes)
 
-- [ ] **Step 1: Write the failing contract tests**
+- [x] **Step 1: Write the failing contract tests**
 
 Create `tests/test_decision_records.py`:
 
@@ -194,7 +194,7 @@ if __name__ == "__main__":
     unittest.main()
 ```
 
-- [ ] **Step 2: Run the new tests to verify they fail**
+- [x] **Step 2: Run the new tests to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records -v
@@ -202,7 +202,7 @@ if __name__ == "__main__":
 
 Expected: FAIL — `test_reference_exists` and the vocabulary tests fail (file missing), `RepoWiringTests` fails (string absent).
 
-- [ ] **Step 3: Create the normative reference doc**
+- [x] **Step 3: Create the normative reference doc**
 
 Create `skills/analyzing-stocks/references/decision-records.md` with exactly this content:
 
@@ -423,7 +423,7 @@ Without `--home`, the script resolves `~/.investing-home`. Exit code 0 = clean;
 1 = violations (printed one per line); 2 = environment error.
 ````
 
-- [ ] **Step 4: Wire the reference into the repo validator**
+- [x] **Step 4: Wire the reference into the repo validator**
 
 In `scripts/validate_repo.py`, in `FULL_REQUIRED`, insert after the
 `capital-allocation.md` line:
@@ -432,7 +432,7 @@ In `scripts/validate_repo.py`, in `FULL_REQUIRED`, insert after the
     "skills/analyzing-stocks/references/decision-records.md",
 ```
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records -v
@@ -441,7 +441,7 @@ In `scripts/validate_repo.py`, in `FULL_REQUIRED`, insert after the
 
 Expected: all new tests PASS; validator prints `Repository validation passed for profile: full`.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/analyzing-stocks/references/decision-records.md scripts/validate_repo.py tests/test_decision_records.py
@@ -457,7 +457,7 @@ git commit -m "Add decision-records reference with vocabulary contract tests"
 - Create: `scripts/validate_records.py`
 - Test: `tests/test_decision_records.py` (append `RecordValidationTests`)
 
-- [ ] **Step 1: Create the fixture state home (fictional data)**
+- [x] **Step 1: Create the fixture state home (fictional data)**
 
 `tests/fixtures/state-home/portfolio.yaml`:
 
@@ -614,7 +614,7 @@ See also: [ACME](../ACME/INDEX.md)
 Fictional legacy report referenced by a historical INDEX row.
 ```
 
-- [ ] **Step 2: Append the failing validator tests**
+- [x] **Step 2: Append the failing validator tests**
 
 Append to `tests/test_decision_records.py` (add `import shutil`, `import subprocess`, `import sys`, `import tempfile` at the top, keeping `pathlib` and `unittest`):
 
@@ -700,7 +700,7 @@ class RecordValidationTests(StateHomeTestCase):
         self.assertIn("source_report", result.stdout)
 ```
 
-- [ ] **Step 3: Run to verify the new tests fail**
+- [x] **Step 3: Run to verify the new tests fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records -v
@@ -708,7 +708,7 @@ class RecordValidationTests(StateHomeTestCase):
 
 Expected: `RecordValidationTests` all FAIL/ERROR (`validate_records.py` does not exist); earlier contract tests still pass.
 
-- [ ] **Step 4: Implement record-level validation**
+- [x] **Step 4: Implement record-level validation**
 
 Create `scripts/validate_records.py`:
 
@@ -994,7 +994,7 @@ if __name__ == "__main__":
 
 (`--reindex` is accepted but does nothing yet — implemented in Task 6.)
 
-- [ ] **Step 5: Run the tests to verify they pass**
+- [x] **Step 5: Run the tests to verify they pass**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records -v
@@ -1002,7 +1002,7 @@ if __name__ == "__main__":
 
 Expected: all PASS (including the seven `RecordValidationTests`).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add scripts/validate_records.py tests/fixtures tests/test_decision_records.py
@@ -1017,7 +1017,7 @@ git commit -m "Add state-home validator: record schema checks with fixture home"
 - Modify: `scripts/validate_records.py`
 - Test: `tests/test_decision_records.py` (append `IndexValidationTests`)
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 ```python
 class IndexValidationTests(StateHomeTestCase):
@@ -1074,7 +1074,7 @@ class IndexValidationTests(StateHomeTestCase):
         self.assertIn("See also", result.stdout)
 ```
 
-- [ ] **Step 2: Run to verify the new tests fail**
+- [x] **Step 2: Run to verify the new tests fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records.IndexValidationTests -v
@@ -1082,7 +1082,7 @@ class IndexValidationTests(StateHomeTestCase):
 
 Expected: all six FAIL (index checks not implemented).
 
-- [ ] **Step 3: Implement index validation**
+- [x] **Step 3: Implement index validation**
 
 In `scripts/validate_records.py`, add to the `Checker` class (and call from `run()`):
 
@@ -1164,7 +1164,7 @@ Change `run()` so each symbol dir collects metas keyed by identity, then calls `
         return self.errors
 ```
 
-- [ ] **Step 4: Run the full test module to verify everything passes**
+- [x] **Step 4: Run the full test module to verify everything passes**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records -v
@@ -1172,7 +1172,7 @@ Change `run()` so each symbol dir collects metas keyed by identity, then calls `
 
 Expected: all PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/validate_records.py tests/test_decision_records.py
@@ -1187,7 +1187,7 @@ git commit -m "Validate INDEX timelines: bijection, historical links, sort, See-
 - Modify: `scripts/validate_records.py`
 - Test: `tests/test_decision_records.py` (append `PortfolioValidationTests`)
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 ```python
 class PortfolioValidationTests(StateHomeTestCase):
@@ -1220,7 +1220,7 @@ class PortfolioValidationTests(StateHomeTestCase):
         self.assertIn("canonical", result.stdout)
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records.PortfolioValidationTests -v
@@ -1228,7 +1228,7 @@ class PortfolioValidationTests(StateHomeTestCase):
 
 Expected: all four FAIL.
 
-- [ ] **Step 3: Implement portfolio validation**
+- [x] **Step 3: Implement portfolio validation**
 
 Add to `Checker` (and call `self.check_portfolio()` at the start of `run()`):
 
@@ -1276,7 +1276,7 @@ Add to `Checker` (and call `self.check_portfolio()` at the start of `run()`):
                 self.err(path, f"option underlying {leg['underlying']!r} is not canonical")
 ```
 
-- [ ] **Step 4: Run the full module**
+- [x] **Step 4: Run the full module**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records -v
@@ -1284,7 +1284,7 @@ Add to `Checker` (and call `self.check_portfolio()` at the start of `run()`):
 
 Expected: all PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/validate_records.py tests/test_decision_records.py
@@ -1299,7 +1299,7 @@ git commit -m "Validate portfolio.yaml: schema, holdings, option legs, thesis li
 - Modify: `scripts/validate_records.py`
 - Test: `tests/test_decision_records.py` (append `ReindexTests`)
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 ```python
 class ReindexTests(StateHomeTestCase):
@@ -1329,7 +1329,7 @@ class ReindexTests(StateHomeTestCase):
         self.assertIn("See also: [1234.HK](../1234.HK/INDEX.md)", acme)
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records.ReindexTests -v
@@ -1337,7 +1337,7 @@ class ReindexTests(StateHomeTestCase):
 
 Expected: FAIL (`--reindex` currently a no-op, so the deleted-row test fails validation with exit 1).
 
-- [ ] **Step 3: Implement reindex**
+- [x] **Step 3: Implement reindex**
 
 Add a module-level function and wire it into `main()` before validation:
 
@@ -1421,7 +1421,7 @@ In `main()`, after resolving `home` and before validation:
         reindex(home)
 ```
 
-- [ ] **Step 4: Run the full module and the repo suite**
+- [x] **Step 4: Run the full module and the repo suite**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records -v
@@ -1430,7 +1430,7 @@ In `main()`, after resolving `home` and before validation:
 
 Expected: all PASS.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add scripts/validate_records.py tests/test_decision_records.py
@@ -1445,7 +1445,7 @@ git commit -m "Add --reindex: rebuild INDEX rows from frontmatter, preserve hist
 - Modify: `skills/investment-decision-workflow/SKILL.md`
 - Test: `tests/test_decision_records.py` (append `WorkflowContractTests`)
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 ```python
 class WorkflowContractTests(unittest.TestCase):
@@ -1466,7 +1466,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("INDEX.md", workflow)
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records.WorkflowContractTests -v
@@ -1474,7 +1474,7 @@ class WorkflowContractTests(unittest.TestCase):
 
 Expected: all three FAIL.
 
-- [ ] **Step 3: Edit the workflow skill**
+- [x] **Step 3: Edit the workflow skill**
 
 In `skills/investment-decision-workflow/SKILL.md`, make three insertions:
 
@@ -1527,7 +1527,7 @@ When a state home is configured, persist the outcome per
 - Without a state home, skip this section (stateless behavior).
 ```
 
-- [ ] **Step 4: Run the full suite**
+- [x] **Step 4: Run the full suite**
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
@@ -1535,7 +1535,7 @@ When a state home is configured, persist the outcome per
 
 Expected: all PASS (including the pre-existing workflow wiring tests).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/investment-decision-workflow/SKILL.md tests/test_decision_records.py
@@ -1550,7 +1550,7 @@ git commit -m "Wire decision workflow to the state home: read state, write recor
 - Modify: `skills/analyzing-stocks/SKILL.md`
 - Test: `tests/test_decision_records.py` (append `ControllerContractTests`)
 
-- [ ] **Step 1: Append the failing tests**
+- [x] **Step 1: Append the failing tests**
 
 ```python
 class ControllerContractTests(unittest.TestCase):
@@ -1563,7 +1563,7 @@ class ControllerContractTests(unittest.TestCase):
         self.assertIn("archive-ready", controller)
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_decision_records.ControllerContractTests -v
@@ -1571,7 +1571,7 @@ class ControllerContractTests(unittest.TestCase):
 
 Expected: both FAIL.
 
-- [ ] **Step 3: Edit the controller skill**
+- [x] **Step 3: Edit the controller skill**
 
 In `skills/analyzing-stocks/SKILL.md`:
 
@@ -1592,7 +1592,7 @@ In `skills/analyzing-stocks/SKILL.md`:
   are archive-ready without the decision workflow.
 ```
 
-- [ ] **Step 4: Run the full suite and repo validator**
+- [x] **Step 4: Run the full suite and repo validator**
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v
@@ -1601,7 +1601,7 @@ In `skills/analyzing-stocks/SKILL.md`:
 
 Expected: all PASS; validator passes.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add skills/analyzing-stocks/SKILL.md tests/test_decision_records.py
@@ -1614,21 +1614,21 @@ git commit -m "Controller emits archive-ready research records for state-home se
 
 **No repo files change.** Operational — run in this session, not a subagent. The private path below is written only into the pointer file, never into any repo file.
 
-- [ ] **Step 1: Create the pointer file** — confirm the exact private research directory with the user (the one containing their `equity_research_YYYY-MM-DD/` folders), then:
+- [x] **Step 1: Create the pointer file** — confirm the exact private research directory with the user (the one containing their `equity_research_YYYY-MM-DD/` folders), then:
 
 ```bash
 printf '%s\n' "<absolute-private-path>" > ~/.investing-home
 ```
 
-- [ ] **Step 2: Create the skeleton**
+- [x] **Step 2: Create the skeleton**
 
 ```bash
 mkdir -p "$(cat ~/.investing-home)/records"
 ```
 
-- [ ] **Step 3: Draft `portfolio.yaml` with the user** — ask for current cash, holdings (symbol/qty/avg cost/currency), open option legs, and constraints; write `<state-home>/portfolio.yaml` per the schema in `decision-records.md`, normalizing symbols to canonical form.
+- [x] **Step 3: Draft `portfolio.yaml` with the user** — ask for current cash, holdings (symbol/qty/avg cost/currency), open option legs, and constraints; write `<state-home>/portfolio.yaml` per the schema in `decision-records.md`, normalizing symbols to canonical form.
 
-- [ ] **Step 4: Validate**
+- [x] **Step 4: Validate**
 
 ```bash
 .venv/bin/python scripts/validate_records.py
@@ -1636,7 +1636,7 @@ mkdir -p "$(cat ~/.investing-home)/records"
 
 Expected: `State-home validation passed` (pointer-file resolution path exercised).
 
-- [ ] **Step 5: Recommend (optional, user's call)** — `git init` the state home as a private repo with its own `.gitignore` (`.omx/`, `.skill-staging/`, `.obsidian/workspace*`).
+- [x] **Step 5: Recommend (optional, user's call)** — `git init` the state home as a private repo with its own `.gitignore` (`.omx/`, `.skill-staging/`, `.obsidian/workspace*`).
 
 ---
 
@@ -1644,11 +1644,11 @@ Expected: `State-home validation passed` (pointer-file resolution path exercised
 
 **No repo files change.** Per spec §3b: index rows only, no schema conversion, `historical` rows excluded from future scoring.
 
-- [ ] **Step 1: Inventory** — list `<state-home>/equity_research_*/` contents; for each report file, identify covered symbols from the filename (patterns like `00883-HK-...`, `multi-name-...-<code>-<code>`) plus a quick skim of the file's header when the filename is ambiguous. Normalize to canonical symbols. Reports with no single-symbol focus (sector notes, screens) are exempt.
+- [x] **Step 1: Inventory** — list `<state-home>/equity_research_*/` contents; for each report file, identify covered symbols from the filename (patterns like `00883-HK-...`, `multi-name-...-<code>-<code>`) plus a quick skim of the file's header when the filename is ambiguous. Normalize to canonical symbols. Reports with no single-symbol focus (sector notes, screens) are exempt.
 
-- [ ] **Step 2: Append historical rows** — for each (symbol, report): ensure `records/<SYMBOL>/INDEX.md` exists (create with the standard header + table if not); append `| <folder-date> | historical | <price or —> | <stance or —> | — | — | — | [report](../../<relative-path>) |`. Extract price/stance only when trivially visible in the report header; otherwise `—`.
+- [x] **Step 2: Append historical rows** — for each (symbol, report): ensure `records/<SYMBOL>/INDEX.md` exists (create with the standard header + table if not); append `| <folder-date> | historical | <price or —> | <stance or —> | — | — | — | [report](../../<relative-path>) |`. Extract price/stance only when trivially visible in the report header; otherwise `—`.
 
-- [ ] **Step 3: Sort and validate**
+- [x] **Step 3: Sort and validate**
 
 ```bash
 .venv/bin/python scripts/validate_records.py --reindex
@@ -1656,7 +1656,7 @@ Expected: `State-home validation passed` (pointer-file resolution path exercised
 
 Expected: exit 0; historical rows preserved and sorted.
 
-- [ ] **Step 4: Acceptance check (manual)** — every stock-specific old report is linked from at least one symbol's INDEX; spot-open two INDEX files in Obsidian and confirm links resolve.
+- [x] **Step 4: Acceptance check (manual)** — every stock-specific old report is linked from at least one symbol's INDEX; spot-open two INDEX files in Obsidian and confirm links resolve.
 
 ---
 
@@ -1664,13 +1664,13 @@ Expected: exit 0; historical rows preserved and sorted.
 
 Spec Verification #4 — proves the skills actually read/write state in a real session.
 
-- [ ] **Step 1:** In a fresh session, run `investment-decision-workflow` on one real name the user picks. Confirm: it resolves the state home, reads `portfolio.yaml` without asking for holdings, and at the end writes `records/<SYMBOL>/<date>-<mode>.md` plus the INDEX row.
+- [x] **Step 1:** In a fresh session, run `investment-decision-workflow` on one real name the user picks. Confirm: it resolves the state home, reads `portfolio.yaml` without asking for holdings, and at the end writes `records/<SYMBOL>/<date>-<mode>.md` plus the INDEX row.
 
-- [ ] **Step 2:** Run `.venv/bin/python scripts/validate_records.py` — exit 0.
+- [x] **Step 2:** Run `.venv/bin/python scripts/validate_records.py` — exit 0.
 
-- [ ] **Step 3:** In a second session on the same name, confirm the stale check anchors on the new record (`review_by` / `next_earnings` referenced) with no re-dictation.
+- [x] **Step 3:** In a second session on the same name, confirm the stale check anchors on the new record (`review_by` / `next_earnings` referenced) with no re-dictation.
 
-- [ ] **Step 4:** Close out: mark the P0 tasks done in this plan file; report results (including any contract wording that confused the model in practice — feed that back as follow-up edits).
+- [x] **Step 4:** Close out: mark the P0 tasks done in this plan file; report results (including any contract wording that confused the model in practice — feed that back as follow-up edits).
 
 ---
 
