@@ -88,6 +88,23 @@ def is_canonical(symbol: object) -> bool:
     return isinstance(symbol, str) and any(p.match(symbol) for p in SYMBOL_PATTERNS.values())
 
 
+def derive_see_also(metas_by_symbol: "dict[str, list[dict]]") -> "dict[str, set[str]]":
+    """Bidirectional See-also map: S links O when any record on either side
+    declares the other in related_symbols, keeping only targets whose symbol
+    directory exists (the mapping's keys). The single derivation shared by
+    validation (expected links) and --reindex (written links), so the two
+    cannot drift.
+    """
+    links: "dict[str, set[str]]" = {name: set() for name in metas_by_symbol}
+    for name, metas in metas_by_symbol.items():
+        for meta in metas:
+            for other in meta.get("related_symbols") or []:
+                if other in links:
+                    links[name].add(other)
+                    links[other].add(name)
+    return links
+
+
 class Checker:
     def __init__(self, home: Path) -> None:
         self.home = home
@@ -343,7 +360,12 @@ class Checker:
             rows.append(cells)
         return rows, malformed
 
-    def check_index(self, symbol_dir: Path, record_metas: "dict[tuple[str, str], dict]") -> None:
+    def check_index(
+        self,
+        symbol_dir: Path,
+        record_metas: "dict[tuple[str, str], dict]",
+        see_also: "set[str]",
+    ) -> None:
         index_path = symbol_dir / "INDEX.md"
         if not index_path.exists():
             if record_metas:
@@ -384,21 +406,17 @@ class Checker:
             self.err(index_path, "rows are not sorted (date asc, historical first, mode priority)")
 
         index_text = index_path.read_text(encoding="utf-8")
-        related = set()
-        for meta in record_metas.values():
-            related.update(meta.get("related_symbols") or [])
-        expected_targets = {other for other in related if (symbol_dir.parent / other).is_dir()}
-        for other in sorted(expected_targets):
+        for other in sorted(see_also):
             expected = f"[{other}](../{other}/INDEX.md)"
             if expected not in index_text:
                 self.err(index_path, f"missing See also link {expected}")
         for target in re.findall(r"\[([^\]]+)\]\(\.\./([^/)]+)/INDEX\.md\)", index_text):
             other = target[1]
-            if other not in expected_targets:
+            if other not in see_also:
                 self.err(
                     index_path,
                     f"unexpected See also link [{target[0]}](../{other}/INDEX.md) "
-                    f"(no record declares related_symbols: {other})",
+                    f"(not derived from any record's related_symbols)",
                 )
 
     # ---------------- walk ----------------
@@ -407,7 +425,9 @@ class Checker:
         self.check_portfolio()
         records_root = self.home / "records"
         if records_root.exists():
-            for symbol_dir in sorted(p for p in records_root.iterdir() if p.is_dir()):
+            symbol_dirs = sorted(p for p in records_root.iterdir() if p.is_dir())
+            metas_by_dir: "dict[str, dict[tuple[str, str], dict]]" = {}
+            for symbol_dir in symbol_dirs:
                 if not is_canonical(symbol_dir.name):
                     self.err(symbol_dir, f"directory name {symbol_dir.name!r} is not a canonical symbol")
                 record_metas: dict[tuple[str, str], dict] = {}
@@ -418,7 +438,14 @@ class Checker:
                     match = RECORD_FILENAME.match(record_path.name)
                     if meta is not None and match:
                         record_metas[(match.group(1), match.group(2))] = meta
-                self.check_index(symbol_dir, record_metas)
+                metas_by_dir[symbol_dir.name] = record_metas
+            # See-also expectations come from the same bidirectional map
+            # --reindex writes, so index checks run after all records load.
+            see_also = derive_see_also(
+                {name: list(metas.values()) for name, metas in metas_by_dir.items()}
+            )
+            for symbol_dir in symbol_dirs:
+                self.check_index(symbol_dir, metas_by_dir[symbol_dir.name], see_also[symbol_dir.name])
         return self.errors
 
 
@@ -481,12 +508,7 @@ def reindex(home: Path) -> "list[str]":
                     f"{symbol_dir.name}: INDEX has malformed rows; not rebuilt (fix or remove them first)"
                 )
 
-    related_by_symbol: "dict[str, set[str]]" = {name: set() for name in metas_by_symbol}
-    for name, metas in metas_by_symbol.items():
-        for meta in metas:
-            for other in meta.get("related_symbols") or []:
-                related_by_symbol.setdefault(name, set()).add(other)
-                related_by_symbol.setdefault(other, set()).add(name)
+    related_by_symbol = derive_see_also(metas_by_symbol)
 
     for symbol_dir in symbol_dirs:
         name = symbol_dir.name
@@ -515,7 +537,7 @@ def reindex(home: Path) -> "list[str]":
         entries.sort(key=lambda pair: pair[0])
 
         lines = [f"# {name} — Decision Timeline", ""]
-        see_also = sorted(o for o in related_by_symbol.get(name, set()) if o in metas_by_symbol)
+        see_also = sorted(related_by_symbol[name])
         for other in see_also:
             lines.append(f"See also: [{other}](../{other}/INDEX.md)")
         if see_also:

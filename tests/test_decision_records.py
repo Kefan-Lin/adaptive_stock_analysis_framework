@@ -469,6 +469,25 @@ class SeeAlsoSymmetryTests(StateHomeTestCase):
         result = run_validator(self.home)
         self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
 
+    def test_one_sided_relation_reindex_and_validate_agree(self) -> None:
+        # Only 1234.HK declares the relation. --reindex derives See-also
+        # bidirectionally, so it still writes the [1234.HK] link into ACME's
+        # INDEX; validate must accept exactly the state reindex produces.
+        self.mutate(
+            "records/ACME/2026-06-01-new-idea.md",
+            "related_symbols: [1234.HK]", "related_symbols: []",
+        )
+        self.mutate(
+            "records/ACME/2026-07-01-position-review.md",
+            "related_symbols: [1234.HK]", "related_symbols: []",
+        )
+        reindexed = run_validator(self.home, "--reindex")
+        self.assertEqual(reindexed.returncode, 0, msg=reindexed.stdout + reindexed.stderr)
+        acme = (self.home / "records" / "ACME" / "INDEX.md").read_text(encoding="utf-8")
+        self.assertIn("See also: [1234.HK](../1234.HK/INDEX.md)", acme)
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
 
 class PortfolioValidationTests(StateHomeTestCase):
     def test_bad_portfolio_schema_fails(self) -> None:
