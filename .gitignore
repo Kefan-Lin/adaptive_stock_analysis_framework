@@ -8,3 +8,7 @@ dist/
 .venv/
 .venv-p3/
 .cache_inflection/
+reports/*.html
+reports/backtest_results*.json
+reports/holdout_results.json
+*.log
