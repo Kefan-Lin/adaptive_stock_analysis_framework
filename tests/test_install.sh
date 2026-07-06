@@ -43,6 +43,7 @@ assert_symlink_target "$CODEx_DEST/investment-decision-workflow" "$REPO_ROOT/ski
 assert_symlink_target "$CODEx_DEST/analyzing-stocks" "$REPO_ROOT/skills/analyzing-stocks"
 assert_symlink_target "$CODEx_DEST/analyzing-banks" "$REPO_ROOT/skills/analyzing-banks"
 assert_symlink_target "$CODEx_DEST/analyzing-utilities-telecom" "$REPO_ROOT/skills/analyzing-utilities-telecom"
+assert_symlink_target "$CODEx_DEST/debating-stocks" "$REPO_ROOT/skills/debating-stocks"
 
 bash "$REPO_ROOT/install/install-claude.sh" --dest "$CLAUDE_DEST" analyzing-stocks analyzing-software-platforms
 assert_symlink_target "$CLAUDE_DEST/analyzing-stocks" "$REPO_ROOT/skills/analyzing-stocks"
