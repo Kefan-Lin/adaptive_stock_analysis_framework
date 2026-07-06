@@ -1,4 +1,13 @@
-from inflection_discovery.harness.metrics import wilson, fmt_ci
+from inflection_discovery.harness.metrics import wilson, fmt_ci, mean, median
+
+
+def test_median_odd_even_and_empty():
+    assert median([3, 1, 2]) == 2
+    assert median([4, 1, 3, 2]) == 2.5
+    assert median([5]) == 5
+    assert median([None, 2, None, 4]) == 3  # None-skipping, matches mean's contract
+    m = median([])
+    assert m != m  # NaN on empty, like mean
 
 
 def _cand(ticker, d_score, engine="B"):

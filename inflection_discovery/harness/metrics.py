@@ -24,3 +24,12 @@ def fmt_ci(k: int, n: int) -> str:
 def mean(xs) -> float:
     xs = [x for x in xs if x is not None]
     return sum(xs) / len(xs) if xs else float("nan")
+
+
+def median(xs) -> float:
+    xs = sorted(x for x in xs if x is not None)
+    n = len(xs)
+    if n == 0:
+        return float("nan")
+    mid = n // 2
+    return xs[mid] if n % 2 else (xs[mid - 1] + xs[mid]) / 2.0
