@@ -16,7 +16,7 @@ from inflection_discovery.contract import validate
 from inflection_discovery.harness.llm_backtest import load_llm_scores
 from inflection_discovery.scorecard import score as sc
 
-REPORTS = Path(__file__).resolve().parents[1] / "reports"
+REPORTS = Path(__file__).resolve().parents[2] / "reports"
 
 NO_DATA = {"WBA"}  # delisted on yfinance — both engines exclude (see report)
 

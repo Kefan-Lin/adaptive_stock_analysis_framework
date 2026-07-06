@@ -1,7 +1,17 @@
 """Live akshare adapter (network). Verifies the foreign-filer coverage win:
 BILI/NOK get a real B signal that the PIT SEC pipeline could not produce."""
+import os
+
+import pytest
+
 from inflection_discovery.live.akshare_source import live_fundamentals
 from inflection_discovery.live.discover import score_one_live
+
+# Every test here fetches live akshare data.
+pytestmark = pytest.mark.skipif(
+    not os.environ.get("RUN_NETWORK_TESTS"),
+    reason="live-network test; set RUN_NETWORK_TESTS=1 to run",
+)
 
 
 def test_akshare_bili_has_quarterly_fundamentals():

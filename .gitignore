@@ -6,4 +6,5 @@ tmp/
 dist/
 .omx/
 .venv/
+.venv-p3/
 .cache_inflection/

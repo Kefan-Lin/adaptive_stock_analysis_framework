@@ -1,9 +1,18 @@
 import math
+import os
 
 import pandas as pd
+import pytest
 
 from inflection_discovery.ashare.data import _num, _pct, ashare_fundamentals
 from inflection_discovery.ashare.discover import score_one_ashare
+
+# This module mixes offline parsing (unguarded) with live-network A-share
+# fetches; gate only the network tests so the parsing assertions run offline.
+_network = pytest.mark.skipif(
+    not os.environ.get("RUN_NETWORK_TESTS"),
+    reason="live-network test; set RUN_NETWORK_TESTS=1 to run",
+)
 
 
 # --- offline parsing ---
@@ -20,6 +29,7 @@ def test_pct_parsing():
 
 
 # --- network: real A-share data ---
+@_network
 def test_ashare_fundamentals_cosco():
     f = ashare_fundamentals("601919")  # 中远海控
     assert not f.empty and len(f) >= 8
@@ -27,6 +37,7 @@ def test_ashare_fundamentals_cosco():
     assert len(gm) >= 4 and -1.0 < float(gm.iloc[-1]) < 1.0
 
 
+@_network
 def test_score_one_ashare():
     c = score_one_ashare("601919")
     assert c.scores["B"] is not None
