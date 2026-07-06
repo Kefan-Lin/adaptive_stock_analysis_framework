@@ -11,7 +11,8 @@ import argparse
 import json
 from pathlib import Path
 
-from .harness import run_backtest, summarize, run_battery
+from .harness.backtest import run_backtest, summarize
+from .harness.canary import run_battery
 
 
 def main() -> int:

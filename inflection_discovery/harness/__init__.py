@@ -1,3 +1,3 @@
-from .metrics import wilson, fmt_ci  # noqa: F401
-from .backtest import run_backtest, summarize, build_control_universe  # noqa: F401
-from .canary import run_battery  # noqa: F401
+"""Harness namespace. Submodules import pandas; import them directly
+(`from inflection_discovery.harness import metrics`) so that pandas-free
+consumers can import the package without the heavy dependencies."""

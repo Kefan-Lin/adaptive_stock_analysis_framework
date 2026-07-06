@@ -30,3 +30,12 @@ def test_A_gate_triggers_on_drawdown():
 def test_A_gate_rejects_shallow_drawdown():
     a = score_A(_prices(85.0))   # 15% drawdown
     assert a["gate"] is False
+
+
+def test_yoy_skips_negative_prior_base():
+    import pandas as pd
+    from inflection_discovery.scorecard.score import _yoy
+    idx = pd.to_datetime(["2024-03-31", "2025-03-31"])
+    s = pd.Series([-10.0, 5.0], index=idx)
+    out = _yoy(s)
+    assert idx[1] not in out.index, "negative prior base must not produce a sign-flipped growth rate"

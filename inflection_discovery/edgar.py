@@ -45,6 +45,14 @@ def get_json(url: str, use_cache: bool = True) -> Any:
     cp = _cache_path(url)
     if use_cache and cp.exists():
         return json.loads(cp.read_text())
+    # Only reached on a live request (cache miss / use_cache=False), so cache
+    # hits above are unaffected. Raise outside the retry loop so this surfaces
+    # immediately instead of being swallowed as a transport error and retried.
+    if "contact@example.com" in SEC_USER_AGENT:
+        raise RuntimeError(
+            "Set SEC_USER_AGENT='<project> <your-email>' before live SEC calls "
+            "(SEC fair-access policy; the placeholder UA gets throttled)."
+        )
     last_err: Optional[str] = None
     for attempt in range(HTTP_RETRIES):
         try:

@@ -20,8 +20,11 @@ def split_adjustment_canary() -> Dict:
     """NVDA had a 10:1 split (ex-date 2024-06-10). As-of 2024-05-01 the price an
     observer saw was pre-split (~$800-900), NOT the back-adjusted ~$83. If our
     series shows ~$83 we are leaking the future split into a pre-split date."""
-    p = pit_prices("NVDA", "2024-05-01")
-    factor = future_split_factor("NVDA", "2024-05-01")
+    try:
+        p = pit_prices("NVDA", "2024-05-01")
+        factor = future_split_factor("NVDA", "2024-05-01")
+    except Exception as exc:  # noqa: BLE001 - a fetch failure is a failed canary, not a crash
+        return {"name": "split_adjustment", "passed": False, "detail": f"unreachable: {exc}"}
     if p is None or p.empty:
         return {"name": "split_adjustment", "passed": False, "detail": "no NVDA data"}
     last = float(p["Close"].iloc[-1])
@@ -38,8 +41,11 @@ def filing_lag_canary() -> Dict:
     """MU FQ3'24 (period end 2024-05-30) was filed 2024-06-27. As-of 2024-06-20
     that quarter must be ABSENT (filed after T); as-of 2024-06-30 it must be
     PRESENT. Tests the filed<=T selector and that we don't peek at unfiled data."""
-    before = pit_fundamentals("MU", "2024-06-20").revenue_q
-    after = pit_fundamentals("MU", "2024-06-30").revenue_q
+    try:
+        before = pit_fundamentals("MU", "2024-06-20").revenue_q
+        after = pit_fundamentals("MU", "2024-06-30").revenue_q
+    except Exception as exc:  # noqa: BLE001 - a fetch failure is a failed canary, not a crash
+        return {"name": "filing_lag", "passed": False, "detail": f"unreachable: {exc}"}
     target = pd.Timestamp("2024-05-30")
     has_before = any(abs((i - target).days) <= 3 for i in before.index)
     has_after = any(abs((i - target).days) <= 3 for i in after.index)
@@ -89,8 +95,11 @@ def survivorship_canary() -> Dict:
     """A ticker with no reconstructable PIT data must be DETECTED as unavailable
     (so the backtest can count it as excluded-no-data) — never fabricated into a
     silent pass. Uses an invalid symbol as a stand-in for a vanished listing."""
-    avail = data_available("ZZZZ_NOT_A_TICKER", "2023-06-30")
-    p = pit_prices("ZZZZ_NOT_A_TICKER", "2023-06-30")
+    try:
+        avail = data_available("ZZZZ_NOT_A_TICKER", "2023-06-30")
+        p = pit_prices("ZZZZ_NOT_A_TICKER", "2023-06-30")
+    except Exception as exc:  # noqa: BLE001 - a fetch failure is a failed canary, not a crash
+        return {"name": "survivorship", "passed": False, "detail": f"unreachable: {exc}"}
     passed = (avail is False) and (p is None or p.empty)
     return {
         "name": "survivorship",

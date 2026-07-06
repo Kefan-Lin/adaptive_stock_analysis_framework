@@ -47,7 +47,9 @@ def _yoy(series: pd.Series, tol_days: int = tx.YOY_TOLERANCE_DAYS,
         if not cand:
             continue
         prior = min(cand, key=lambda i: abs((i - target).days))
-        if series[prior] not in (0, 0.0):
+        # Growth vs a non-positive base is sign-flipped/meaningless (loss-making
+        # EPS, negative OCF): only compute the ratio off a strictly positive base.
+        if series[prior] > 0:
             g = series[e] / series[prior] - 1.0
             out[e] = max(clip_range[0], min(clip_range[1], g))
     return pd.Series(out).sort_index()
