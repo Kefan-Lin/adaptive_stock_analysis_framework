@@ -114,3 +114,17 @@ def pit_prices(ticker: str, T, lookback_days: Optional[int] = None) -> pd.DataFr
         out = out[out.index > (T - pd.Timedelta(days=lookback_days))]
     cols = [c for c in ("Open", "High", "Low", "Close", "Volume") if c in out]
     return out[cols]
+
+
+def median_dollar_adv(ticker: str, T, days: int = 60) -> Optional[float]:
+    """Median daily dollar volume over the trailing `days` sessions as of T.
+
+    Point-in-time (uses pit_prices). None when no data — callers treat None as
+    'cannot verify liquidity' and exclude, counting the name, never guessing.
+    """
+    df = pit_prices(ticker, T, lookback_days=days * 3)
+    if df is None or df.empty or "Close" not in df or "Volume" not in df:
+        return None
+    tail = df.tail(days)
+    dv = (tail["Close"] * tail["Volume"]).dropna()
+    return float(dv.median()) if len(dv) else None

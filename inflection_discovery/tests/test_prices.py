@@ -27,3 +27,16 @@ def test_forward_return_no_gap_unchanged(monkeypatch):
     monkeypatch.setattr(prices, "_raw_history", lambda t: _frame(dates, [10.0] * len(dates)))
     r = prices.forward_return("OK", pd.Timestamp("2022-06-30"), months=12)
     assert r == pytest.approx(0.0)
+
+
+def test_median_dollar_adv(monkeypatch):
+    dates = pd.bdate_range("2024-01-01", "2024-06-30")
+    df = pd.DataFrame({"Close": [10.0] * len(dates), "Volume": [200_000] * len(dates)}, index=dates)
+    monkeypatch.setattr(prices, "pit_prices", lambda t, T, lookback_days=None: df)
+    adv = prices.median_dollar_adv("X", pd.Timestamp("2024-06-30"))
+    assert adv == pytest.approx(2_000_000.0)
+
+
+def test_median_dollar_adv_empty(monkeypatch):
+    monkeypatch.setattr(prices, "pit_prices", lambda t, T, lookback_days=None: pd.DataFrame())
+    assert prices.median_dollar_adv("X", pd.Timestamp("2024-06-30")) is None

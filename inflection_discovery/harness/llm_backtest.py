@@ -30,9 +30,10 @@ import pandas as pd
 from ..benchmark import load_benchmark, BenchmarkRow
 from ..contract import Candidate, make_routing
 from ..engine_b import score_one
-from ..pit.prices import pit_prices
+from ..pit.prices import pit_prices, median_dollar_adv
 from ..scorecard import score as sc
 from ..scorecard import taxonomy as tx
+from ..scorecard.taxonomy import MIN_ADV_USD
 from .backtest import build_control_universe, summarize
 
 LLM_SCORES = Path(__file__).resolve().parents[2] / "reports" / "llm_scores.json"
@@ -129,16 +130,26 @@ def _eval_engine(row: BenchmarkRow, control: Sequence[str], top_n: int,
         ctrl = _control_scored(control, dt, with_text)
         universe = ([self_c] if self_c is not None else []) + ctrl
         eligible = _rank(list(universe), top_n)
-        topn = eligible[:top_n]
+        # Liquidity haircut (audit I1): drop names below the ADV floor from top-N;
+        # None ADV => cannot verify => excluded. Same rule and floor as engine B.
+        eligible_liquid = [
+            c for c in eligible
+            if (median_dollar_adv(c.ticker, dt) or 0.0) >= MIN_ADV_USD
+        ]
+        topn = eligible_liquid[:top_n]
         in_top = self_c is not None and any(c.ticker == row.ticker and c.engine == self_c.engine for c in topn)
         rank = next((c.rank for c in topn if c.ticker == row.ticker and c.engine == (self_c.engine if self_c else "")), None)
+        elig_pre_adv = self_c is not None and any(
+            c.ticker == row.ticker and c.engine == self_c.engine for c in eligible)
+        illiquid = bool(elig_pre_adv and (median_dollar_adv(row.ticker, dt) or 0.0) < MIN_ADV_USD)
         out["dates"].append({
             "as_of": str(pd.Timestamp(dt).date()),
             "is_hit_date": hit_date is not None and pd.Timestamp(dt) == pd.Timestamp(hit_date),
             "in_topN": bool(in_top),
             "rank": rank,
-            "eligible_n": len(eligible),
+            "eligible_n": len(eligible_liquid),
             "gate": bool(self_c.passes_A_gate) if self_c else None,
+            "illiquid": illiquid,
             "scores": self_c.scores if self_c else None,
         })
         out["no_data"] = out["no_data"] and (not had_data)

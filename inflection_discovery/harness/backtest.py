@@ -15,8 +15,9 @@ import pandas as pd
 from ..config import CACHE_DIR
 from ..benchmark import load_benchmark, BenchmarkRow
 from ..engine_b import score_universe
-from ..pit.prices import forward_return
+from ..pit.prices import forward_return, median_dollar_adv
 from ..pit.universe import data_available, random_control_tickers
+from ..scorecard.taxonomy import MIN_ADV_USD
 from .metrics import mean, wilson
 
 
@@ -58,16 +59,26 @@ def evaluate_row(row: BenchmarkRow, control: Sequence[str], top_n: int,
         eligible, scored = score_universe(universe, dt, top_n=top_n, with_text=with_text)
         had_data = any(c.ticker == row.ticker for c in scored)
         self_c = next((c for c in scored if c.ticker == row.ticker), None)
-        topn = eligible[:top_n]
+        # Liquidity haircut: drop names below the ADV floor from top-N eligibility
+        # (None ADV => cannot verify => excluded). Applied AFTER D-ranking so the
+        # top-N is the tradable cut, not the raw score order (audit I1).
+        eligible_liquid = [
+            c for c in eligible
+            if (median_dollar_adv(c.ticker, dt) or 0.0) >= MIN_ADV_USD
+        ]
+        topn = eligible_liquid[:top_n]
         in_top = any(c.ticker == row.ticker for c in topn)
         rank = next((c.rank for c in topn if c.ticker == row.ticker), None)
+        elig_pre_adv = any(c.ticker == row.ticker for c in eligible)
+        illiquid = bool(elig_pre_adv and (median_dollar_adv(row.ticker, dt) or 0.0) < MIN_ADV_USD)
         out["dates"].append({
             "as_of": str(pd.Timestamp(dt).date()),
             "is_hit_date": hit_date is not None and pd.Timestamp(dt) == pd.Timestamp(hit_date),
             "in_topN": in_top,
             "rank": rank,
-            "eligible_n": len(eligible),
+            "eligible_n": len(eligible_liquid),
             "gate": bool(self_c.passes_A_gate) if self_c else None,
+            "illiquid": illiquid,
             "scores": self_c.scores if self_c else None,
         })
         out["no_data"] = out["no_data"] and (not had_data)
@@ -141,6 +152,16 @@ def summarize(results: Dict) -> Dict:
                "no_data": r["no_data"]} for r in find("borderline")]
 
     excluded = [r["ticker"] + " (" + r["label"] + ")" for r in rows if r["no_data"]]
+    # Names dropped from top-N solely by the ADV liquidity floor: had data, were
+    # otherwise eligible (A gate + trap ceiling) on some date, illiquid there, and
+    # never surfaced in top-N. Reported alongside excluded_no_data (audit I1).
+    excluded_illiquid = [
+        r["ticker"] + " (" + r["label"] + ")"
+        for r in rows
+        if not r["no_data"]
+        and any(d.get("illiquid") for d in r["dates"])
+        and not any(d["in_topN"] for d in r["dates"])
+    ]
 
     # --- forward return: hits vs control base rate (6 & 12 mo) ---
     def fwd(tkrs_dates, months):
@@ -192,6 +213,7 @@ def summarize(results: Dict) -> Dict:
         "controls_plumbing": ctrl_detail,
         "borderline": border,
         "excluded_no_data": excluded,
+        "excluded_illiquid": excluded_illiquid,
         "forward_return": {
             "picks_6m": picks_fwd6, "picks_12m": picks_fwd12,
             "control_6m": ctrl_fwd6, "control_12m": ctrl_fwd12,

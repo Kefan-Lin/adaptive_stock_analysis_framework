@@ -51,6 +51,11 @@ TRAP_RUNWAY_QUARTERS = 4.0     # < 4 quarters of cash at current burn is risky
 TRAP_SECULAR_CAGR = -0.05      # 3y revenue CAGR below this, with no acceleration, = secular
 TRAP_CEILING = 0.70            # candidates above this trap_risk are not surfaced
 
+# Spec §Metrics liquidity haircut: names whose trailing-60-session median
+# dollar volume at the as-of date is below this are not costlessly investable;
+# they are excluded from top-N eligibility and counted as excluded_illiquid.
+MIN_ADV_USD = 1_000_000.0
+
 # --- D (ranker) and composite weights ---
 D_W_A = 0.4                    # weight on depressedness (reduced: rank on the turn, not raw cheapness)
 D_W_TURN = 0.5                 # weight on max(B, C)
