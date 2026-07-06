@@ -34,7 +34,7 @@ def test_run_battery_survives_fetch_failure(monkeypatch):
     monkeypatch.setattr(canary, "data_available", boom_net)
 
     results = run_battery()
-    assert isinstance(results, list) and len(results) == 4
+    assert isinstance(results, list) and len(results) == 5
     lag = next(r for r in results if r["name"] == "filing_lag")
     assert lag["passed"] is False
     assert "unreachable" in lag["detail"]

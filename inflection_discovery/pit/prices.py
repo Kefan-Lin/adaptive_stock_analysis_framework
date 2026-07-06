@@ -63,7 +63,10 @@ def forward_return(ticker: str, T, months: int = 6) -> Optional[float]:
     Split-consistent (both ends from the same back-adjusted series). Dead-name
     handling: if the series ends before T+months (delisting), the last available
     close is used, so a name that collapsed contributes its realized loss rather
-    than silently dropping (review SC1).
+    than silently dropping (review SC1). A 30+ day trading gap inside the window
+    is treated as death of the original line: the window is truncated at the last
+    pre-gap close so a recycled ticker's successor prices never mask the collapse
+    (audit I2).
     """
     T = _to_ts(T)
     df = _raw_history(ticker)
@@ -72,6 +75,16 @@ def forward_return(ticker: str, T, months: int = 6) -> Optional[float]:
     start = df["Close"].asof(T)
     end_date = T + pd.DateOffset(months=months)
     fut = df[df.index <= end_date]["Close"].dropna()
+    window = fut[fut.index > T]
+    if len(window) >= 2:
+        gaps = window.index.to_series().diff()
+        breaks = gaps[gaps > pd.Timedelta(days=30)]
+        if not breaks.empty:
+            # Trading stopped for 30+ days inside the window: the original line
+            # died (delisting); anything after is a recycled ticker or relist.
+            # Realize the loss at the last pre-gap close (spec: dead names
+            # contribute their realized loss, never a successor's prices).
+            fut = window[window.index < breaks.index[0]]
     if pd.isna(start) or start <= 0 or fut.empty:
         return None
     return float(fut.iloc[-1] / start - 1.0)

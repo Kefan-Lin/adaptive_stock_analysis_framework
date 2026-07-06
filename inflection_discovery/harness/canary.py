@@ -11,7 +11,7 @@ from typing import Dict, List
 
 import pandas as pd
 
-from ..pit.prices import pit_prices, future_split_factor
+from ..pit.prices import pit_prices, future_split_factor, forward_return
 from ..pit.fundamentals import pit_fundamentals
 from ..pit.universe import data_available
 
@@ -109,10 +109,22 @@ def survivorship_canary() -> Dict:
     }
 
 
+def recycled_ticker_canary() -> Dict:
+    """BBBY died in 2023; its ticker was recycled. forward_return must realize
+    the collapse, not the successor entity's price."""
+    try:
+        r = forward_return("BBBY", pd.Timestamp("2022-06-30"), months=12)
+        ok = r is not None and r <= -0.9
+        return {"name": "recycled_ticker", "passed": bool(ok), "detail": f"BBBY 12m fwd = {r}"}
+    except Exception as exc:  # noqa: BLE001 - a fetch failure is a failed canary, not a crash
+        return {"name": "recycled_ticker", "passed": False, "detail": f"unreachable: {exc}"}
+
+
 def run_battery() -> List[Dict]:
     return [
         split_adjustment_canary(),
         filing_lag_canary(),
         injected_future_value_canary(),
         survivorship_canary(),
+        recycled_ticker_canary(),
     ]
