@@ -1,7 +1,29 @@
-# Inflection Discovery — Backtest & A-vs-B Comparison Report (v3)
+# Inflection Discovery — Backtest & A-vs-B Comparison Report (v4)
 
-**Date:** 2026-06-29 (v3: full Implementation-A backtest) · 2026-06-28 (v2: engine B)
+**Date:** 2026-07-06 (v4: ADV + dead-name metric rerun; holdout downgrade) ·
+2026-06-29 (v3: full Implementation-A backtest) · 2026-06-28 (v2: engine B)
 **Run:** engines A (LLM judgment) and B (code), point-in-time, free data only.
+
+> **v4 (2026-07-06):** metrics rerun with the **ADV liquidity haircut**
+> (`MIN_ADV_USD`, per-scan-date illiquid exclusion) and **dead-name gap
+> truncation** (dead tickers floored at their last pre-gap close, plus a
+> recycled-ticker canary), and **holdout claims downgraded per an independent
+> methodology audit**. The A-vs-B tables below are regenerated from the fresh
+> `reports/backtest_results_v4_top{10,20}.json`; the holdout section is
+> regenerated from `reports/holdout_results.json` (now carrying median,
+> leave-N-out, and ceiling-boundary fields). Numbers that moved vs v3 are shown
+> `old → new` the first time they appear. v3 mechanism/narrative text is kept
+> where still true.
+>
+> **Two things the rerun changed, stated plainly.** (1) The A-vs-B hit/trap
+> **levels rose vs the v3 table** because v4 runs on the current harness (median
+> eligible ≈ 14/date, vs the ~28 the v3 table quoted); the *engine ordering* (A ≥
+> B on both recall and trap-avoidance) is unchanged. (2) The **ADV haircut fired
+> but changed no headline count** — it flagged AXTI illiquid on two *intermediate
+> B-scan* dates and excluded **0 labeled evaluation rows** (`excluded_illiquid: []`
+> at every hit-date, both engines, both cuts). It is in the pipeline and active,
+> not yet load-bearing on this tiny benchmark.
+
 **v3 change — the headline:** Implementation A (LLM) is now run through a **full
 comparison-mode backtest** on the same harness as B (previously only a one-name
 spot-check). A is scored from the same frozen ≤T EDGAR corpus B reads; results in
@@ -12,12 +34,15 @@ strengthening.
 > **What these numbers are.** A discrimination smoke-test, **not** generalizable
 > accuracy. n = 14 positive events / 9 trap tickers; every rate has a wide Wilson
 > CI; treat as directional. Point-in-time integrity is verified at runtime (the
-> 4-canary leak battery passes against live yfinance/EDGAR; 135 tests pass).
-> **A's rates are additionally a memorization-contaminated UPPER BOUND** — the
-> model already knows these outcomes (see the A-vs-B section for why that is still
-> a fair *engine* comparison).
+> leak/recycled-ticker canary battery passes against live yfinance/EDGAR; the
+> `inflection_discovery` + contract suites pass). **A's rates are additionally a
+> memorization-contaminated UPPER BOUND** — the model already knows these outcomes
+> (see the A-vs-B section for why that is still a fair *engine* comparison).
+> **v4:** prices now pass through the ADV liquidity haircut and dead-name gap
+> truncation before any metric is computed (see the v4 note above for their
+> effect on this run).
 
-## A-vs-B full backtest (v3) — LLM judgment vs code features
+## A-vs-B full backtest (v4) — LLM judgment vs code features
 
 **The experiment.** Hold *everything* shared with engine B fixed — the depressed-base
 A gate, price momentum, the identical 65-name control arm, the `score_D`
@@ -30,32 +55,59 @@ is ranked against the **same** depressed-peer backdrop B faces. So the A−B del
 is a clean ablation of *engine*, with byte-identical metric math.
 
 **Validation that it's apples-to-apples:** B, recomputed inside the A harness,
-**reproduces the stored v2 numbers exactly** (top-10 3/14 hit, 4/9 trap; top-20
-6/14, 5/9). The only moving part is the engine.
+reproduces its own stored numbers, and both engines share a byte-identical control
+arm (**control = 65**, median eligible = 14/date) and metric layer. The only moving
+part is the engine.
 
-| Metric (control=65, median elig ≈ 28-30) | **A (LLM)** | **B (code)** |
+**A-vs-B, v4 rerun** (`backtest_results_v4_top{10,20}.json`; post-ADV, post-dead-name).
+`old → new` = v3 table → v4:
+
+| Metric (control=65, median elig = 14) | **A (LLM)** | **B (code)** |
 |---|---|---|
-| Hit rate · top-10 | **5/14 = 36%** (CI 16–61%) | 3/14 = 21% (CI 8–48%) |
-| Hit rate · top-20 | **10/14 = 71%** (CI 45–88%) | 6/14 = 43% (CI 21–67%) |
-| Trap rate · top-10 *(lower=better)* | **0/9 = 0%** (CI 0–30%) | 4/9 = 44% (CI 19–73%) |
-| Trap rate · top-20 *(lower=better)* | **2/9 = 22%** (CI 6–55%) | 5/9 = 56% (CI 27–81%) |
-| Fwd return 12m, top-10 picks vs control | **+78%** vs +14% (5 picks) | +78% vs +18% (3 picks) |
+| Hit rate · top-10 | **10/14 = 71%** (36% → 71%) | 7/14 = 50% (21% → 50%) |
+| Hit rate · top-20 | **12/14 = 86%** (71% → 86%) | 11/14 = 79% (43% → 79%) |
+| Trap rate · top-10 *(lower=better)* | **2/9 = 22%** (0% → 22%) | 5/9 = 56% (44% → 56%) |
+| Trap rate · top-20 *(lower=better)* | **2/9 = 22%** (unch.) | 6/9 = 67% (56% → 67%) |
+| Fwd 12m, top-10 picks vs control | **+69%** vs +28% (n=10) | +69% vs +13% (n=7) |
+| Fwd 12m, top-20 picks vs control | **+82%** vs +38% (n=12) | +82% vs +42% (n=11) |
+| `excluded_no_data` / `excluded_illiquid` | 2 (WBA×2) / **0** | 2 (WBA×2) / **0** |
 
-**A beats B on both axes** — higher recall *and* fewer traps — and the wider
-recall did **not** dilute pick quality (top-10 picks still +78% at 12m).
+**A beats B on both axes** — higher recall *and* fewer traps, unchanged as an
+*ordering* from v3 even though the v4 harness lifts both engines' absolute levels.
+Two honest reads of the v4 numbers:
 
-**Where A's recall edge comes from (top-20 adds vs B):** BB, NOK, COHR, INTC-2025
-— exactly the **narrative / earnings-judgment** names a text-free keyword counter
-can't see. (LITE and NFLX come in already at top-10.)
+- **The levels rose because the cut got easier, not because the engines improved.**
+  With median eligible = 14, "top-10" is ~top-70% and "top-20" is essentially the
+  whole eligible field — so top-20 hit rates near 80–86% are *weakly selective by
+  construction*, and top-20 trap rates (A 22%, B 67%) are the more informative half
+  of the table. The **A−B gap** (recall +21pp top-10; trap −34pp top-10, −44pp
+  top-20) is the load-bearing result, not the levels.
+- **Forward-return convergence.** At v4 the two engines' *pick* baskets return
+  almost identically (top-10 +69% both; top-20 +82% both) — the A edge is in
+  **which controls they beat** (A control +28%/+38% vs B +13%/+42%) and in
+  **trap-avoidance**, not in a higher headline pick return. The v3 "+78%" pick
+  figure is superseded by these n-labelled basket means.
+- **`excluded_illiquid` = 0 at every hit-date** (shown beside `excluded_no_data` =
+  2, the two WBA dates with no reconstructable XBRL). The ADV haircut *did* fire —
+  AXTI is flagged illiquid on its 2024-03-30 and 2024-08-30 B-scan dates — but
+  those are non-hit intermediate scans, so no labeled row was dropped.
+
+**Where A's recall edge comes from (v4):** BB, NOK, COHR, INTC-2025 — exactly the
+**narrative / earnings-judgment** names a text-free keyword counter can't see —
+now clear **at top-10** on the v4 harness (they were v3's top-20 adds). A's only
+top-10 shortfalls are META and BILI, which arrive by top-20; A's *sole* structural
+misses are **SNDK** and **AMD-2016**, both A-gate failures (post-spin <3y history;
+already-rallied by the as-of date), not judgment errors.
 
 **Where A's trap edge comes from:** A's *structural-decline* judgment avoids
-**LUMN, PTON, FOSL** — the traps B's mechanical filter surfaced. PTON is the
-clearest win: B rewarded its gross-margin bounce off a negative trough; A reads
-"margin up **but revenue still −22% YoY and still burning cash → not a real
-turn**."
+**LUMN, PTON, FOSL** — the traps B's mechanical filter surfaced (B flags all three
+in v4; A flags none). PTON is the clearest win: B rewarded its gross-margin bounce
+off a negative trough; A reads "margin up **but revenue still −22% YoY and still
+burning cash → not a real turn**." The A−B trap gap widens at top-20 (A 2/9 vs B
+6/9): B additionally surfaces BBBY there, A does not.
 
-**A's two residual misses are the intrinsically-hard cases the design predicted**,
-not tuning failures:
+**A's two residual flags are the intrinsically-hard cases the design predicted**
+(ZM dead-money, INTC-fakestart — 2/9 at both cuts), not tuning failures:
 - **ZM (dead money):** growth stalled at ~+3% with a **pristine** balance sheet, so
   there is *no* trap signal — only "no turn." Its deep depressedness (A≈0.99)
   pulls D into the top-20 despite a low turn. This is the limit of the 40%
@@ -85,90 +137,154 @@ not tuning failures:
 *(The one-name spot-validation below is now subsumed by this full backtest; it is
 kept as a worked example of the C-judgment mechanism.)*
 
-## Post-cutoff holdout (v3) — the memorization confound, removed
+## Post-cutoff holdout — the memorization confound, tested (v4: downgraded)
 
-The single honest gap in the section above is that the LLM **already knows** the
-benchmark outcomes. So I ran a genuine holdout where the outcome is blind: **T =
+The single honest gap in the A-vs-B section is that the LLM **already knows** the
+benchmark outcomes. So a holdout was run where the outcome is blind: **T =
 2026-01-31** (after the model's Jan-2026 knowledge cutoff), a **fresh** universe of
-16 depressed names sampled at random with **zero overlap** with the benchmark or
-control arm, scored A (LLM) and B from ≤T evidence **before any forward return was
-computed** (`reports/llm_holdout_scores.json`), then measured the realized **~5-month
-forward return** (T → today). Most names are obscure micro-caps I have near-zero
-priors on, so this is about as blind as a free-data test gets.
+16 depressed names with **zero overlap** with the benchmark or control arm, scored A
+(LLM) and B from ≤T evidence, then measured the realized **~5-month forward return**
+(T → today). Most names are obscure micro-caps with near-zero priors, so this is
+about as blind as a free-data test gets.
+
+> **v4 downgrade (read this first).** An independent methodology audit found the v3
+> holdout claims **overstated**. The "cleared arm +125%" spread is carried by two
+> names and evaporates under leave-two-out; one of the two "cleared" winners (LESL)
+> sits **exactly on the trap ceiling** and only clears via an inclusive `≤`; and the
+> run itself is **not reproducible** (no committed seed/script/≤T evidence) and
+> **survivorship-filtered**. The corrected C1/C2 blocks below restate the result as
+> **suggestive, not validated**. The regenerated `holdout_results.json` (median /
+> leave-N-out / ceiling-boundary) is the source of truth for every number here.
 
 | ~5-month forward return (T=2026-01-31) | result |
 |---|---|
-| **A top-5 by D** (CNS, TRIP, FIP, LEAT, FLUT) | **+2%** |
-| **B top-5 by D** (TRIP, FLUT, JBGS, SYRA, LEAT) | **+113%** |
-| Depressed-pool base rate (all 16) | **+72%** |
-| **A trap-CLEARED** (10 eligible names) | **+125%** |
-| **A trap-FLAGGED** (6 names, trap>ceiling) | **−17%** |
+| **A top-5 by D** (CNS, TRIP, FIP, LEAT, FLUT) | mean **−0.6%** · median **+3.2%** |
+| **B top-5 by D** (TRIP, FLUT, JBGS, SYRA, LEAT) | mean **+137%** · median **+3.2%** |
+| Depressed-pool base rate (all 16) | mean **+83%** · median **0.0%** |
+| **A trap-CLEARED** (10 names, trap ≤ 0.70) | mean **+141%** · **median +10.8%** |
+| **A trap-FLAGGED** (6 names, trap > 0.70) | mean **−12.1%** · median −13.7% |
 
-**This is a deliberately unflattering, honest result, and it splits cleanly:**
+**v4 correction (C1) — the "cleared +141%" number does not survive contact with the
+data.** These figures are recomputed from the regenerated `holdout_results.json`,
+which now carries median / leave-N-out / ceiling-boundary fields; the v3 draft's
+`+125% / −17% / +113% / +72%` were the earlier point estimates and are superseded
+by the numbers above (the metric-layer rerun shifted them). Stated verbatim from
+the JSON:
 
-- **What generalized — the binary trap / quality screen.** A's *cleared* names
-  returned **+125%** vs *flagged* **−17%** — a real out-of-sample spread. Of the 6
-  A flagged as un-investable (shells / SPAC-collapses / serial diluters), 5 were
-  flat-to-disastrous (JTAI −75%, SGLY −45%, AMST −40%, ALDA/ANKM ~0%); the one miss
-  was GUTS (+62%, a flagged shell that popped anyway). So "don't step on the dead
-  shells" — the core ¬trap judgment — **held up blind**.
-- **What did NOT generalize — the fine-grained D ranking.** A's top-5 (+2%)
-  **underperformed both B's top-5 (+113%) and the pool (+72%)**. The biggest winners
-  (LESL +600%, SYRA +575%, PVLA +93%) were ranked **low** by A (ranks 6, 7, 10):
-  its quality/safety tilt pushed the volatile small-caps down, and two of its actual
-  picks fell (FLUT −37%, FIP −15%). The benchmark's headline "A out-ranks B" did
-  **not** reproduce here.
-- **Regime + n caveat (load-bearing).** A +72% pool base rate over 5 months is a
-  **violent small-cap/junk rally** — exactly the regime where the junkiest survivors
-  rip and quality lags. With **n = 5 picks over one 5-month regime**, neither
-  engine's *ranking* result is statistically meaningful. B's win is essentially one
-  name (SYRA, +575%, in B's top-5 but not A's).
+- **The cleared arm's mean is +141% but its median is +10.8%.** The mean is an
+  artifact of two names: **SYRA (+697.5%)** and **LESL (+640.9%)**. Drop those two
+  (`leave_two_out_mean`) and the cleared arm collapses to **+8.7%**; drop only the
+  top one (`leave_one_out_mean`, SYRA) and it is **+78.9%**. A ten-name arm whose
+  mean falls from +141% to +8.7% on removing two names is **carried entirely by two
+  observations**.
+- **LESL is a threshold-boundary artifact.** Its trap score is **0.70 = TRAP_CEILING
+  exactly**, so it is "cleared" only because the gate is inclusive (`trap ≤ ceiling`).
+  It is one of exactly two names sitting *on* the boundary — `ceiling_boundary =
+  [LESL, WVVIP]`. Flip the gate to strict (`trap < ceiling`) and both move to
+  flagged: the split goes to **cleared +97.6% vs flagged +69.3%** (median +10.8% vs
+  −7.0%) — i.e. the mean spread nearly closes and rests on which side of 0.70 two
+  names land. And had **LESL + SYRA** landed flagged, the split **inverts** to
+  **cleared +8.7% vs flagged +158%** — the screen would look actively harmful.
+- **Conclusion.** The blind trap-screen result is **two-name-fragile and
+  threshold-boundary-dependent — suggestive, not validated.** The *median* cleared
+  (+10.8%) vs flagged (−13.7%) spread is the more honest read of the signal, and
+  even that rides on a 16-name, single-regime sample. (The flagged arm itself is
+  the steadier half: 5 of 6 were flat-to-disastrous — JTAI −72.5%, SGLY −45.5%,
+  AMST −27.3%, ALDA/ANKM ~0% — the lone exception GUTS +72.6%; "don't step on the
+  dead shells" is where the residual out-of-sample signal actually lives.)
+- **The fine-grained D *ranking* did not generalize either.** A's top-5 (mean
+  −0.6%, median +3.2%) trailed both B's top-5 (mean +137%) and the pool (mean +83%);
+  the biggest winners (SYRA, LESL, PVLA +99%) were ranked **low** by A (ranks 7, 6,
+  10). But both engines' medians are ~+3%, and B's mean "win" is essentially the
+  single SYRA +697.5% name — so neither *ranking* result is statistically meaningful
+  at n = 5 over one 5-month **junk-rally** regime.
 
-**Honest bottom line.** The memorization-free holdout confirms A's **trap/quality
-discrimination** carries real out-of-sample signal, but provides **no evidence** that
-A's *ranking* adds forward alpha over B or the depressed universe — and one (noisy,
-regime-specific) data point where it underperformed by tilting too defensive. So the
-benchmark's A-beats-B *ranking* margin should be read as **memorization-flavored, not
-confirmed**; the durable, generalizing win is the qualitative **"is this a real
-business or a trap"** call. A larger, multi-regime holdout is the real way to settle
-the ranking question. *(Reproduce: `reports/run_holdout.py`.)*
+**C2 — reproducibility disclaimer (this holdout cannot be reproduced as run).**
+The original 2026-01-31 holdout was **not** committed reproducibly:
 
-## Headline: the selectivity correction
+- **No sampling script, seed, or source list was committed** for the 16-name draw,
+  and the ≤T evidence file the scores were read from **is not in the repo** — so the
+  as-of inputs cannot be regenerated.
+- **Scores and results landed in the same commit**, so the claim that scoring
+  preceded outcome measurement rests on **author attestation**, not on a
+  commit-ordering artifact.
+- **The pool is survivorship-filtered**: only names still resolving today could be
+  drawn, which mechanically **inflates the +83% pool base rate** (the failures that
+  delisted between T and today are invisible). The "cleared beats flagged" and "pool
+  ripped" numbers all inherit this bias.
+- **Requirement going forward:** future holdouts **must** use
+  `reports/sample_holdout.py` — now committed, **seeded**, and **sha256-attested**
+  over the drawn universe — so the sample, its provenance, and the ≤T cutoff are
+  independently checkable. This run predates that tool and should be read as an
+  **illustrative single-shot probe, not a validated holdout.**
 
-The single most important v2 finding. v1 used a 30-name control arm (median ~13
-eligible/date), so "top-10" was barely selective (~top 77%) and the 57% hit rate
-was **inflated**. With a realistic universe (65-name control arm, **median ~28
-eligible/date**), top-10 is a real cut (~top 36%):
+## Measurement notes (disclosures)
 
-| Metric (control=65, median eligible≈28) | top-10 | top-20 |
+Short list of measurement choices that bound how the numbers above should be read:
+
+- **Price-only returns.** Forward returns are price-only; the control arm holds
+  dividend-heavy names, so the control is **understated by ~1.6pp** vs a
+  total-return basis. This makes the pick-vs-control spread **conservative** (the
+  gap would narrow slightly, not widen, on total return).
+- **"top-10 picks +78%" (v3) was a 5-name mean, not a basket.** The v3 headline was
+  the mean of the **5 labeled positives that surfaced**, not a tradeable 10-name
+  basket; **ex-NVDA the other 4 average +59.6%**. v4 reports n-labelled basket means
+  (top-10 +69%, top-20 +82%) instead.
+- **Control arm built once, at ref-date 2023-06-30.** The 65-name control is scored
+  at a single reference date, so its **effective n is 53–65 by pick date** (names
+  without reconstructable data at earlier as-of dates drop out). Using one late
+  ref-date makes the control **conservative** (survivors, later window).
+- **Engine-A scores are hand-authored frozen files.** A's comparison-mode scores are
+  read from committed JSON (`reports/llm_scores.json`, `llm_holdout_scores.json`) —
+  there is **no runtime LLM loop**; the harness ranks fixed author-attested scores
+  against the live control arm. This is what makes A's rates a memorization upper
+  bound, and why a live seeded holdout (C2) is the open item.
+
+## The selectivity correction (v2 → v4)
+
+The single most important v2 finding, updated for the v4 harness. v1 used a 30-name
+control arm (median ~13 eligible/date), so "top-10" was barely selective and the
+57% hit rate was **inflated**. The 65-name control arm fixed that; on the **v4
+harness the median eligible field is 14/date**, so "top-10" ≈ top-70% and "top-20"
+is essentially the whole field — read the **trap** row and the **A−B gap**, not the
+hit-rate levels.
+
+**Engine B alone, v4** (`backtest_results_v4_top{10,20}.json`; `old → new` =
+v3 table → v4):
+
+| Metric — engine B (control=65, median elig = 14) | top-10 | top-20 |
 |---|---|---|
-| **Hit rate** | **3/14 = 21%** (CI 8–48%) | 6/14 = 43% (CI 21–67%) |
-| **Trap rate** | 4/9 = 44% (CI 19–73%) | 5/9 = 56% (CI 27–81%) |
-| Mean lead (hits) | ~5 months | ~5 months |
-| **Forward return 12m, picks vs control** | **+78% vs +18%** | +74% vs +12% |
-| Forward return 6m, picks vs control | +23% vs +18% | +33% vs +10% |
+| **Hit rate** | **7/14 = 50%** (21% → 50%) | 11/14 = 79% (43% → 79%) |
+| **Trap rate** *(lower=better)* | **5/9 = 56%** (44% → 56%) | 6/9 = 67% (56% → 67%) |
+| Mean lead (hits) | ~4.9 months | ~5.1 months |
+| **Fwd 12m, picks vs control** | **+69% vs +13%** (n=7) | +82% vs +42% (n=11) |
+| Fwd 6m, picks vs control | +40% vs +14% | +51% vs +47% |
+| `excluded_no_data` / `excluded_illiquid` | 2 (WBA×2) / **0** | 2 (WBA×2) / **0** |
 
 **The honest read:** the D ranker does **not** reliably push the specific labeled
-inflections into the absolute top-10 against ~28 other depressed names — it only
-captures the strongest-signal ones (AXTI, MU-2023, NVDA at top-10; +LITE, MU-2016,
-NFLX at top-20). BUT the names it **does** rank at the top went on to **beat the
-depressed universe by ~60pp at 12 months** (+78% vs +18%). So D carries real
-economic signal at the top even though binary top-10 recall is modest. As a
-"the top of the ranking outperforms" tool it works; as a "catches exactly these 14
-names in top-10" tool it is weak — and only the realistic universe reveals that.
+inflections into the absolute top-10 against the other depressed names — B captures
+the strongest-signal ones (AXTI, BB, LITE, MU×2, NVDA, NFLX at top-10) and adds the
+narrative/foreign names (NOK, META, COHR, BILI) only at top-20. BUT the names it
+ranks at the top went on to **beat the depressed universe by ~56pp at 12 months**
+(+69% vs +13% top-10). So D carries real economic signal at the top even though the
+levels are inflated by the shallow cut. As a "the top of the ranking outperforms"
+tool it works; the trap row (B 5/9 top-10, 6/9 top-20) is where it structurally
+struggles — which is the whole reason engine A exists.
 
-### Per-name (control=65)
+### Per-name (engine B, control=65, v4)
 
-- **top-10 hits:** AXTI, MU (2023), NVDA. **top-20 adds:** LITE, MU (2016), NFLX.
-- **Persistent misses:** BB/NOK/BILI (narrative or foreign-filer — see below),
-  SNDK (post-spin, A gate can't assess <3y history), AMD-2016/INTC-2025 (already
-  rallied by the test date — A gate discipline), META/COHR (depressed + real but
-  out-ranked by peers on D).
-- **Traps correctly avoided (top-10):** BBBY, LUMN (weak turn → rank too low to
-  surface), LCID, FFAI, BLNK (cash-burn → caught by the runway filter).
-- **Traps still flagged (top-10):** PTON (margin bounce off a COVID-writedown
-  trough), ZM (dead-money, flat+profitable), INTC-fakestart, FOSL. These are the
-  genuinely hard cases (below).
+- **B top-10 hits:** AXTI, BB, LITE, MU (2023), MU (2016), NVDA, NFLX.
+  **B top-20 adds:** NOK, META, COHR, BILI (narrative / foreign-filer names that
+  need a lower selectivity bar to surface under code features).
+- **Persistent misses:** SNDK (post-spin, A gate can't assess <3y history),
+  AMD-2016 (already rallied → gate discipline), INTC-2025 (B ranks it below the
+  cut).
+- **Traps correctly avoided:** BBBY (top-10; enters B's top-20), LCID, FFAI, BLNK
+  (cash-burn → caught by the runway filter).
+- **Traps B still flags as turns:** LUMN, PTON (margin bounce off a COVID-writedown
+  trough), FOSL, ZM (dead-money, flat+profitable), INTC-fakestart — the mechanical
+  filter's structural blind spot, and exactly the set A clears (it flags only ZM +
+  INTC). These are the genuinely hard cases (below).
 
 ## A vs B on the narrative (C) dimension
 
@@ -199,9 +315,9 @@ holdout names). v2 delivers the A-vs-B *spot validation*, not a full A backtest.
 
 ## Improvements delivered (the v1 "next steps")
 
-1. **Control universe enlarged** (30→65; median eligible 13→28) → the selectivity
-   correction above. *Done.* (Sampling free tickers caps the count; 200+ needs a
-   much larger random draw, noted.)
+1. **Control universe enlarged** (30→65) → the selectivity correction above.
+   *Done.* (Median eligible/date is 14 on the v4 harness; sampling free tickers
+   caps the count; 200+ needs a much larger random draw, noted.)
 2. **C precision** — boilerplate-stripped, word-boundary keywords. *Done.*
 3. **Foreign-filer path** — added IFRS (`ifrs-full`) fundamentals + 20-F/6-K text.
    *Partial by reality:* NOK files IFRS but **no quarterly XBRL** (annual/semi
@@ -223,9 +339,9 @@ holdout names). v2 delivers the A-vs-B *spot validation*, not a full A backtest.
    capital-allocation history — which is exactly **Implementation A's (LLM)
    domain**. The real next step is to test whether A's qualitative ¬trap judgment
    beats B's mechanical filter, not to hand-tune more thresholds (which would
-   overfit this tiny benchmark). **→ v3 update: now tested.** A's full backtest
-   drops the trap rate to 0% (top-10) / 22% (top-20) vs B's 44% / 56% — A's
-   structural-decline judgment flags LUMN/PTON/FOSL that B missed. See the A-vs-B
+   overfit this tiny benchmark). **→ tested (v4 numbers).** A's full backtest holds
+   the trap rate at **2/9 = 22%** at both cuts vs B's **56% / 67%** — A's
+   structural-decline judgment clears LUMN/PTON/FOSL that B flags. See the A-vs-B
    section at the top.
 5. **Paid point-in-time dataset — not done (blocked by the free-data decision).**
    This would lift the probe to a generalizable accuracy estimate and revive the
@@ -234,42 +350,56 @@ holdout names). v2 delivers the A-vs-B *spot validation*, not a full A backtest.
 
 ## Remaining honest limitations
 
-- **Weak top-10 discrimination among depressed peers** (hit 21%): D surfaces the
-  strongest inflections but doesn't out-rank all depressed peers; forward-return
-  suggests the top of the ranking still outperforms.
+- **Shallow cut on a small field.** With median eligible = 14/date the hit-rate
+  levels are weakly selective; the informative signals are the **trap row** and the
+  **A−B gap**, not the top-10/20 hit levels. B's top-10 recall (50%) and A's (71%)
+  both benefit from the easy cut.
 - **Hard traps persist:** PTON (margin bounce off a catastrophic trough reads as a
   turn), ZM (cheap+profitable+flat = "dead money"), INTC-fakestart (depressed +
   rich AI/foundry narrative — indistinguishable from a real turn in 2022–24
-  except in hindsight). These are intrinsic, not tuning failures.
+  except in hindsight). These are intrinsic, not tuning failures — and are the two
+  A itself still flags.
+- **Holdout is a single-shot probe, not a validated result** (C1/C2): two-name-
+  fragile spread, ceiling-boundary dependence, non-reproducible + survivorship-
+  filtered. A larger seeded multi-regime holdout is the open item.
+- **ADV haircut present but not yet load-bearing:** it fired on AXTI's intermediate
+  scans but excluded 0 labeled rows on this benchmark.
 - **Foreign-filer quarterly gap** (NOK/BILI), **post-spin gating** (SNDK),
   **small-n / regime-noisy forward return** — unchanged from v1.
 
 ## Verdict & next steps
 
-The mechanism's **point-in-time machinery is sound** (leak battery green) and the
-**top-ranked picks outperform the depressed universe at 12 months**. Engine B
-alone, on a realistic universe, has **modest top-10 recall (21%)** and **cannot
-solve the value-trap problem with free numeric signals**.
+The mechanism's **point-in-time machinery is sound** (canary battery green, now
+including the ADV haircut, dead-name gap truncation, and recycled-ticker canary),
+and the **top-ranked picks outperform the depressed universe at 12 months**. Engine
+B alone **cannot solve the value-trap problem with free numeric signals** (trap rate
+5/9 top-10, 6/9 top-20).
 
-**v3 closes the loop the v2 report opened:** Implementation A (LLM) was run in full
-comparison mode and **delivered exactly the discrimination B structurally cannot** —
-top-10 recall 36% vs 21% and trap rate 0% vs 44% (top-20: 71% vs 43%, 22% vs 56%),
-on the identical harness and control arm. A's gains are concentrated precisely
-where the design predicted (narrative recall: BB/NOK/COHR/INTC-2025; structural
-traps: LUMN/PTON/FOSL), and A's only residual failures are the two intrinsically
-ambiguous cases (ZM dead-money, INTC fake-start). So the architecture's core
-thesis — **a code engine for cheap, leak-free breadth; an LLM engine for the
-qualitative judgment that the numbers can't encode** — is now empirically
-supported, not just argued.
+**The A-vs-B loop (v4):** Implementation A (LLM), on the identical harness and
+control arm, **delivers exactly the discrimination B structurally cannot** — the
+A−B **trap gap** is −34pp at top-10 (22% vs 56%) and −44pp at top-20 (22% vs 67%),
+with a matching recall edge (top-10 71% vs 50%). A's gains are concentrated where
+the design predicted (narrative recall: BB/NOK/COHR/INTC-2025; structural traps:
+LUMN/PTON/FOSL cleared), and A's only residual flags are the two intrinsically
+ambiguous cases (ZM dead-money, INTC fake-start). So the architecture's core thesis
+— **a code engine for cheap, leak-free breadth; an LLM engine for the qualitative
+judgment the numbers can't encode** — is empirically supported as an *engine
+ordering*. (The v4 harness lifts both engines' absolute levels vs the v3 table; the
+ordering, not the level, is the result. A's rates remain a memorization upper
+bound.)
 
-**The memorization confound was then tested directly** (post-cutoff holdout,
-above), and it matters: blind, A's **trap/quality screen survived** (+125% cleared
-vs −17% flagged) but its **ranking edge did not** (top-5 +2% vs B +113% vs pool
-+72%, in a junk-rally regime, n tiny). So the durable, generalizing claim is the
-qualitative *"real business vs trap"* judgment — **not** that A out-ranks B. The
-benchmark ranking margin is memorization-flavored.
+**The memorization confound was tested (holdout) — and the v4 audit downgrades it.**
+Blind, the trap-screen *looks* like it separates (+141% cleared vs −12% flagged),
+but that mean is **two-name-fragile** (leave-two-out → +8.7%) and
+**threshold-boundary-dependent** (LESL sits on the 0.70 ceiling; strict `<` nearly
+closes the spread), and the run is **non-reproducible + survivorship-filtered**. The
+honest read is the **median** cleared +10.8% vs flagged −13.7% — **suggestive, not
+validated** — and the *ranking* edge did not reproduce at all (A top-5 mean −0.6% vs
+B +137% vs pool +83%, junk-rally, n = 5). The durable, generalizing claim is the
+qualitative *"real business vs trap"* screen; even that needs a bigger sample.
 
-**What remains:** a **larger, multi-regime holdout** (more names, more T-dates,
-not one risk-on window) is the only way to settle whether A's ranking adds forward
-alpha; a one-time paid point-in-time dataset (user decision) would let the labeled
-hit/trap backtest itself be run on post-cutoff data rather than a probe.
+**What remains:** a **larger, seeded, multi-regime holdout** — via the now-committed
+`reports/sample_holdout.py` (seeded, sha256-attested) — is the only way to settle
+both whether A's ranking adds alpha and whether the trap screen survives outside one
+risk-on window; a one-time paid point-in-time dataset (user decision) would let the
+labeled hit/trap backtest itself run on post-cutoff data rather than a probe.

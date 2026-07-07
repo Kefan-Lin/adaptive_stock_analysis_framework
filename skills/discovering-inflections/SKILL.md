@@ -98,14 +98,22 @@ never a bare "X% accurate."
 
 A full comparison-mode A-vs-B backtest exists: `inflection_discovery/harness/llm_backtest.py`
 ranks LLM-scored candidates (`reports/llm_scores.json`) against the identical
-control arm and harness B uses, so only the engine varies. On the benchmark A beats
-B on both recall and trap-avoidance (top-10 36% vs 21% hit, 0% vs 44% trap; top-20
-71% vs 43%, 22% vs 56%) — see `reports/comparison-report.md`. **These A rates are a
-memorization-contaminated upper bound** (the model knows the outcomes).
+control arm and harness B uses, so only the engine varies. On the benchmark (v4
+rerun, post ADV-haircut and dead-name truncation) A beats B on both recall and
+trap-avoidance: top-10 71% vs 50% hit, 22% vs 56% trap; top-20 86% vs 79%, 22% vs
+67% — see `reports/comparison-report.md`. Read the **A−B gap**, not the levels: the
+median eligible field is only ~14 names/date, so the hit-rate levels are weakly
+selective by construction. **These A rates are a memorization-contaminated upper
+bound** (the model knows the outcomes).
 
 A **post-cutoff holdout** (`reports/run_holdout.py`, T=2026-01-31, fresh blind
-universe) tested that confound and split the result: A's **trap/quality screen
-generalized** (cleared +125% vs flagged −17% forward) but its **ranking edge did
-not** (top-5 +2% vs B +113% vs pool +72%, junk-rally regime, n tiny). So treat the
-durable claim as the qualitative *real-business-vs-trap* judgment, **not** that A
-out-ranks B; a larger multi-regime holdout is needed to settle the ranking question.
+universe) tested that confound. Its blind trap-screen evidence is **suggestive but
+two-name-fragile, not validated**: the cleared arm's mean +141% collapses to a
+median of +10.8% (vs flagged −13.7%), leave-two-out (drop SYRA +698%, LESL +641%)
+takes the mean to +8.7%, and LESL sits **exactly on the 0.70 trap ceiling** —
+"cleared" only via the inclusive `≤` gate. The holdout is also **non-reproducible
+as run** (no committed sampling seed/script or ≤T evidence file; survivorship-
+filtered pool), and the **ranking edge did not reproduce at all** (A top-5 mean
+−0.6% vs B +137% vs pool +83%, junk-rally regime, n tiny). So make no
+generalization claim from it; the open item is a **larger seeded multi-regime
+holdout via `reports/sample_holdout.py`** (committed, seeded, sha256-attested).
