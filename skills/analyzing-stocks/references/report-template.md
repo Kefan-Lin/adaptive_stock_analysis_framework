@@ -156,6 +156,7 @@
 本节是上行两道 gate（re-rating / re-basing）的对称下行交叉检验，不推翻已通过证据门槛的上调，
 只暴露其中未被证据支撑的部分。
 
+- `Gate verdict`：`Bear stands / Bear pulled down / insufficient disclosure (Confidence lowered)`（一行结论）：
 - 周期位置：`early / mid / late / peak`，证据（价格 vs 成本曲线 / 利润率 vs 历史 / 库存 / 资本开支周期 / 供给公告）：
 
 | 历史振幅（至少最近两个完整周期，公司过短则用最接近的行业代理并说明） | 峰值 | 谷底 | 峰-谷变化% |
@@ -167,9 +168,10 @@
 - Floor-coverage 算术：由 *已披露* 合同机制（take-or-pay / 最低收入条款 / 价格下限或 collar /
   套保头寸 / 带取消条款的 backlog / 受监管或合约锁定收入份额）保护的当前 run-rate 营收与盈利份额：
   Bear 只能计入此已披露覆盖度；未覆盖部分按中周期或历史谷底经济学（取证据支持者）压力测试。
-- Bear 内明确的谷底锚（trough 盈利 × trough 倍数，或 P/B / NAV / 重置成本资产底）——采用哪个锚及其数值（即使 headline Bear 高于该锚也须列出）：
-- Gap 说明：若 headline Bear 高于谷底锚，差额须由上述 floor 覆盖度加已通过上行 gate 的结构性论据完全解释；无法解释则下调 Bear：
+- Bear 内明确的谷底锚（trough 盈利 × trough 倍数，或 P/B / NAV / 重置成本资产底）——采用哪个锚及其数值（即使 headline Bear 高于该锚也须列出）；旧谷底价格不可考据时，以财报每股账面价值为 Fact、谷底价格/倍数标注为 Inference 并注明方法，不得杜撰引用：
+- Gap 说明：若 headline Bear 高于谷底锚，把差额换算成 Bear 的*隐含* EPS×倍数、对照历史振幅表检验（Bear 是情景现值、锚是谷底一瞬，须在盈利水平上同口径比较）；差额只能由已披露 floor 覆盖度加已通过上行 gate 的结构性论据解释，其中仅定性通过的论据只能支撑 bear 倍数/久期，不能把 bear 盈利抬到接近当前 run-rate；无法解释则下调 Bear：
 - 概率对称性检查：若周期证据为 late-cycle 或 peak，维持对称概率须给出一行理由，否则加厚 Bear 尾部：
+- Base-over-run-rate 检查：late/peak 时 Base 归一化盈利 ≥ 最新年化 run-rate 须给一行理由（已通过 re-basing gate 即为该理由），否则 Base 设于中周期或以下：
 
 ## 8. 安全边际、市场预期反推、价值陷阱判断
 

@@ -34,6 +34,9 @@ driver:
 - discount rate, required return, terminal multiple, or valuation multiple
 - net debt, cash, share count, dilution, FX, or capital return
 - material M&A, regulation, litigation, refinancing, or other capital action
+- a framework or gate methodology change that first quantifies already-disclosed facts
+  (e.g. a newly mandatory gate); attribute the revision to the gate, and never use it to
+  launder a price- or sentiment-driven change
 
 If price changed but the valuation drivers did not, keep Bear/Base/Bull fair values
 unchanged and update only the margin-of-safety, expected-return, market-implied
@@ -134,19 +137,33 @@ Produce every item below as a required row, not optional guidance:
 4. **Explicit trough anchor inside the Bear case**: a trough-year earnings scenario
    (trough earnings × trough multiple) or an asset-based floor (P/B, NAV, replacement
    cost). State which anchor is used and show its value even when the headline Bear is set
-   above it.
-5. **Gap statement**: if the headline Bear sits above the trough anchor, the gap must be
-   fully explained by the quantified floor coverage plus any structural arguments that
-   already passed the upward gates; if it cannot be, pull the Bear down to what the
-   evidence supports.
+   above it. Where an old trough price is not citable (e.g. delisted or pre-spin intraday
+   lows), carry book value per share as a Fact from filings and label the trough price or
+   multiple an Inference with its method stated; do not fabricate a citation.
+5. **Gap statement**: if the headline Bear sits above the trough anchor, express the gap
+   as the Bear's *implied* earnings and multiple and test those against the amplitude
+   table (item 2) — the Bear is a scenario present value while the anchor is a bottom-tick,
+   so compare like with like at the earnings level rather than on the raw price gap. The
+   gap may be credited only to quantified floor coverage plus structural arguments that
+   already passed the upward gates; and an argument that passed only *qualitatively* may
+   support the Bear's multiple or duration but must never lift the Bear's earnings level to
+   at or near the current run-rate. If the residual cannot be explained, pull the Bear down
+   to what the evidence supports.
 6. **Probability-asymmetry check**: when cycle-position evidence says late-cycle or peak,
    keeping symmetric scenario probabilities requires an explicit one-line justification;
    otherwise fatten the Bear tail.
+7. **Base-over-run-rate check**: when cycle position is late or peak, a Base normalized
+   earnings level at or above the latest annualized run-rate requires an explicit one-line
+   justification (the mirror of the probability check). This does not override a Base that
+   cleared the `Earnings Base Re-basing Gate` — that cleared evidence *is* the
+   justification — but it stops an over-run-rate Base that never cleared re-basing from
+   escaping the cross-check, since the gate otherwise binds only the Bear.
 
-Record the result in the report's cycle-trough cross-check block. The historical
-amplitude table (item 2) is fed from the earnings-base representativeness check in
-[financial-diagnostics](financial-diagnostics.md) whenever the divergence is a cyclical
-peak.
+Record the result in the report's cycle-trough cross-check block, opening with a one-line
+`Gate verdict`: `Bear stands` / `Bear pulled down` / `insufficient disclosure (Confidence
+lowered)`. The historical amplitude table (item 2) is fed from the earnings-base
+representativeness check in [financial-diagnostics](financial-diagnostics.md) whenever the
+divergence is a cyclical peak.
 
 ## 2) Valuation Families
 
@@ -336,6 +353,7 @@ Produce:
 5. Sensitivity summary
 6. Market-implied expectations takeaway
 7. Key assumptions that most affect conclusion
-8. Cycle-trough cross-check block for cyclical or commodity-linked names: cycle-position
-   statement, historical amplitude table, floor-coverage arithmetic, Bear trough anchor,
-   gap statement, and probability-asymmetry check (per the `Cycle-Trough Cross-Check Gate`)
+8. Cycle-trough cross-check block for cyclical or commodity-linked names: `Gate verdict`,
+   cycle-position statement, historical amplitude table, floor-coverage arithmetic, Bear
+   trough anchor, gap statement, probability-asymmetry check, and the Base-over-run-rate
+   check (per the `Cycle-Trough Cross-Check Gate`)

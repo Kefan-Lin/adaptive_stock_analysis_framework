@@ -266,6 +266,27 @@ class RecordValidationTests(StateHomeTestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("scenarios", result.stdout)
 
+    def test_bad_scenario_probabilities_fails(self) -> None:
+        self.mutate(
+            "records/ACME/2026-06-01-new-idea.md",
+            "scenarios: {bear: 80, base: 135, bull: 190}",
+            "scenarios: {bear: 80, base: 135, bull: 190}\n"
+            "scenario_probabilities: {bear: 20, base: 55, bull: 60}",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("scenario_probabilities", result.stdout)
+
+    def test_valid_scenario_probabilities_passes(self) -> None:
+        self.mutate(
+            "records/ACME/2026-06-01-new-idea.md",
+            "scenarios: {bear: 80, base: 135, bull: 190}",
+            "scenarios: {bear: 80, base: 135, bull: 190}\n"
+            "scenario_probabilities: {bear: 20, base: 55, bull: 25}",
+        )
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
 
 class KoreaAustraliaSymbolTests(StateHomeTestCase):
     """Canonical symbol forms extended to Korea (KRX) and Australia (ASX)."""

@@ -198,6 +198,7 @@ class Checker:
         self._check_group(path, meta, VALUATION_GROUP)
         self._check_group(path, meta, WORKFLOW_GROUP)
         self._check_scenarios(path, meta)
+        self._check_scenario_probabilities(path, meta)
         self._check_triggers(path, meta)
         self._check_action_taken(path, meta)
 
@@ -233,6 +234,20 @@ class Checker:
             return
         if any(not is_number(v) for v in scenarios.values()):
             self.err(path, f"scenarios values must be numbers, got {scenarios!r}")
+
+    def _check_scenario_probabilities(self, path: Path, meta: dict) -> None:
+        probs = meta.get("scenario_probabilities")
+        if probs is None:
+            return
+        if not isinstance(probs, dict) or set(probs) != {"bear", "base", "bull"}:
+            self.err(path, f"scenario_probabilities must have exactly bear/base/bull, got {probs!r}")
+            return
+        if any(not is_number(v) for v in probs.values()):
+            self.err(path, f"scenario_probabilities values must be numbers, got {probs!r}")
+            return
+        total = sum(probs.values())
+        if not 99.0 <= total <= 101.0:
+            self.err(path, f"scenario_probabilities must sum to ~100, got {total}")
 
     def _check_triggers(self, path: Path, meta: dict) -> None:
         triggers = meta.get("triggers")

@@ -88,6 +88,7 @@ position_size: Starter
 confidence: Medium
 weighted_fair_value: 140
 scenarios: {bear: 80, base: 135, bull: 190}
+scenario_probabilities: {bear: 20, base: 55, bull: 25}   # optional; percents summing to ~100
 
 # Decision & execution (required when the decision workflow ran)
 candidate_tier: Core Candidate
@@ -116,6 +117,9 @@ action_taken: null            # backfilled after confirmed execution
   currency, stance, review_by`.
 - Required together when a full valuation backs the decision:
   `weighted_fair_value, scenarios, position_size, confidence`.
+- `scenario_probabilities` is optional; when present it has exactly `bear/base/bull`,
+  numeric, summing to ~100. It records the probability-asymmetry outcome of the
+  Cycle-Trough Cross-Check Gate so a probability-only change stays visible in the timeline.
 - Required together when the decision workflow ran: `candidate_tier,
   valuation_zone, execution_method, triggers`.
 - `mode: research` marks a standalone `analyzing-stocks` run saved without the
