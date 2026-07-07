@@ -30,13 +30,25 @@ holdout downgrade) · 2026-06-29 (v3: full Implementation-A backtest) ·
 > truncation** (>30-day trading gap, or a sub-$1 close jumping >8× in one
 > session) retained as defense-in-depth for feeds that do keep both legs. The
 > `recycled_ticker` canary now **passes live** (2026-07-07 data: BBBY 12m fwd
-> = **−1.0**). The registry itself moves no number in this report (BBBY/FFAI
-> sit outside the pick baskets and the benchmark-excluded control arm); the
-> identity-break rule, however, **will move the control forward-return means on
-> the next rerun** — 5 of 65 control names carry recycled-shell stitch
-> artifacts (flat penny closes jumping 19–130× overnight) that the v4 control
-> means ingested as real returns (worst case: one name contributing a spurious
-> +118× at a pick date). The tables below remain the committed v4 artifacts.
+> = **−1.0**). The registry itself moved no number (BBBY/FFAI sit outside the
+> pick baskets and the benchmark-excluded control arm). The **forward-return
+> summaries and the holdout were regenerated same-day under this metric
+> layer**, with truncation scoped to the **identity segment containing T**: a
+> break after T bounds the window (successor prices can't mask a collapse); a
+> break at/before T only trims the left (a transient two-session 2012 bad tick
+> in LEAT's feed must not zero a 2026 window — segment scoping also makes the
+> value invariant to whether the feed serves such glitch rows at all, which it
+> does nondeterministically). The regeneration **purged 25 stitched-artifact
+> control values** across the four summaries: 5 of 65 control names
+> (BESS/CRDV/ELVG/IVDN/MYCB) carry recycled-shell stitch artifacts — flat
+> penny closes jumping 19–130× overnight — that the prior v4 control means had
+> ingested as real returns; worst cases were a spurious **+14,900%** (IVDN)
+> and **+11,800%** (CRDV) inside the 2024-08-30 / 2024-09-30 pick-date control
+> means. Effect: 12m control means fell from +28%/+38% (A cuts) and +13%/+42%
+> (B cuts) to a clean **+9–11%**; **hit/trap rates, ranks, eligibility,
+> exclusions, and pick means are unaffected** (rank data byte-identical), and
+> the holdout regenerated **byte-identical** to its previously committed
+> numbers.
 >
 > **Two things the rerun changed, stated plainly.** (1) The A-vs-B hit/trap
 > **levels rose vs the v3 table** because v4 runs on the current harness (median
@@ -102,8 +114,8 @@ part is the engine.
 | Hit rate · top-20 | **12/14 = 86%** (71% → 86%) | 11/14 = 79% (43% → 79%) |
 | Trap rate · top-10 *(lower=better)* | **2/9 = 22%** (0% → 22%) | 5/9 = 56% (44% → 56%) |
 | Trap rate · top-20 *(lower=better)* | **2/9 = 22%** (unch.) | 6/9 = 67% (56% → 67%) |
-| Fwd 12m, top-10 picks vs control | **+69%** vs +28% (n=10) | +69% vs +13% (n=7) |
-| Fwd 12m, top-20 picks vs control | **+82%** vs +38% (n=12) | +82% vs +42% (n=11) |
+| Fwd 12m, top-10 picks vs control | **+69%** vs +10% (n=10) | +69% vs +11% (n=7) |
+| Fwd 12m, top-20 picks vs control | **+82%** vs +9% (n=12) | +82% vs +10% (n=11) |
 | `excluded_no_data` / `excluded_illiquid` | 2 (WBA×2) / **0** | 2 (WBA×2) / **0** |
 
 **A beats B on both axes** — higher recall *and* fewer traps, unchanged as an
@@ -117,9 +129,13 @@ Two honest reads of the v4 numbers:
   of the table. The **A−B gap** (recall +21pp top-10; trap −34pp top-10, −44pp
   top-20) is the load-bearing result, not the levels.
 - **Forward-return convergence.** At v4 the two engines' *pick* baskets return
-  almost identically (top-10 +69% both; top-20 +82% both) — the A edge is in
-  **which controls they beat** (A control +28%/+38% vs B +13%/+42%) and in
-  **trap-avoidance**, not in a higher headline pick return. The v3 "+78%" pick
+  almost identically (top-10 +69% both; top-20 +82% both), and after the v4.1
+  artifact purge the **control baskets do too** (12m control ≈ +9–11% for both
+  engines at both cuts) — so the pick-vs-control spread (~+58pp top-10, ~+72pp
+  top-20) is engine-independent, and the A edge lives in **trap-avoidance and
+  recall**, not in forward-return spreads. (The pre-purge read that A "beat
+  different controls" — A +28%/+38% vs B +13%/+42% — was an artifact of
+  stitched control values, not a real engine difference.) The v3 "+78%" pick
   figure is superseded by these n-labelled basket means.
 - **`excluded_illiquid` = 0 at every hit-date** (shown beside `excluded_no_data` =
   2, the two WBA dates with no reconstructable XBRL). The ADV haircut *did* fire —
@@ -296,16 +312,16 @@ v3 table → v4):
 | **Hit rate** | **7/14 = 50%** (21% → 50%) | 11/14 = 79% (43% → 79%) |
 | **Trap rate** *(lower=better)* | **5/9 = 56%** (44% → 56%) | 6/9 = 67% (56% → 67%) |
 | Mean lead (hits) | ~4.9 months | ~5.1 months |
-| **Fwd 12m, picks vs control** | **+69% vs +13%** (n=7) | +82% vs +42% (n=11) |
-| Fwd 6m, picks vs control | +40% vs +14% | +51% vs +47% |
+| **Fwd 12m, picks vs control** | **+69% vs +11%** (n=7) | +82% vs +10% (n=11) |
+| Fwd 6m, picks vs control | +40% vs +13% | +51% vs +7% |
 | `excluded_no_data` / `excluded_illiquid` | 2 (WBA×2) / **0** | 2 (WBA×2) / **0** |
 
 **The honest read:** the D ranker does **not** reliably push the specific labeled
 inflections into the absolute top-10 against the other depressed names — B captures
 the strongest-signal ones (AXTI, BB, LITE, MU×2, NVDA, NFLX at top-10) and adds the
 narrative/foreign names (NOK, META, COHR, BILI) only at top-20. BUT the names it
-ranks at the top went on to **beat the depressed universe by ~56pp at 12 months**
-(+69% vs +13% top-10). So D carries real economic signal at the top even though the
+ranks at the top went on to **beat the depressed universe by ~58pp at 12 months**
+(+69% vs +11% top-10). So D carries real economic signal at the top even though the
 levels are inflated by the shallow cut. As a "the top of the ranking outperforms"
 tool it works; the trap row (B 5/9 top-10, 6/9 top-20) is where it structurally
 struggles — which is the whole reason engine A exists.
@@ -418,10 +434,12 @@ dead-ticker registry** (`pit/dead_tickers.py`): yfinance re-anchors recycled
 tickers to the live successor and drops the dead leg entirely (verified on
 BBBY/HTZ/SPCE/SHLD), so series-shape detection alone cannot realize those
 losses; **identity-break truncation** (>30-day gap, or a sub-$1 close jumping
->8× in one session) is retained as defense-in-depth — and already earns its
-keep by purging recycled-shell stitch artifacts from 5 of 65 control names on
-future reruns (see the v4.1 note). And the **top-ranked picks outperform the
-depressed universe at 12 months**. Engine B alone **cannot solve the value-trap
+>8× in one session), scoped to the identity segment containing T, is retained
+as defense-in-depth — and already earned its keep: the v4.1 regeneration
+purged 25 stitched-artifact control values from 5 of 65 control names, worst
+case +14,900% inside a pick-date control mean (see the v4.1 note). And the
+**top-ranked picks outperform the depressed universe at 12 months** (+69% vs
++10% control at top-10). Engine B alone **cannot solve the value-trap
 problem with free numeric signals** (trap rate 5/9 top-10, 6/9 top-20).
 
 **The A-vs-B loop (v4):** Implementation A (LLM), on the identical harness and

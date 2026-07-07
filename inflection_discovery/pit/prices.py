@@ -69,8 +69,8 @@ def future_split_factor(ticker: str, T) -> float:
     return factor
 
 
-def _first_identity_break(close: pd.Series) -> Optional[pd.Timestamp]:
-    """Index of the first identity break in a Close series, or None.
+def _identity_breaks(close: pd.Series) -> pd.DatetimeIndex:
+    """All identity-break indices in a Close series (possibly empty).
 
     Break signals (either fires):
     (a) a calendar gap > IDENTITY_GAP_DAYS between consecutive sessions
@@ -78,17 +78,47 @@ def _first_identity_break(close: pd.Series) -> Optional[pd.Timestamp]:
         recycled ticker), or
     (b) close[i]/close[i-1] > IDENTITY_JUMP_RATIO while close[i-1] <
         IDENTITY_PENNY_CEILING — a sub-$1 name jumping >8x in ONE session in a
-        back-adjusted series is a stitched successor, not a market move. The
-        test is up-only by construction, so genuine crash days (DOWN moves)
-        never trigger it.
+        back-adjusted series is a stitched successor or a mangled feed splice,
+        not a market move. The test is up-only by construction, so genuine
+        crash days (DOWN moves) never trigger it.
+
+    A break index marks the FIRST session of the new identity/segment.
     """
     if len(close) < 2:
-        return None
+        return close.index[:0]
     gap = close.index.to_series().diff() > pd.Timedelta(days=IDENTITY_GAP_DAYS)
     prev = close.shift(1)
     jump = (close / prev > IDENTITY_JUMP_RATIO) & (prev < IDENTITY_PENNY_CEILING)
-    breaks = close.index[(gap | jump).to_numpy()]
-    return breaks[0] if len(breaks) else None
+    return close.index[(gap | jump).to_numpy()]
+
+
+def _identity_segment(close: pd.Series, T: pd.Timestamp) -> pd.Series:
+    """The contiguous same-identity sub-series containing the as-of date T.
+
+    The series is split at every identity break (a break index starts a new
+    segment); the segment T falls in is returned. Prices before the segment
+    cannot anchor T, and prices after it cannot be read as T's forward window.
+    This simultaneously stops a stitched successor from masking a collapse
+    (a break AFTER T bounds the window on the right) and stops a transient
+    feed glitch years earlier from truncating a modern window (a break
+    AT/BEFORE T only trims the left) — making the measured return invariant
+    to glitches outside T's own segment (live case: LEAT's two-session 2012
+    bad tick, which whole-series truncation turned into a false 0.0 for a
+    2026 window).
+    """
+    left = None
+    right = None
+    for b in _identity_breaks(close):
+        if b <= T:
+            left = b
+        else:
+            right = b
+            break
+    if left is not None:
+        close = close[close.index >= left]
+    if right is not None:
+        close = close[close.index < right]
+    return close
 
 
 def forward_return(ticker: str, T, months: int = 6) -> Optional[float]:
@@ -104,16 +134,19 @@ def forward_return(ticker: str, T, months: int = 6) -> Optional[float]:
        as-of-T start (terminal 0 dominates any start-price re-anchoring); a T
        on/after the death date returns None (the old entity did not exist at
        T); a death after the window falls through to the normal path.
-    2. **Identity-break truncation** (defense-in-depth for feed shapes that DO
-       retain both legs): the whole series is truncated at the first identity
-       break — a >IDENTITY_GAP_DAYS calendar gap, or a stitch-jump (sub-$1
-       close rising >IDENTITY_JUMP_RATIO x in one session; direction-gated, see
-       `_first_identity_break`) — BEFORE start and end are read, so a
-       successor's prices never mask the collapse (audit I2) and a T inside the
-       dead zone anchors at the dying price, not the successor's (audit M-1).
-    3. If the series ends before T+months (delisting), the last available close
-       is used, so a collapsed name contributes its realized loss rather than
-       silently dropping (review SC1).
+    2. **Identity-segment truncation** (defense-in-depth for feed shapes that
+       DO retain both legs): start and end are read only from the contiguous
+       identity segment containing T — the series split at every break, i.e. a
+       >IDENTITY_GAP_DAYS calendar gap or a stitch-jump (sub-$1 close rising
+       >IDENTITY_JUMP_RATIO x in one session; direction-gated, see
+       `_identity_breaks`). A break after T bounds the window so a successor's
+       prices never mask the collapse (audit I2) and a T inside the dead zone
+       anchors at the dying price (audit M-1); a break at/before T only trims
+       the left, so a transient feed glitch years earlier cannot zero a modern
+       window (see `_identity_segment`).
+    3. If the segment ends before T+months (delisting), the last available
+       close is used, so a collapsed name contributes its realized loss rather
+       than silently dropping (review SC1).
     """
     T = _to_ts(T)
     end_date = T + pd.DateOffset(months=months)
@@ -137,10 +170,7 @@ def forward_return(ticker: str, T, months: int = 6) -> Optional[float]:
     df = _raw_history(ticker)
     if df is None or df.empty or "Close" not in df:
         return None
-    close = df["Close"].dropna()
-    brk = _first_identity_break(close)
-    if brk is not None:
-        close = close[close.index < brk]
+    close = _identity_segment(df["Close"].dropna(), T)
     start = close.asof(T)
     fut = close[close.index <= end_date]
     if pd.isna(start) or start <= 0 or fut.empty:

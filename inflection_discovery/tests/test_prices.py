@@ -57,6 +57,31 @@ def test_forward_return_T_inside_dead_zone(monkeypatch):
     assert r is not None and abs(r) < 0.5, f"dead-zone T must not book the successor's level, got {r}"
 
 
+def test_forward_return_ignores_break_before_T(monkeypatch):
+    # A transient bad tick years BEFORE T (0.51 -> 0.02 x2 -> 0.50, a V-glitch
+    # on a continuously operating company) fires the jump detector, but it must
+    # not truncate the modern series: truncation is scoped to the identity
+    # segment CONTAINING T, so the real T -> T+m return is measured. (Live
+    # case: LEAT's two-session 2012 feed glitch zeroing a 2026 window under
+    # whole-series truncation; segment scoping also makes the result invariant
+    # to whether the feed serves the glitch rows at all.)
+    early = pd.bdate_range("2012-01-02", "2012-11-08")  # 0.51 era
+    tick = pd.bdate_range("2012-11-09", "2012-11-12")   # 2 bad prints
+    late = pd.bdate_range("2012-11-13", "2013-12-31")   # recovered era
+    T = pd.Timestamp("2013-06-28")
+    closes = (
+        [0.51] * len(early)
+        + [0.02] * len(tick)
+        + [0.50 if d <= T else 0.75 for d in late]
+    )
+    monkeypatch.setattr(
+        prices, "_raw_history",
+        lambda t: _frame(list(early) + list(tick) + list(late), closes))
+    r = prices.forward_return("GLITCH", T, months=6)
+    assert r is not None and r == pytest.approx(0.5), \
+        f"pre-T glitch must not zero the window, got {r}"
+
+
 def test_forward_return_dead_ticker_realizes_terminal_loss(monkeypatch):
     # yfinance re-anchors recycled tickers to the live successor and DROPS the
     # dead leg (no gap, no penny prices, nothing for a shape detector to see).
