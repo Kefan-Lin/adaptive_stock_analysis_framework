@@ -46,6 +46,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install package dependencies
-        run: pip install -r inflection_discovery/requirements.txt pytest
+        run: pip install -r inflection_discovery/requirements.txt pytest pyyaml
       - name: Package tests (offline subset)
         run: python -m pytest inflection_discovery/tests tests/test_contract.py -v
