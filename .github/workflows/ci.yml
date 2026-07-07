@@ -48,4 +48,4 @@ jobs:
       - name: Install package dependencies
         run: pip install -r inflection_discovery/requirements.txt pytest
       - name: Package tests (offline subset)
-        run: python -m pytest inflection_discovery/tests -v
+        run: python -m pytest inflection_discovery/tests tests/test_contract.py -v

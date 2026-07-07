@@ -93,6 +93,8 @@ def score_one_ashare(code: str) -> Candidate:
                 "trap_risk": trap["score"], "D": d},
         composite=composite,
         engine="B",
+        symbol=routing["symbol"],
+        market=routing["market"],
         evidence={"A": a["evidence"], "B": b["evidence"],
                   "trap_risk": trap["evidence"],
                   "market": ["China A-share LIVE (non-PIT; akshare restated values)"]},

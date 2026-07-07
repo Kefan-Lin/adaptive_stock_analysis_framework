@@ -46,6 +46,7 @@ def score_one_live(ticker: str, with_text: bool = True) -> Candidate:
     d = score_D(a["score"], b["score"], c["score"], trap["score"], prices)
     turn = max(b["score"] or 0.0, c["score"] or 0.0)
     composite = round(((a["score"] or 0.0) + turn + (1.0 - (trap["score"] or 0.0))) / 3.0, 4)
+    routing = make_routing(ticker)
     return Candidate(
         ticker=ticker,
         as_of_date=str(today.date()),
@@ -54,10 +55,12 @@ def score_one_live(ticker: str, with_text: bool = True) -> Candidate:
                 "trap_risk": trap["score"], "D": d},
         composite=composite,
         engine="B",
+        symbol=routing["symbol"],
+        market=routing["market"],
         evidence={"A": a["evidence"], "B": b["evidence"], "C": c["evidence"],
                   "trap_risk": trap["evidence"],
                   "source": [f"fundamentals: {source}", "LIVE (non-PIT) discovery"]},
-        routing=make_routing(ticker),
+        routing=routing,
         thesis=f"{ticker} (live, {source}): A={a['score']} B={b['score']} C={c['score']}",
     )
 
