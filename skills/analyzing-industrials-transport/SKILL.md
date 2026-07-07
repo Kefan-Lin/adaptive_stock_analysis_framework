@@ -61,6 +61,13 @@ State:
   corroborating evidence in the Earnings Base Re-basing Gate is met, not dismissed as a fluke.
 - If backlog or service attach materially improves visibility, run a re-rating sensitivity
   against the old project-cycle multiple before changing the Base valuation.
+- Cycle-Trough Cross-Check (industrials/transport): build the historical amplitude table on
+  peak-to-trough revenue, margin, and EPS/FCF across the end-market cycle, and set the Bear on
+  a trough-utilization, mid-cycle-margin-reversion path. Credit only *disclosed* non-cancellable
+  backlog (net of cancellation terms), advance payments, and durable service attach as the Bear
+  floor coverage; stress cancellable awards and uncovered volume at trough utilization. Anchor
+  the Bear on a trough-earnings × trough-multiple or asset floor and show it even when headline
+  Bear is above. Run before finalizing Bear/Base/Bull.
 
 ## 5. Risk Checklist
 
@@ -77,4 +84,5 @@ State:
 - KPI tree with demand, margin, and capital metrics
 - Key accounting or contract normalizations
 - Valuation method route
+- Cycle-trough cross-check: cross-cycle amplitude table, disclosed non-cancellable-backlog coverage arithmetic, and trough-utilization/mid-cycle-margin Bear floor
 - Risk checklist and monitor triggers

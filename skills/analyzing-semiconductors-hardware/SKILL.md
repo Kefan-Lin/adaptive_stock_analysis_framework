@@ -63,6 +63,13 @@ State:
   than being dismissed as a peak.
 - If long-term agreements materially reduce cycle exposure, run an old-cycle vs
   contract-backed re-rating sensitivity before deciding whether the Base multiple changes.
+- Cycle-Trough Cross-Check (memory/semis): trough is ASP-driven — memory downcycles have
+  cut EPS to losses, so build the historical amplitude table on peak-to-trough ASP, gross
+  margin, and EPS/FCF. Credit only *disclosed* SCA/LTA take-or-pay coverage in the Bear
+  floor (its share of run-rate revenue), and stress the uncovered remainder at trough ASP;
+  do not lean on "SCA floor" qualitatively. Anchor the Bear on a P/B or replacement-cost
+  floor — the classic memory downside anchor — and show it even when headline Bear is above.
+  Run this before finalizing Bear/Base/Bull.
 
 ## 5. Risk Checklist
 
@@ -79,4 +86,5 @@ State:
 - KPI tree with demand, pricing, and utilization metrics
 - Key accounting normalizations
 - Valuation route, cycle-adjustment logic, and any contract-backed re-rating sensitivity
+- Cycle-trough cross-check: ASP-driven amplitude table, disclosed SCA/LTA coverage arithmetic, and P/B or replacement-cost Bear floor
 - Risk checklist and monitor thresholds

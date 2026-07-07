@@ -41,6 +41,15 @@ A structural step-change routes into the `Earnings Base Re-basing Gate` in
 [valuation-scenarios](valuation-scenarios.md); a one-off does not. Do not default to
 skepticism: a strong quarter is neither automatically noise nor automatically signal.
 
+When the divergence is classified as a **cyclical peak**, or the name is
+cyclical/commodity-classified in [industry-structure](industry-structure.md), also
+compute the **historical amplitude table** — peak-to-trough % change of revenue, gross
+margin, and EPS (use FCF or book value per share where EPS goes negative) over at least
+the last two completed cycles, or the closest industry proxy if the company is too young —
+and route it into the `Cycle-Trough Cross-Check Gate` in
+[valuation-scenarios](valuation-scenarios.md), the same way a step-change routes into the
+re-basing gate. This keeps a peak-quarter base from being anchored as steady-state.
+
 ## 2) Choose the Diagnostic Family First
 
 ### Operating companies

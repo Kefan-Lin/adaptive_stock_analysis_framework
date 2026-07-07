@@ -20,9 +20,11 @@ Core principle: **先做行业分型，再做估值，再做仓位建议**。不
 5. Load shared references from this skill.
 6. Build source map, evidence ledger, and any needed structural overlay.
 7. Run the structural re-rating gate when new evidence changes revenue visibility,
-   earnings volatility, contract durability, capital intensity, or risk premium, and
+   earnings volatility, contract durability, capital intensity, or risk premium,
    run the `Earnings Base Re-basing Gate` when the latest-quarter annualized run-rate
-   diverges materially from the trailing full-year or TTM earnings base.
+   diverges materially from the trailing full-year or TTM earnings base, and run the
+   `Cycle-Trough Cross-Check Gate` whenever the name is cyclical or commodity-linked and
+   Bear/Base/Bull values are being set or changed.
 8. Produce the unified report with stance and position sizing.
 
 Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selection is incomplete.
@@ -158,6 +160,11 @@ Always load these references from this skill:
   full-year or TTM base, so a genuine profit-center inflection is not valued on
   unrepresentative trailing earnings. Re-rating changes the multiple; re-basing changes
   the earnings base level.
+- Use the `Cycle-Trough Cross-Check Gate` in [valuation-scenarios](references/valuation-scenarios.md)
+  whenever the name is cyclical or commodity-linked and Bear/Base/Bull values are being set
+  or changed, so an earnings base near a cycle peak is not treated as steady-state. It is the
+  symmetric downside counterpart to the two upward gates and bounds how much of a re-based or
+  re-rated floor is evidence-backed; it does not weaken them.
 - Use [value-investing-lens](references/value-investing-lens.md) for downside framing, value-trap checks, and market-implied expectations.
 - Reverse DCF is required only for steady-state operating companies. For other families, use the closest market-implied expectation check instead.
 - Use [risk-register](references/risk-register.md) to complete the mandatory eight-bucket risk

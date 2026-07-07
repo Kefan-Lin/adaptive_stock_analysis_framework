@@ -65,6 +65,13 @@ Boundary rule:
 - Avoid: spot-price extrapolation or single-year earnings multiple at cycle extremes
 - If contracts or policy support reduce commodity beta, run old spot-cycle vs contracted
   cash-flow sensitivity and say whether the valuation family shifts toward infrastructure-like DCF.
+- Cycle-Trough Cross-Check (resource/energy): set the Bear trough price deck at cost-curve
+  support (marginal-cost / AISC floor), and build the historical amplitude table on
+  peak-to-trough realized price, margin, and EPS/FCF. Credit only *disclosed* hedge, offtake,
+  tolling, streaming, or floor-price coverage in the Bear floor (its share of run-rate volume
+  and revenue); stress the uncovered remainder at the trough deck. Anchor the Bear on NAV
+  computed at trough prices and show it even when headline Bear is above. Run before finalizing
+  Bear/Base/Bull.
 
 ## 5. Risk Checklist
 
@@ -81,4 +88,5 @@ Boundary rule:
 - KPI tree with price, volume, cost, and reserve metrics
 - Key normalizations and asset-liability adjustments
 - Valuation route with long-run price assumptions
+- Cycle-trough cross-check: trough price deck at cost-curve support, disclosed hedge/offtake coverage arithmetic, and NAV-at-trough-prices Bear floor
 - Risk checklist and monitor thresholds

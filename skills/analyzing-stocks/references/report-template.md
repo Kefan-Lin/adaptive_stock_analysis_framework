@@ -148,6 +148,29 @@
 - 估值实际采用的盈利基数（trailing 还是 forward run-rate）：
 - 是否进入 headline Base：`是 / 否（仅作上行 sensitivity）`
 
+### 7.5 Cycle-trough cross-check（周期性/商品关联标的必填）
+
+当标的在 industry-structure 中被判为 cyclical 或 commodity-linked（含 `Cyclical + Structural`），
+且正在设定或变更 Bear/Base/Bull 时必须填本节（参见 valuation-scenarios 的
+`Cycle-Trough Cross-Check Gate`）。若不适用，写 `N/A - not cyclical/commodity-linked`。
+本节是上行两道 gate（re-rating / re-basing）的对称下行交叉检验，不推翻已通过证据门槛的上调，
+只暴露其中未被证据支撑的部分。
+
+- 周期位置：`early / mid / late / peak`，证据（价格 vs 成本曲线 / 利润率 vs 历史 / 库存 / 资本开支周期 / 供给公告）：
+
+| 历史振幅（至少最近两个完整周期，公司过短则用最接近的行业代理并说明） | 峰值 | 谷底 | 峰-谷变化% |
+| --- | ---: | ---: | ---: |
+| 营收 |  |  |  |
+| 毛利率 |  |  |  |
+| EPS（EPS 转负时改用 FCF 或每股账面价值） |  |  |  |
+
+- Floor-coverage 算术：由 *已披露* 合同机制（take-or-pay / 最低收入条款 / 价格下限或 collar /
+  套保头寸 / 带取消条款的 backlog / 受监管或合约锁定收入份额）保护的当前 run-rate 营收与盈利份额：
+  Bear 只能计入此已披露覆盖度；未覆盖部分按中周期或历史谷底经济学（取证据支持者）压力测试。
+- Bear 内明确的谷底锚（trough 盈利 × trough 倍数，或 P/B / NAV / 重置成本资产底）——采用哪个锚及其数值（即使 headline Bear 高于该锚也须列出）：
+- Gap 说明：若 headline Bear 高于谷底锚，差额须由上述 floor 覆盖度加已通过上行 gate 的结构性论据完全解释；无法解释则下调 Bear：
+- 概率对称性检查：若周期证据为 late-cycle 或 peak，维持对称概率须给出一行理由，否则加厚 Bear 尾部：
+
 ## 8. 安全边际、市场预期反推、价值陷阱判断
 
 | 场景 | 内在价值 | 当前价 | 安全边际 |

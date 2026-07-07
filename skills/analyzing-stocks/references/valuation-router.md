@@ -23,7 +23,9 @@ Match valuation method to industry economics instead of defaulting to one generi
 ## Hard Rules
 
 1. Banks and insurers must not be valued with generic enterprise DCF as the only method.
-2. Commodity or cyclical businesses must use mid-cycle or through-cycle normalization.
+2. Commodity or cyclical businesses must use mid-cycle or through-cycle normalization, and
+   must pass the `Cycle-Trough Cross-Check Gate` in
+   [valuation-scenarios](valuation-scenarios.md) before finalizing Bear/Base/Bull values.
 3. Biotech and similar asset portfolios must probability-adjust asset values.
 4. Asset-heavy real estate must anchor on NAV or FFO/AFFO logic.
 5. Genuine multi-segment conglomerates and holding companies must use sum-of-parts: value each

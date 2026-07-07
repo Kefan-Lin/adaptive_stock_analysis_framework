@@ -150,6 +150,8 @@ Update only what new evidence justifies:
 - update Bear/Base/Bull only for changed fundamentals, discount rate, multiple, net debt, share count, capital action, regulation, litigation, financing, or structural regime evidence
 - run the Structural Re-rating Gate when revenue visibility, earnings volatility, contract quality, reinvestment economics, or risk premium changed
 - run the Earnings Base Re-basing Gate when the latest-quarter annualized run-rate diverges materially from the trailing full-year or TTM earnings base, so a profit-center inflection is re-based onto a forward run-rate instead of being valued on unrepresentative trailing earnings (re-rating changes the multiple; re-basing changes the earnings base level)
+- run the Cycle-Trough Cross-Check Gate when the name is cyclical or commodity-linked and any scenario value is set or changed, so a re-based or re-rated floor is bounded by disclosed contract coverage and an explicit trough anchor; it is the symmetric downside counterpart to the two upward gates and does not weaken them
+- any update that moves a single scenario fair value by more than 20%, or Weighted Fair Value by more than 15%, must republish the full scenario assumption table (earnings base and multiple/discount rate per scenario), not just a qualitative bridge, and for cyclical names must re-run the Cycle-Trough Cross-Check Gate
 - update margin of safety, market-implied expectations, and position discipline for price moves
 - re-check Red-Team Gate, value-trap status, Add-on Trigger, Trim/Exit Trigger, and Position Size
 
@@ -165,6 +167,8 @@ Evidence that may justify a WFV change:
 - industry structure change such as HBM long-term agreements, optical networking order durability, power PPA / capacity revenue lock-in, or other supply-demand evidence
 - discount-rate, risk-premium, share-count, net-debt, litigation, regulation, financing, or capital-allocation changes
 - a structural earnings-base re-basing: the latest-quarter annualized run-rate exceeds the trailing base AND corroborating evidence (new capacity online, signed backlog or order book, price/channel confirmation, gross-margin sustainability, cash conversion) clears the Earnings Base Re-basing Gate — one favorable quarter alone does not
+
+For cyclical or commodity-linked names, any WFV change — especially one justified by a re-based or re-rated earnings floor near a cycle peak — must also clear the Cycle-Trough Cross-Check Gate: credit floor protection only up to disclosed contract coverage, anchor the Bear on a trough-earnings or asset-based floor, and fatten the Bear tail unless symmetric probabilities are explicitly justified.
 
 If the only new evidence is price action, sell-side target-price upgrade, or sentiment, trigger reassessment and market-implied-expectations analysis, but keep WFV unchanged until fundamentals support the change.
 
@@ -323,6 +327,7 @@ For new ideas, use the current `$analyzing-stocks` output or state that full val
 - `Margin of Safety update`:
 - `Structural Re-rating Gate`:
 - `Earnings Base Re-basing Gate`:
+- `Cycle-Trough Cross-Check`: (cyclical/commodity-linked names; else `N/A`)
 - `Red-Team / value-trap update`:
 - `Add-on / Trim-Exit trigger status`:
 

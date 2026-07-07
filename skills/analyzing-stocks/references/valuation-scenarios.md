@@ -40,6 +40,12 @@ unchanged and update only the margin-of-safety, expected-return, market-implied
 expectations, and position-sizing discussion. If a scenario value changes, include
 a bridge explaining the prior value, current value, change, and reason.
 
+Any incremental or event-review update that moves a single scenario fair value by more
+than 20%, or Weighted Fair Value by more than 15%, must republish the full scenario
+assumption table (earnings base and multiple/discount rate per scenario), not just a
+qualitative bridge. For cyclical or commodity-linked names it must also re-run the
+`Cycle-Trough Cross-Check Gate`.
+
 ### Structural Re-rating Gate
 
 Before finalizing any reassessment, test whether new evidence changes the business
@@ -94,6 +100,53 @@ Required handling:
    step-change, carry it as an upside sensitivity while Base holds the trailing base.
 4. Record the result in the report's earnings-base re-basing block so the numerator
    used for valuation is never silently the trailing figure.
+
+### Cycle-Trough Cross-Check Gate
+
+The two gates above adjust value **upward**: re-rating lifts the multiple, re-basing
+lifts the earnings base. This gate is their **symmetric downside counterpart**. It does
+not undo them — a step-change or re-rating that cleared its evidentiary bar stands. Its
+job is to bound how much of any re-based or re-rated floor is actually evidence-backed
+and force the residual cyclicality to stay visible, so an earnings base set at or near a
+cycle peak is not silently treated as steady-state.
+
+Trigger this gate whenever the company is classified **cyclical or commodity-linked**
+(including `Cyclical + Structural`) in [industry-structure](industry-structure.md), and
+Bear/Base/Bull fair values are being set or changed — in full reports **and** in
+incremental or event-review updates that touch scenario values. It is a cross-check, not
+a veto: it cannot weaken the `Structural Re-rating Gate` or `Earnings Base Re-basing
+Gate`, only expose the part of the floor those gates did not justify.
+
+Produce every item below as a required row, not optional guidance:
+
+1. **Cycle-position statement**: `early / mid / late / peak`, with the evidence used —
+   pricing vs cost curve, margin vs history, inventory, capex cycle, supply announcements.
+2. **Historical amplitude table**: peak-to-trough % change of revenue, gross margin, and
+   EPS (use FCF or book value per share where EPS goes negative) over at least the last
+   two completed cycles. If the company is too young, use the closest industry proxy and
+   say so.
+3. **Floor-coverage arithmetic**: quantify the share of current run-rate revenue and
+   earnings protected by *disclosed* contractual mechanisms — take-or-pay, minimum-revenue
+   clauses, price floors/collars, hedge book, backlog with cancellation terms,
+   regulated/contracted revenue share. The Bear case may credit floor protection only up
+   to that disclosed coverage; stress the uncovered remainder at mid-cycle or
+   historical-trough economics, whichever the evidence supports.
+4. **Explicit trough anchor inside the Bear case**: a trough-year earnings scenario
+   (trough earnings × trough multiple) or an asset-based floor (P/B, NAV, replacement
+   cost). State which anchor is used and show its value even when the headline Bear is set
+   above it.
+5. **Gap statement**: if the headline Bear sits above the trough anchor, the gap must be
+   fully explained by the quantified floor coverage plus any structural arguments that
+   already passed the upward gates; if it cannot be, pull the Bear down to what the
+   evidence supports.
+6. **Probability-asymmetry check**: when cycle-position evidence says late-cycle or peak,
+   keeping symmetric scenario probabilities requires an explicit one-line justification;
+   otherwise fatten the Bear tail.
+
+Record the result in the report's cycle-trough cross-check block. The historical
+amplitude table (item 2) is fed from the earnings-base representativeness check in
+[financial-diagnostics](financial-diagnostics.md) whenever the divergence is a cyclical
+peak.
 
 ## 2) Valuation Families
 
@@ -283,3 +336,6 @@ Produce:
 5. Sensitivity summary
 6. Market-implied expectations takeaway
 7. Key assumptions that most affect conclusion
+8. Cycle-trough cross-check block for cyclical or commodity-linked names: cycle-position
+   statement, historical amplitude table, floor-coverage arithmetic, Bear trough anchor,
+   gap statement, and probability-asymmetry check (per the `Cycle-Trough Cross-Check Gate`)
