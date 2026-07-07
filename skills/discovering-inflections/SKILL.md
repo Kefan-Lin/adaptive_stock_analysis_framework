@@ -83,11 +83,27 @@ For each longlist name, score the dual engine and fill the candidate contract
 - Apply the `¬trap` checks; set `passes_A_gate`, the A/B/C/trap_risk/D scores,
   evidence (cite sources), and a one-paragraph `thesis`.
 
-### Stage 3 — Rank and route
-Rank eligible candidates (pass A gate, trap_risk under ceiling) by `D`. For the
-top N, hand each to `$analyzing-stocks` using the `routing` block (exchange,
-currency, tradable line, `suggested_style = turnaround`) plus the `thesis` as the
-scope for a full work-up.
+### Stage 3 — Rank, debate-gate, route, record
+
+1. **Rank** eligible candidates (pass A gate, trap_risk under ceiling, ADV
+   floor) by `D`.
+2. **Debate gate (mandatory before any candidate is routed):** run
+   `$debating-stocks` on each top-N candidate as the value-trap gate — the
+   candidate contract's `evidence` and `thesis` are the debate brief; the
+   question is "genuine inflection or value-trap / head-fake?". This is the
+   judgment layer the backtest showed free numeric signals cannot provide.
+   A candidate whose verdict is trap / likely-trap stops here: log the verdict
+   and its cruxes next to the candidate, do not route it.
+3. **Route survivors** to `$analyzing-stocks` using the `routing` block
+   (exchange, currency, tradable line, `suggested_style = turnaround`) plus
+   the `thesis` as scope. Candidates carry canonical `symbol` + `market`
+   (e.g. akshare `600519` → `600519.SH`) per the decision-records contract in
+   `analyzing-stocks/references/decision-records.md`.
+4. **Record:** when a private state home is configured (see the
+   decision-records reference's resolution rules), offer to persist each
+   routed survivor as a `mode: new-idea` decision record plus its `INDEX.md`
+   row, so discovery output lands in the same per-symbol timeline the
+   decision workflow reads.
 
 ## What this does and does not claim
 
