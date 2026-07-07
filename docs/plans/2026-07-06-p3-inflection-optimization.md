@@ -60,7 +60,7 @@
 - Modify: moved test files' internal paths; add skip guards
 - Keep: `tests/test_contract.py` (stays for main CI)
 
-- [ ] **Step 1: Create the package venv and copy the data cache**
+- [x] **Step 1: Create the package venv and copy the data cache**
 
 ```bash
 python3 -m venv .venv-p3 && .venv-p3/bin/pip install --quiet -r inflection_discovery/requirements.txt pytest
@@ -70,7 +70,7 @@ echo ".venv-p3/" >> .gitignore
 
 Expected: pip succeeds; cache copied (speeds Task 8; gitignored).
 
-- [ ] **Step 2: Confirm the current red state (CI-sim fails before the move)**
+- [x] **Step 2: Confirm the current red state (CI-sim fails before the move)**
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' 2>&1 | tail -3
@@ -78,7 +78,7 @@ Expected: pip succeeds; cache copied (speeds Task 8; gitignored).
 
 Expected: errors (`ModuleNotFoundError: No module named 'pandas'`) — this is the bug being fixed.
 
-- [ ] **Step 3: Move the 7 pandas-dependent test files**
+- [x] **Step 3: Move the 7 pandas-dependent test files**
 
 ```bash
 mkdir -p inflection_discovery/tests
@@ -87,11 +87,11 @@ git mv tests/test_ashare.py tests/test_canary.py tests/test_live_akshare.py test
 
 (`tests/test_contract.py` stays — it is pandas-free and guards the candidate schema in main CI.)
 
-- [ ] **Step 4: Fix repo-relative paths inside the moved files**
+- [x] **Step 4: Fix repo-relative paths inside the moved files**
 
 The moved files sit one directory deeper. `grep -n "parents\[1\]" inflection_discovery/tests/*.py` and change each to `parents[2]` (e.g. `test_llm_backtest.py:19` `REPORTS = Path(__file__).resolve().parents[1] / "reports"` → `parents[2]`). Verify no other relative assumptions: `grep -n "Path(__file__)" inflection_discovery/tests/*.py`.
 
-- [ ] **Step 5: Gate network tests behind an env flag**
+- [x] **Step 5: Gate network tests behind an env flag**
 
 At the top of each module that hits the live network (`test_canary.py`, `test_ashare.py`, `test_live_akshare.py`) add:
 
@@ -107,7 +107,7 @@ pytestmark = pytest.mark.skipif(
 
 If a module mixes offline and live tests, apply the marker per-test instead of module-wide — inspect each and keep genuinely offline assertions unguarded.
 
-- [ ] **Step 6: Verify both suites**
+- [x] **Step 6: Verify both suites**
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' 2>&1 | tail -3
@@ -116,7 +116,7 @@ If a module mixes offline and live tests, apply the marker per-test instead of m
 
 Expected: unittest suite ALL PASS (172 main tests + test_contract); pytest passes with network tests SKIPPED.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add -A tests inflection_discovery/tests .gitignore
@@ -130,7 +130,7 @@ git commit -m "Split package tests out of main CI's discovery path; gate live-ne
 **Files:**
 - Modify: `.github/workflows/ci.yml`
 
-- [ ] **Step 1: Append the job** (same indentation level as `test:`):
+- [x] **Step 1: Append the job** (same indentation level as `test:`):
 
 ```yaml
   inflection-tests:
@@ -146,7 +146,7 @@ git commit -m "Split package tests out of main CI's discovery path; gate live-ne
         run: python -m pytest inflection_discovery/tests -v
 ```
 
-- [ ] **Step 2: Sanity-check the workflow parses and CI-sim still green**
+- [x] **Step 2: Sanity-check the workflow parses and CI-sim still green**
 
 ```bash
 .venv/bin/python -c "import yaml; yaml.safe_load(open('.github/workflows/ci.yml')); print('yaml ok')"
@@ -155,7 +155,7 @@ git commit -m "Split package tests out of main CI's discovery path; gate live-ne
 
 Expected: `yaml ok`; main suite passes.
 
-- [ ] **Step 3: Commit** — `git add .github/workflows/ci.yml && git commit -m "Add CI job running the inflection package tests with real dependencies"`
+- [x] **Step 3: Commit** — `git add .github/workflows/ci.yml && git commit -m "Add CI job running the inflection package tests with real dependencies"`
 
 ---
 
@@ -165,7 +165,7 @@ Expected: `yaml ok`; main suite passes.
 - Delete from tracking (keep generators + fixtures): `reports/*.html`, `reports/backtest_results*.json`, `reports/holdout_results.json`, `excalidraw.log`
 - Modify: `.gitignore`
 
-- [ ] **Step 1: Untrack generated outputs**
+- [x] **Step 1: Untrack generated outputs**
 
 ```bash
 git rm --cached reports/ab_compare.html reports/ashare_curves.html reports/backtest.html reports/dashboard.html reports/price_curves.html reports/backtest_results.json reports/backtest_results_A.json reports/backtest_results_A_top20.json reports/backtest_results_v2.json reports/holdout_results.json excalidraw.log
@@ -173,7 +173,7 @@ git rm --cached reports/ab_compare.html reports/ashare_curves.html reports/backt
 
 KEEP tracked (test fixtures / provenance / docs): `inflection_discovery/benchmark/benchmark.csv`, `reports/llm_scores.json`, `reports/llm_holdout_scores.json`, `reports/holdout_universe.json`, `reports/*.md`, `reports/make_*.py`, `reports/run_holdout.py`.
 
-- [ ] **Step 2: Ignore them going forward** — append to `.gitignore`:
+- [x] **Step 2: Ignore them going forward** — append to `.gitignore`:
 
 ```
 reports/*.html
@@ -182,7 +182,7 @@ reports/holdout_results.json
 *.log
 ```
 
-- [ ] **Step 3: Verify fixtures still resolve**
+- [x] **Step 3: Verify fixtures still resolve**
 
 ```bash
 .venv-p3/bin/python -m pytest inflection_discovery/tests/test_llm_backtest.py -q
@@ -191,7 +191,7 @@ git status --short | head -20
 
 Expected: pass (fixtures untouched); deletions + .gitignore staged, no stray changes.
 
-- [ ] **Step 4: Commit** — `git commit -am "Untrack generated report artifacts and stray log; keep fixtures and generators"`
+- [x] **Step 4: Commit** — `git commit -am "Untrack generated report artifacts and stray log; keep fixtures and generators"`
 
 ---
 
@@ -201,7 +201,7 @@ Expected: pass (fixtures untouched); deletions + .gitignore staged, no stray cha
 - Modify: `inflection_discovery/scorecard/score.py`, `inflection_discovery/harness/__init__.py`, `inflection_discovery/harness/canary.py`, `inflection_discovery/edgar.py`
 - Test: `inflection_discovery/tests/test_scorecard.py`, `inflection_discovery/tests/test_canary.py`, new asserts
 
-- [ ] **Step 1: Failing test — `_yoy` on a negative prior base emits nothing**
+- [x] **Step 1: Failing test — `_yoy` on a negative prior base emits nothing**
 
 Append to `inflection_discovery/tests/test_scorecard.py` (match its existing synthetic-frame style):
 
@@ -217,7 +217,7 @@ def test_yoy_skips_negative_prior_base():
 
 Run: `.venv-p3/bin/python -m pytest inflection_discovery/tests/test_scorecard.py::test_yoy_skips_negative_prior_base -q` → FAIL (currently returns −1.5).
 
-- [ ] **Step 2: Fix `_yoy`** — in `score.py` (~line 50) replace the base guard:
+- [x] **Step 2: Fix `_yoy`** — in `score.py` (~line 50) replace the base guard:
 
 ```python
         # Growth vs a non-positive base is sign-flipped/meaningless (loss-making
@@ -229,7 +229,7 @@ Run: `.venv-p3/bin/python -m pytest inflection_discovery/tests/test_scorecard.py
 
 Run the test → PASS. Run the whole scorecard file → all pass.
 
-- [ ] **Step 3: Lazy harness imports.** Replace `inflection_discovery/harness/__init__.py` with:
+- [x] **Step 3: Lazy harness imports.** Replace `inflection_discovery/harness/__init__.py` with:
 
 ```python
 """Harness namespace. Submodules import pandas; import them directly
@@ -240,7 +240,7 @@ consumers can import the package without the heavy dependencies."""
 Then fix any `from inflection_discovery.harness import X` usages found by:
 `grep -rn "from inflection_discovery.harness import\|from .harness import" inflection_discovery reports tests skills` — point each at the submodule (e.g. `from inflection_discovery.harness.backtest import run_backtest`).
 
-- [ ] **Step 4: Offline-soft canaries.** In `canary.py`, wrap each network-dependent canary body (the SEC/yfinance fetches, e.g. `filing_lag_canary` ~line 41) so a fetch failure returns a failed-but-not-raised result, matching the file's existing result type:
+- [x] **Step 4: Offline-soft canaries.** In `canary.py`, wrap each network-dependent canary body (the SEC/yfinance fetches, e.g. `filing_lag_canary` ~line 41) so a fetch failure returns a failed-but-not-raised result, matching the file's existing result type:
 
 ```python
     try:
@@ -251,7 +251,7 @@ Then fix any `from inflection_discovery.harness import X` usages found by:
 
 (Adapt `CanaryResult(...)` to the module's actual result constructor — read the file first.) Add a test in `test_canary.py` (offline, unguarded by the network marker) that monkeypatches the fetch function to raise and asserts `run_battery()` returns without raising and marks that canary failed.
 
-- [ ] **Step 5: SEC UA guard.** In `edgar.py`, at the single choke point where HTTP requests are issued (grep `SEC_USER_AGENT`), insert before the request:
+- [x] **Step 5: SEC UA guard.** In `edgar.py`, at the single choke point where HTTP requests are issued (grep `SEC_USER_AGENT`), insert before the request:
 
 ```python
     if "contact@example.com" in SEC_USER_AGENT:
@@ -263,7 +263,7 @@ Then fix any `from inflection_discovery.harness import X` usages found by:
 
 Offline test (monkeypatch the env/constant, assert `RuntimeError` on the fetch entry function without any network I/O).
 
-- [ ] **Step 6: Verify both suites + commit**
+- [x] **Step 6: Verify both suites + commit**
 
 ```bash
 .venv-p3/bin/python -m pytest inflection_discovery/tests tests/test_contract.py -q
@@ -281,7 +281,7 @@ git commit -am "Guard _yoy base, soften offline canaries, lazy harness imports, 
 
 Recycled tickers (BBBY) make yfinance serve a NEW entity's prices under the old symbol, so the spec's "dead name contributes its realized loss" is violated (−35% instead of ≈−100%).
 
-- [ ] **Step 1: Failing test** (offline, synthetic — new file `inflection_discovery/tests/test_prices.py`):
+- [x] **Step 1: Failing test** (offline, synthetic — new file `inflection_discovery/tests/test_prices.py`):
 
 ```python
 import pandas as pd
@@ -313,7 +313,7 @@ def test_forward_return_no_gap_unchanged(monkeypatch):
 
 Adjust the `closes` construction so the last pre-gap close is 0.08 (count the bdate_range length at test-writing time — compute it in the test instead of hardcoding 232: `n_old = len(pd.bdate_range("2022-06-01", "2023-05-01")); closes = [10.0]*(n_old-1) + [0.08] + [5.0]*...`). Run → first test FAILS (returns ≈ −0.5 from the recycled $5).
 
-- [ ] **Step 2: Implement gap truncation** in `forward_return` after `fut = df[df.index <= end_date]["Close"].dropna()`:
+- [x] **Step 2: Implement gap truncation** in `forward_return` after `fut = df[df.index <= end_date]["Close"].dropna()`:
 
 ```python
     window = fut[fut.index > T]
@@ -331,7 +331,7 @@ Adjust the `closes` construction so the last pre-gap close is 0.08 (count the bd
 
 (Keep the existing `fut.empty` guard after this; if truncation empties the window, fall through to the pre-existing behavior of using the last close ≤ T+months from before T — i.e. return None as today.) Run tests → PASS.
 
-- [ ] **Step 3: Recycled-ticker canary** (network-gated). In `canary.py`, add to the battery:
+- [x] **Step 3: Recycled-ticker canary** (network-gated). In `canary.py`, add to the battery:
 
 ```python
 def recycled_ticker_canary() -> "CanaryResult":
@@ -347,7 +347,7 @@ def recycled_ticker_canary() -> "CanaryResult":
 
 (Adapt constructor/registration to the module's existing pattern.)
 
-- [ ] **Step 4: Verify + commit**
+- [x] **Step 4: Verify + commit**
 
 ```bash
 .venv-p3/bin/python -m pytest inflection_discovery/tests -q
@@ -362,7 +362,7 @@ git add -A && git commit -m "Floor dead names at their last pre-gap close; add r
 - Modify: `inflection_discovery/pit/prices.py` (new helper), `inflection_discovery/harness/backtest.py` + `inflection_discovery/harness/llm_backtest.py` (eligibility), `inflection_discovery/scorecard/taxonomy.py` (threshold constant)
 - Test: `inflection_discovery/tests/test_prices.py`, `inflection_discovery/tests/test_metrics.py`
 
-- [ ] **Step 1: Failing tests**
+- [x] **Step 1: Failing tests**
 
 ```python
 def test_median_dollar_adv(monkeypatch):
@@ -380,7 +380,7 @@ def test_median_dollar_adv_empty(monkeypatch):
 
 Run → FAIL (`median_dollar_adv` undefined).
 
-- [ ] **Step 2: Implement the helper** in `pit/prices.py`:
+- [x] **Step 2: Implement the helper** in `pit/prices.py`:
 
 ```python
 def median_dollar_adv(ticker: str, T, days: int = 60) -> Optional[float]:
@@ -399,7 +399,7 @@ def median_dollar_adv(ticker: str, T, days: int = 60) -> Optional[float]:
 
 Run → PASS.
 
-- [ ] **Step 3: Threshold in the taxonomy.** In `scorecard/taxonomy.py`, next to `TRAP_CEILING`, add:
+- [x] **Step 3: Threshold in the taxonomy.** In `scorecard/taxonomy.py`, next to `TRAP_CEILING`, add:
 
 ```python
 # Spec §Metrics liquidity haircut: names whose trailing-60-session median
@@ -408,11 +408,11 @@ Run → PASS.
 MIN_ADV_USD = 1_000_000.0
 ```
 
-- [ ] **Step 4: Wire into eligibility.** Read `harness/backtest.py` `score_universe`/`evaluate_row` and `harness/llm_backtest.py` (~line 100, where `passes_A_gate` and the trap ceiling gate top-N membership). At the same gate, exclude names with `median_dollar_adv(ticker, date) or 0.0) < MIN_ADV_USD` — treating `None` as excluded — and collect them into an `excluded_illiquid` list surfaced in `summarize`'s output next to `excluded_no_data`. Add a metrics-level test in `test_metrics.py` with synthetic candidates where one name fails only the ADV gate: assert it is absent from top-N and present in `excluded_illiquid`.
+- [x] **Step 4: Wire into eligibility.** Read `harness/backtest.py` `score_universe`/`evaluate_row` and `harness/llm_backtest.py` (~line 100, where `passes_A_gate` and the trap ceiling gate top-N membership). At the same gate, exclude names with `median_dollar_adv(ticker, date) or 0.0) < MIN_ADV_USD` — treating `None` as excluded — and collect them into an `excluded_illiquid` list surfaced in `summarize`'s output next to `excluded_no_data`. Add a metrics-level test in `test_metrics.py` with synthetic candidates where one name fails only the ADV gate: assert it is absent from top-N and present in `excluded_illiquid`.
 
-- [ ] **Step 5: Spec sync.** In `docs/plans/2026-06-28-inflection-discovery-design.md` §Metrics, change "A liquidity haircut / minimum-ADV filter is applied" to state the concrete rule: trailing-60-session median dollar ADV ≥ $1M at the as-of date, else excluded and counted (`excluded_illiquid`).
+- [x] **Step 5: Spec sync.** In `docs/plans/2026-06-28-inflection-discovery-design.md` §Metrics, change "A liquidity haircut / minimum-ADV filter is applied" to state the concrete rule: trailing-60-session median dollar ADV ≥ $1M at the as-of date, else excluded and counted (`excluded_illiquid`).
 
-- [ ] **Step 6: Verify + commit**
+- [x] **Step 6: Verify + commit**
 
 ```bash
 .venv-p3/bin/python -m pytest inflection_discovery/tests -q
@@ -430,9 +430,9 @@ git add -A && git commit -m "Implement the spec's minimum-ADV liquidity haircut 
 
 This task needs network. Export `SEC_USER_AGENT="inflection-discovery-research <contact-email>"` before running (the orchestrator supplies the real contact address at dispatch time — never commit it); the cache in `.cache_inflection/` makes reruns mostly cache-hits.
 
-- [ ] **Step 1: Extend `run_holdout.py` output** with, per arm: mean, **median**, per-name table, leave-one-out and leave-two-out (drop the 1–2 largest winners) means, and a `ceiling_boundary` note listing any cleared name whose `trap` equals `TRAP_CEILING` exactly. Pure-python additions to its existing summary dict; no scoring changes (scores stay the frozen `llm_holdout_scores.json`).
+- [x] **Step 1: Extend `run_holdout.py` output** with, per arm: mean, **median**, per-name table, leave-one-out and leave-two-out (drop the 1–2 largest winners) means, and a `ceiling_boundary` note listing any cleared name whose `trap` equals `TRAP_CEILING` exactly. Pure-python additions to its existing summary dict; no scoring changes (scores stay the frozen `llm_holdout_scores.json`).
 
-- [ ] **Step 2: Write the seeded sampler** `reports/sample_holdout.py`:
+- [x] **Step 2: Write the seeded sampler** `reports/sample_holdout.py`:
 
 ```python
 """Reproducible holdout sampler (audit C2). Usage:
@@ -444,7 +444,7 @@ its sha256 is recorded so the draw is verifiable."""
 
 Implement with `argparse` + `random.Random(seed).sample`; record `_meta` exactly as documented. Offline unit test (`inflection_discovery/tests/test_sample_holdout.py`): same seed + source → identical draw; `_meta.sha256` matches the file.
 
-- [ ] **Step 3: Rerun engine B, the A harness, and the holdout returns** with the Task-6/7 metric layer:
+- [x] **Step 3: Rerun engine B, the A harness, and the holdout returns** with the Task-6/7 metric layer:
 
 ```bash
 export SEC_USER_AGENT="inflection-discovery-research kflin1996+sec@gmail.com"
@@ -455,14 +455,14 @@ export SEC_USER_AGENT="inflection-discovery-research kflin1996+sec@gmail.com"
 
 (Read `cli.py` and each module's `__main__` for the real entry points before running; the commands above show intent, use the actual interfaces. Results land as untracked JSON — fine, the report tables are the durable artifact.)
 
-- [ ] **Step 4: Update `reports/comparison-report.md` to v4.** Required content:
+- [x] **Step 4: Update `reports/comparison-report.md` to v4.** Required content:
   1. New A-vs-B and B tables from the rerun (post-ADV, post-dead-name numbers), each noting `excluded_illiquid` counts.
   2. **C1 correction block** in the holdout section: cleared/flagged shown as mean AND median; leave-one/two-out sensitivity; the LESL `trap = 0.70 = TRAP_CEILING` inclusive-boundary fact; explicit sentence that the trap-screen split is **two-name-fragile and threshold-boundary-dependent — treat as suggestive, not validated**.
   3. **C2 reproducibility disclaimer**: the 2026-01-31 holdout's sampling is not reproducible (no seed/source committed; evidence file not in repo; scores+results same commit) and the pool is survivorship-filtered; future holdouts must use `reports/sample_holdout.py`.
   4. One-line disclosures: price-only returns vs dividend-heavy control (~1.6pp, conservative); "top-10 picks" = surfaced labeled positives, not a tradeable basket; control arm fixed at 2023-06-30 ref-date (effective n 53–65 by date); A scores are hand-authored frozen files (no runtime LLM loop).
-- [ ] **Step 5: Sync the SKILL.md claims paragraph** ("What this does and does not claim") to the v4 numbers and the downgraded holdout language — the current text says "trap/quality screen generalized"; it must now say the blind trap-screen evidence is suggestive but two-name-fragile (C1) and non-reproducible (C2).
+- [x] **Step 5: Sync the SKILL.md claims paragraph** ("What this does and does not claim") to the v4 numbers and the downgraded holdout language — the current text says "trap/quality screen generalized"; it must now say the blind trap-screen evidence is suggestive but two-name-fragile (C1) and non-reproducible (C2).
 
-- [ ] **Step 6: Verify + commit (two commits)**
+- [x] **Step 6: Verify + commit (two commits)**
 
 ```bash
 .venv-p3/bin/python -m pytest inflection_discovery/tests -q
@@ -481,7 +481,7 @@ git commit -m "Report v4: rerun with ADV+dead-name metrics; downgrade holdout cl
 - Modify: `inflection_discovery/contract.py`, `inflection_discovery/ashare/discover.py` (~lines 78–101), `inflection_discovery/live/discover.py`
 - Test: `tests/test_contract.py` (stays pandas-free), new `inflection_discovery/tests/` case if pandas needed
 
-- [ ] **Step 1: Failing tests** — append to `tests/test_contract.py` (stdlib-only):
+- [x] **Step 1: Failing tests** — append to `tests/test_contract.py` (stdlib-only):
 
 ```python
 def test_canonical_symbol_bridge():
@@ -506,7 +506,7 @@ def test_symbol_patterns_match_repo_validator():
 
 Note: `scripts/validate_records.py` imports `yaml` at module level — if `exec_module` fails on that in the pandas-free venv, PyYAML IS installed there (main venv), so it works; in `.venv-p3` install pyyaml too (`pip install pyyaml`). Run → FAIL (module missing).
 
-- [ ] **Step 2: Implement `inflection_discovery/symbols.py`:**
+- [x] **Step 2: Implement `inflection_discovery/symbols.py`:**
 
 ```python
 """Canonical-symbol bridge (decision-records contract, spec §Canonical Symbol Form).
@@ -548,9 +548,9 @@ def canonical_symbol(code: str, exchange: str = "") -> Tuple[str, str]:
 
 Run tests → PASS.
 
-- [ ] **Step 3: Extend the candidate contract.** In `contract.py`: add fields `symbol: str = ""` and `market: str = ""` to `Candidate`; in `validate()`, when `symbol` is non-empty require `market` present and `SYMBOL_PATTERNS[market].match(symbol)` (import from `.symbols`); extend `make_routing(ticker, exchange="", currency="USD")` to call `canonical_symbol` (fall back to `(ticker, "US")` on ValueError with the error recorded — never crash routing) and include `"symbol"`/`"market"` keys. Update `ashare/discover.py` (`score_one_ashare` emits `exchange="SSE"/"SZSE"`) and `live/discover.py` to pass their exchange through. Add validator tests to `tests/test_contract.py` (bad: `symbol="600519"`+`market="CN"` → violation; good: `"600519.SH"`).
+- [x] **Step 3: Extend the candidate contract.** In `contract.py`: add fields `symbol: str = ""` and `market: str = ""` to `Candidate`; in `validate()`, when `symbol` is non-empty require `market` present and `SYMBOL_PATTERNS[market].match(symbol)` (import from `.symbols`); extend `make_routing(ticker, exchange="", currency="USD")` to call `canonical_symbol` (fall back to `(ticker, "US")` on ValueError with the error recorded — never crash routing) and include `"symbol"`/`"market"` keys. Update `ashare/discover.py` (`score_one_ashare` emits `exchange="SSE"/"SZSE"`) and `live/discover.py` to pass their exchange through. Add validator tests to `tests/test_contract.py` (bad: `symbol="600519"`+`market="CN"` → violation; good: `"600519.SH"`).
 
-- [ ] **Step 4: Verify + commit**
+- [x] **Step 4: Verify + commit**
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' 2>&1 | tail -3
@@ -566,7 +566,7 @@ git add -A && git commit -m "Candidates carry canonical symbol+market; bridge lo
 - Modify: `skills/discovering-inflections/SKILL.md` (Stage 3)
 - Create: `tests/test_discovering_inflections_contract.py` (stdlib-only, runs in main CI)
 
-- [ ] **Step 1: Failing contract tests** — new `tests/test_discovering_inflections_contract.py`:
+- [x] **Step 1: Failing contract tests** — new `tests/test_discovering_inflections_contract.py`:
 
 ```python
 """String-level contract tests for the discovering-inflections skill wiring (P3)."""
@@ -601,7 +601,7 @@ if __name__ == "__main__":
 
 Run: `.venv/bin/python -m unittest tests.test_discovering_inflections_contract -v` → FAIL.
 
-- [ ] **Step 2: Rewrite Stage 3** in `SKILL.md` (replace the current "### Stage 3 — Rank and route" block):
+- [x] **Step 2: Rewrite Stage 3** in `SKILL.md` (replace the current "### Stage 3 — Rank and route" block):
 
 ```markdown
 ### Stage 3 — Rank, debate-gate, route, record
@@ -627,7 +627,7 @@ Run: `.venv/bin/python -m unittest tests.test_discovering_inflections_contract -
    output lands in the same per-symbol timeline the decision workflow reads.
 ```
 
-- [ ] **Step 3: Run tests + both suites; commit**
+- [x] **Step 3: Run tests + both suites; commit**
 
 ```bash
 .venv/bin/python -m unittest tests.test_discovering_inflections_contract -v
@@ -643,7 +643,7 @@ git add -A && git commit -m "Wire Stage 3: debate-gated routing and new-idea rec
 - Create: `skills/discovering-inflections/agents/openai.yaml`
 - Modify: `scripts/validate_repo.py` (FULL_REQUIRED), `tests/test_discovering_inflections_contract.py`
 
-- [ ] **Step 1: Failing test** — append to `tests/test_discovering_inflections_contract.py`:
+- [x] **Step 1: Failing test** — append to `tests/test_discovering_inflections_contract.py`:
 
 ```python
     def test_skill_registered_and_platform_complete(self) -> None:
@@ -655,17 +655,17 @@ git add -A && git commit -m "Wire Stage 3: debate-gated routing and new-idea rec
 
 Run → FAIL.
 
-- [ ] **Step 2: Create `agents/openai.yaml`** by mirroring an existing sibling exactly (read `skills/analyzing-stocks/agents/openai.yaml` first and copy its shape — name, description, entry point — with this skill's values). Register the skill: add its SKILL.md (and openai.yaml if siblings are listed too — match how siblings appear) to `FULL_REQUIRED` in `scripts/validate_repo.py`.
+- [x] **Step 2: Create `agents/openai.yaml`** by mirroring an existing sibling exactly (read `skills/analyzing-stocks/agents/openai.yaml` first and copy its shape — name, description, entry point — with this skill's values). Register the skill: add its SKILL.md (and openai.yaml if siblings are listed too — match how siblings appear) to `FULL_REQUIRED` in `scripts/validate_repo.py`.
 
-- [ ] **Step 3: Verify** — new test passes; `.venv/bin/python scripts/validate_repo.py --profile full` passes; `bash tests/test_install.sh` passes (the new skill installs via the glob).
+- [x] **Step 3: Verify** — new test passes; `.venv/bin/python scripts/validate_repo.py --profile full` passes; `bash tests/test_install.sh` passes (the new skill installs via the glob).
 
-- [ ] **Step 4: Commit** — `git commit -am "Register discovering-inflections: openai.yaml parity and full-profile validation"`
+- [x] **Step 4: Commit** — `git commit -am "Register discovering-inflections: openai.yaml parity and full-profile validation"`
 
 ---
 
 ### Task 12: Final verification + merge to main
 
-- [ ] **Step 1: Full gate**
+- [x] **Step 1: Full gate**
 
 ```bash
 .venv/bin/python -m unittest discover -s tests -p 'test_*.py' -v 2>&1 | tail -3
@@ -677,9 +677,9 @@ bash tests/test_install.sh
 
 Expected: all pass. The first command is the CI-sim (PyYAML-only) — it is the merge gate.
 
-- [ ] **Step 2: Merge** (orchestrator, after final review): `git -C <main-root> merge p3-optimize`, rerun the gate on main, push per user's standing preference.
+- [x] **Step 2: Merge** (orchestrator, after final review): `git -C <main-root> merge p3-optimize`, rerun the gate on main, push per user's standing preference.
 
-- [ ] **Step 3: Update memory + report** — orchestrator closes out.
+- [x] **Step 3: Update memory + report** — orchestrator closes out.
 
 ## Spec Coverage Map
 
