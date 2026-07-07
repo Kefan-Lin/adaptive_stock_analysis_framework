@@ -39,6 +39,8 @@ FULL_REQUIRED = [
     "skills/debating-stocks/SKILL.md",
     "skills/debating-stocks/REFERENCE.md",
     "skills/debating-stocks/agents/openai.yaml",
+    "skills/discovering-inflections/SKILL.md",
+    "skills/discovering-inflections/agents/openai.yaml",
     "skills/analyzing-banks/SKILL.md",
     "skills/analyzing-banks/agents/openai.yaml",
     "skills/analyzing-consumer-retail/SKILL.md",

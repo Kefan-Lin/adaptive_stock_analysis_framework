@@ -1,0 +1,4 @@
+interface:
+  display_name: "Discovering Inflections"
+  short_description: "Upstream discovery front-end that surfaces earnings/narrative-inflection candidates and routes them into analyzing-stocks"
+  default_prompt: "Use $discovering-inflections to surface depressed, out-of-favor names whose earnings or narrative have started to turn, rank them, and route the best candidates into $analyzing-stocks for a full work-up."

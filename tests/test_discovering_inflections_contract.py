@@ -23,6 +23,12 @@ class DiscoveringInflectionsWiringTests(unittest.TestCase):
         self.assertIn("canonical", self.text)
         self.assertIn("600519.SH", self.text)
 
+    def test_skill_registered_and_platform_complete(self) -> None:
+        openai_yaml = SKILL.parent / "agents" / "openai.yaml"
+        self.assertTrue(openai_yaml.exists(), "missing agents/openai.yaml for platform parity")
+        validator = (REPO_ROOT / "scripts" / "validate_repo.py").read_text(encoding="utf-8")
+        self.assertIn("discovering-inflections", validator)
+
 
 if __name__ == "__main__":
     unittest.main()
