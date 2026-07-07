@@ -117,6 +117,7 @@
 
 - 概率加权价值：
 - 期望收益与收益/风险比：
+- 加权公允价值验算（必须显式列出，不能只给结论）：`Weighted Fair Value = sum(probability × scenario value)`
 
 ### 7.3 Structural re-rating sensitivity（如适用必填）
 
@@ -266,6 +267,16 @@
 - Inferences（推断链）：
 - Assumptions（关键假设）：
 - 数据缺口及影响：
+
+输入验证块（Input verification，见 Step 6.5，跳过即视为报告不完整）：
+
+| 项目 | 来源 1 | 来源 2 / filing-direct | 通过/存疑 |
+| --- | --- | --- | --- |
+| 摊薄股数 diluted share count |  |  |  |
+| 净债务/净现金 net debt |  |  |  |
+| 估值盈利基数 valuation earnings base |  |  |  |
+
+- 币种与交易线核对（ADR / 双重上市时必填）：`<primary currency ↔ tradable line>`
 
 最后一行固定输出（与 Section 9.0 Red-Team Gate 第 2 条呼应）：
 `最可能错的地方是：...`

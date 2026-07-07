@@ -25,7 +25,8 @@ Core principle: **先做行业分型，再做估值，再做仓位建议**。不
    diverges materially from the trailing full-year or TTM earnings base, and run the
    `Cycle-Trough Cross-Check Gate` whenever the name is cyclical or commodity-linked and
    Bear/Base/Bull values are being set or changed.
-8. Produce the unified report with stance and position sizing.
+8. Run the input verification pass: confirm the critical valuation inputs and show the weighted-fair-value arithmetic before anything is finalized.
+9. Produce the unified report with stance and position sizing.
 
 Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selection is incomplete.
 
@@ -177,6 +178,24 @@ Always load these references from this skill:
 - Use [portfolio-sizing](references/portfolio-sizing.md) for `Core / Starter / Speculative / Watch-Avoid`.
 - Use [portfolio-construction](references/portfolio-construction.md) to convert the per-name tier
   into a portfolio-adjusted size (sector caps, KPI-driver correlation, factor tilt) for report Section 9.1.
+
+## Step 6.5: Input Verification Pass (Mandatory)
+
+Before producing the report, run a cheap audit of the inputs every downstream
+number depends on. A wrong diluted share count or net debt figure silently
+corrupts Weighted Fair Value, margin of safety, and sizing.
+
+- Verify the three critical inputs per [source-policy](references/source-policy.md)
+  `Critical-Input Verification`: the **diluted share count**, **net debt** (or net
+  cash), and the **valuation earnings base** (the earnings/cash-flow numerator the
+  valuation actually uses). Each must be confirmed by two independent sources or one
+  filing-direct citation; state any discrepancy and lower confidence one band.
+- Recompute Weighted Fair Value as an explicit shown line, `sum(probability ×
+  scenario value)`, not an asserted scalar; it must reconcile with the scenario
+  table.
+- For dual-listed / ADR names, assert the currency-and-tradable-line reconciliation
+  before stating the target range.
+- Record the pass in report Section 10.4's `输入验证块` so skipping it is visible.
 
 ## Step 7: Produce the Unified Report
 

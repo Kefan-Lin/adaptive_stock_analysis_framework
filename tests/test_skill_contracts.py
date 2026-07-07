@@ -443,5 +443,34 @@ class SkillMetadataContractTests(unittest.TestCase):
                 )
 
 
+class InputVerificationContractTests(unittest.TestCase):
+    def test_controller_has_input_verification_step_before_report(self) -> None:
+        controller = read("skills/analyzing-stocks/SKILL.md")
+        self.assertIn("Step 6.5", controller)
+        self.assertIn("Input Verification Pass", controller)
+        for critical_input in ["diluted share count", "net debt", "valuation earnings base"]:
+            self.assertIn(critical_input, controller)
+        # Verification precedes report production
+        self.assertGreater(controller.find("Step 7"), controller.find("Step 6.5"))
+
+    def test_source_policy_requires_dual_source_on_critical_inputs(self) -> None:
+        source = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("Critical-Input Verification", source)
+        self.assertIn("two independent sources", source)
+        self.assertIn("one filing-direct citation", source)
+        self.assertIn("lower confidence one band", source)
+
+    def test_report_template_shows_weighted_fair_value_math(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("sum(probability × scenario value)", template)
+
+    def test_report_template_has_input_verification_block(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("输入验证块", template)
+        for column in ["项目", "来源", "通过/存疑"]:
+            self.assertIn(column, template)
+        self.assertIn("币种与交易线核对", template)
+
+
 if __name__ == "__main__":
     unittest.main()

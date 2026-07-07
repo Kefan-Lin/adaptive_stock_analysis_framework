@@ -182,6 +182,26 @@ When the primary reporting currency differs from the analysis or comparison curr
 
 If FX rates cannot be sourced reliably, lower confidence and flag as a data gap.
 
+## Critical-Input Verification
+
+Three inputs drive every downstream valuation number and must be verified before a
+report finalizes (see controller Step 6.5):
+
+1. **Diluted share count** — fully diluted, including options, RSUs, convertibles,
+   and recent issuance/buyback since the last balance sheet.
+2. **Net debt / net cash** — total debt minus cash and equivalents at the latest
+   reporting date, plus any post-period capital action.
+3. **Valuation earnings base** — the earnings, FCF, book value, NAV, or float figure
+   the chosen valuation family actually multiplies or discounts.
+
+Each must be confirmed by **two independent sources** (e.g. the filing plus a data
+service) or **one filing-direct citation** (the primary document itself, cited with
+date and line). If the two sources disagree, state the discrepancy, use the
+filing-direct value, and **lower confidence one band**. Do not silently pick one.
+
+This is the ordinary-path equivalent of the fact-checker that `debating-stocks`
+runs; it is not optional.
+
 ## Failure Conditions
 
 Do not finalize a confident stance if:
