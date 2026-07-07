@@ -1,28 +1,60 @@
 # Inflection Discovery — Backtest & A-vs-B Comparison Report (v4)
 
-**Date:** 2026-07-06 (v4: ADV + dead-name metric rerun; holdout downgrade) ·
-2026-06-29 (v3: full Implementation-A backtest) · 2026-06-28 (v2: engine B)
+**Date:** 2026-07-07 (v4.1: dead-name mechanism fix — curated registry +
+identity-break truncation) · 2026-07-06 (v4: ADV + dead-name metric rerun;
+holdout downgrade) · 2026-06-29 (v3: full Implementation-A backtest) ·
+2026-06-28 (v2: engine B)
 **Run:** engines A (LLM judgment) and B (code), point-in-time, free data only.
 
 > **v4 (2026-07-06):** metrics rerun with the **ADV liquidity haircut**
-> (`MIN_ADV_USD`, per-scan-date illiquid exclusion) and **dead-name gap
-> truncation** (dead tickers floored at their last pre-gap close, plus a
-> recycled-ticker canary), and **holdout claims downgraded per an independent
-> methodology audit**. The A-vs-B tables below are regenerated from the fresh
+> (`MIN_ADV_USD`, per-scan-date illiquid exclusion) and **dead-name handling**,
+> and **holdout claims downgraded per an independent methodology audit**. The
+> A-vs-B tables below are regenerated from the fresh
 > `reports/backtest_results_v4_top{10,20}.json`; the holdout section is
 > regenerated from `reports/holdout_results.json` (now carrying median,
 > leave-N-out, and ceiling-boundary fields). Numbers that moved vs v3 are shown
 > `old → new` the first time they appear. v3 mechanism/narrative text is kept
 > where still true.
 >
+> **v4.1 (2026-07-07) — dead-name mechanism corrected.** The v4 draft claimed
+> dead names were realized via *trading-gap truncation* and that the
+> recycled-ticker canary was green. Both were wrong as stated: yfinance
+> **re-anchors recycled tickers to the current live entity and drops the dead
+> leg entirely** (verified 2026-07-07 on BBBY/HTZ/SPCE/SHLD — BBBY's served
+> 24-year history bottoms at $2.65; the 2023 collapse to pennies is simply
+> absent from the feed), so no series-shape rule can realize such a loss, and
+> the canary was in fact **failing live** (BBBY 12m fwd read +0.30). The fix:
+> dead benchmark names are floored via a **curated dead-ticker registry**
+> (`inflection_discovery/pit/dead_tickers.py` — death date + terminal value,
+> same curated-fact class as the benchmark labels), with **identity-break
+> truncation** (>30-day trading gap, or a sub-$1 close jumping >8× in one
+> session) retained as defense-in-depth for feeds that do keep both legs. The
+> `recycled_ticker` canary now **passes live** (2026-07-07 data: BBBY 12m fwd
+> = **−1.0**). The registry itself moves no number in this report (BBBY/FFAI
+> sit outside the pick baskets and the benchmark-excluded control arm); the
+> identity-break rule, however, **will move the control forward-return means on
+> the next rerun** — 5 of 65 control names carry recycled-shell stitch
+> artifacts (flat penny closes jumping 19–130× overnight) that the v4 control
+> means ingested as real returns (worst case: one name contributing a spurious
+> +118× at a pick date). The tables below remain the committed v4 artifacts.
+>
 > **Two things the rerun changed, stated plainly.** (1) The A-vs-B hit/trap
 > **levels rose vs the v3 table** because v4 runs on the current harness (median
-> eligible ≈ 14/date, vs the ~28 the v3 table quoted); the *engine ordering* (A ≥
-> B on both recall and trap-avoidance) is unchanged. (2) The **ADV haircut fired
-> but changed no headline count** — it flagged AXTI illiquid on two *intermediate
-> B-scan* dates and excluded **0 labeled evaluation rows** (`excluded_illiquid: []`
-> at every hit-date, both engines, both cuts). It is in the pipeline and active,
-> not yet load-bearing on this tiny benchmark.
+> eligible ≈ 14/date, vs the ~28 the v3 table quoted) — and that halving of the
+> eligible field is **caused by the ADV haircut itself**: the $1M-ADV gate
+> removes roughly half of the 65-name control arm as verified-illiquid
+> micro-caps/preferreds (the audit measured ~32 of 65 sub-$1M; at 2024-06-30
+> the eligible field goes **27 pre-ADV → 13 post-ADV**, with **0 None-drops** —
+> every exclusion a verified sub-$1M name, none unverifiable). The **thinner
+> control denominator — not engine improvement — is what mechanically lifted
+> the absolute hit levels ~30pp vs v3**; the *engine ordering* (A ≥ B on both
+> recall and trap-avoidance) is unchanged. (2) The **ADV haircut excluded 0
+> labeled evaluation rows** (`excluded_illiquid: []` at every hit-date, both
+> engines, both cuts; its only firings on labeled names are AXTI's two
+> *intermediate B-scan* dates). So the haircut **is load-bearing — on the
+> levels, via the control denominator** — just not via labeled-row exclusions,
+> which were zero. Which is exactly why the **A−B gap, not the levels**, is
+> the read.
 
 **v3 change — the headline:** Implementation A (LLM) is now run through a **full
 comparison-mode backtest** on the same harness as B (previously only a one-name
@@ -34,13 +66,15 @@ strengthening.
 > **What these numbers are.** A discrimination smoke-test, **not** generalizable
 > accuracy. n = 14 positive events / 9 trap tickers; every rate has a wide Wilson
 > CI; treat as directional. Point-in-time integrity is verified at runtime (the
-> leak/recycled-ticker canary battery passes against live yfinance/EDGAR; the
+> 5-canary leak battery passes against live yfinance/EDGAR as of 2026-07-07 —
+> including the recycled-ticker canary, which passes because dead names are
+> realized via the curated dead-ticker registry, BBBY 12m fwd = −1.0; the
 > `inflection_discovery` + contract suites pass). **A's rates are additionally a
 > memorization-contaminated UPPER BOUND** — the model already knows these outcomes
 > (see the A-vs-B section for why that is still a fair *engine* comparison).
-> **v4:** prices now pass through the ADV liquidity haircut and dead-name gap
-> truncation before any metric is computed (see the v4 note above for their
-> effect on this run).
+> **v4/v4.1:** prices now pass through the ADV liquidity haircut and dead-name
+> handling (curated registry floor + identity-break truncation) before any
+> metric is computed (see the v4/v4.1 notes above for their effect on this run).
 
 ## A-vs-B full backtest (v4) — LLM judgment vs code features
 
@@ -90,7 +124,10 @@ Two honest reads of the v4 numbers:
 - **`excluded_illiquid` = 0 at every hit-date** (shown beside `excluded_no_data` =
   2, the two WBA dates with no reconstructable XBRL). The ADV haircut *did* fire —
   AXTI is flagged illiquid on its 2024-03-30 and 2024-08-30 B-scan dates — but
-  those are non-hit intermediate scans, so no labeled row was dropped.
+  those are non-hit intermediate scans, so no labeled row was dropped. The
+  haircut's load-bearing effect is on the **denominator** instead: it is what
+  thins the eligible control field to ~14/date (v4 note), which sets the
+  inflated absolute levels.
 
 **Where A's recall edge comes from (v4):** BB, NOK, COHR, INTC-2025 — exactly the
 **narrative / earnings-judgment** names a text-free keyword counter can't see —
@@ -143,9 +180,10 @@ The single honest gap in the A-vs-B section is that the LLM **already knows** th
 benchmark outcomes. So a holdout was run where the outcome is blind: **T =
 2026-01-31** (after the model's Jan-2026 knowledge cutoff), a **fresh** universe of
 16 depressed names with **zero overlap** with the benchmark or control arm, scored A
-(LLM) and B from ≤T evidence, then measured the realized **~5-month forward return**
-(T → today). Most names are obscure micro-caps with near-zero priors, so this is
-about as blind as a free-data test gets.
+(LLM) and B from ≤T evidence, then measured the realized **T+5mo forward return**
+(pinned at 2026-06-30: `FWD_MONTHS = 5` in `reports/run_holdout.py`, fully
+deterministic — not "T → today"). Most names are obscure micro-caps with
+near-zero priors, so this is about as blind as a free-data test gets.
 
 > **v4 downgrade (read this first).** An independent methodology audit found the v3
 > holdout claims **overstated**. The "cleared arm +125%" spread is carried by two
@@ -156,7 +194,7 @@ about as blind as a free-data test gets.
 > **suggestive, not validated**. The regenerated `holdout_results.json` (median /
 > leave-N-out / ceiling-boundary) is the source of truth for every number here.
 
-| ~5-month forward return (T=2026-01-31) | result |
+| T+5mo forward return (T=2026-01-31, pinned end 2026-06-30) | result |
 |---|---|
 | **A top-5 by D** (CNS, TRIP, FIP, LEAT, FLUT) | mean **−0.6%** · median **+3.2%** |
 | **B top-5 by D** (TRIP, FLUT, JBGS, SYRA, LEAT) | mean **+137%** · median **+3.2%** |
@@ -245,9 +283,10 @@ Short list of measurement choices that bound how the numbers above should be rea
 The single most important v2 finding, updated for the v4 harness. v1 used a 30-name
 control arm (median ~13 eligible/date), so "top-10" was barely selective and the
 57% hit rate was **inflated**. The 65-name control arm fixed that; on the **v4
-harness the median eligible field is 14/date**, so "top-10" ≈ top-70% and "top-20"
-is essentially the whole field — read the **trap** row and the **A−B gap**, not the
-hit-rate levels.
+harness the median eligible field is 14/date** (the ADV haircut is what thins
+the 65-name arm back down to ~14 eligible — see the v4 note), so "top-10" ≈
+top-70% and "top-20" is essentially the whole field — read the **trap** row and
+the **A−B gap**, not the hit-rate levels.
 
 **Engine B alone, v4** (`backtest_results_v4_top{10,20}.json`; `old → new` =
 v3 table → v4):
@@ -362,18 +401,28 @@ holdout names). v2 delivers the A-vs-B *spot validation*, not a full A backtest.
 - **Holdout is a single-shot probe, not a validated result** (C1/C2): two-name-
   fragile spread, ceiling-boundary dependence, non-reproducible + survivorship-
   filtered. A larger seeded multi-regime holdout is the open item.
-- **ADV haircut present but not yet load-bearing:** it fired on AXTI's intermediate
-  scans but excluded 0 labeled rows on this benchmark.
+- **ADV haircut: load-bearing on the levels via the control denominator, not
+  via exclusions.** It excluded 0 labeled rows (its only labeled-name firings
+  are AXTI's intermediate scans), but it halves the eligible control field
+  (median ~28 → 14; 2024-06-30: 27 → 13, 0 None-drops) and thereby produces
+  the ~30pp-inflated absolute hit levels — read the A−B gap, not the levels.
 - **Foreign-filer quarterly gap** (NOK/BILI), **post-spin gating** (SNDK),
   **small-n / regime-noisy forward return** — unchanged from v1.
 
 ## Verdict & next steps
 
-The mechanism's **point-in-time machinery is sound** (canary battery green, now
-including the ADV haircut, dead-name gap truncation, and recycled-ticker canary),
-and the **top-ranked picks outperform the depressed universe at 12 months**. Engine
-B alone **cannot solve the value-trap problem with free numeric signals** (trap rate
-5/9 top-10, 6/9 top-20).
+The mechanism's **point-in-time machinery is sound** — the 5-canary battery is
+green against live yfinance/EDGAR as of 2026-07-07, with `recycled_ticker`
+passing at BBBY 12m fwd = **−1.0**. Dead names are realized via the **curated
+dead-ticker registry** (`pit/dead_tickers.py`): yfinance re-anchors recycled
+tickers to the live successor and drops the dead leg entirely (verified on
+BBBY/HTZ/SPCE/SHLD), so series-shape detection alone cannot realize those
+losses; **identity-break truncation** (>30-day gap, or a sub-$1 close jumping
+>8× in one session) is retained as defense-in-depth — and already earns its
+keep by purging recycled-shell stitch artifacts from 5 of 65 control names on
+future reruns (see the v4.1 note). And the **top-ranked picks outperform the
+depressed universe at 12 months**. Engine B alone **cannot solve the value-trap
+problem with free numeric signals** (trap rate 5/9 top-10, 6/9 top-20).
 
 **The A-vs-B loop (v4):** Implementation A (LLM), on the identical harness and
 control arm, **delivers exactly the discrimination B structurally cannot** — the

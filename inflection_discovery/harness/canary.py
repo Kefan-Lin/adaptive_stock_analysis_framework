@@ -110,8 +110,13 @@ def survivorship_canary() -> Dict:
 
 
 def recycled_ticker_canary() -> Dict:
-    """BBBY died in 2023; its ticker was recycled. forward_return must realize
-    the collapse, not the successor entity's price."""
+    """BBBY died in 2023 and its ticker was recycled; yfinance now serves the
+    symbol as the live successor's continuous history with the dead leg dropped
+    (no gap, no penny prices — nothing for a series-shape detector to see).
+    forward_return must still realize the collapse, not the successor's price:
+    the curated dead-ticker registry (pit/dead_tickers.py) floors names that
+    died inside the window at their terminal value regardless of what series
+    the provider re-anchors under the symbol."""
     try:
         r = forward_return("BBBY", pd.Timestamp("2022-06-30"), months=12)
         ok = r is not None and r <= -0.9
