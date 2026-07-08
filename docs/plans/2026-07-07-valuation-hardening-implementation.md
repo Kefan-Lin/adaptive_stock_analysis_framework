@@ -205,6 +205,15 @@ Bound the free parameters that dominate value: discount rate, terminal value, sc
 - Modify: `skills/analyzing-stocks/references/report-template.md` (§7.1 assumption rows)
 - Modify: `tests/test_skill_contracts.py` (new class `ValuationInputDisciplineContractTests`)
 
+> **Rebase note (Cycle-Trough Gate):** the merged-in Gate added a `### Cycle-Trough
+> Cross-Check Gate` subsection to valuation-scenarios §1 (after the Re-basing Gate, at
+> ~line 107) that includes a *cyclical* probability-asymmetry check. This task's
+> `default prior of 25 / 50 / 25` is a **global** Hard-rule appended to the §1 bullet list
+> (append after the existing `Do not change Bear/Base/Bull ... share price changed` line) —
+> keep them distinct and complementary; do not edit inside the Gate's subsection.
+> value-investing-lens.md and macro-overlay.md were NOT touched by the Gate, so §3 / §5 /
+> the macro floor note apply cleanly.
+
 - [ ] **Step 1: Write the failing contract tests**
 
 Append to `tests/test_skill_contracts.py`:
@@ -350,8 +359,14 @@ No valuation finalizes without live peer context and a moat-consistent terminal 
 
 **Files:**
 - Modify: `skills/analyzing-stocks/references/valuation-scenarios.md` (§8 sanity checks → required comps + moat linkage)
-- Modify: `skills/analyzing-stocks/references/report-template.md` (new §7.5 comps table)
+- Modify: `skills/analyzing-stocks/references/report-template.md` (new §7.6 comps table)
 - Modify: `tests/test_skill_contracts.py` (new class `CrossSectionalReconciliationContractTests`)
+
+> **Rebase note (Cycle-Trough Gate collision):** the merged-in Cycle-Trough Gate already
+> occupies report-template `### 7.5 Cycle-trough cross-check`, so this task's comps table
+> is **§7.6**, not §7.5. Its "Cross-Sectional Reconciliation" (peer comps) is a distinct
+> concept from the Gate's "Cycle-Trough Cross-Check" (own-history cycle trough) — do not
+> conflate or merge the two sections.
 
 - [ ] **Step 1: Write the failing contract tests**
 
@@ -373,7 +388,7 @@ class CrossSectionalReconciliationContractTests(unittest.TestCase):
 
     def test_report_template_has_live_comps_section(self) -> None:
         template = read("skills/analyzing-stocks/references/report-template.md")
-        self.assertIn("7.5 横截面对标", template)
+        self.assertIn("7.6 横截面对标", template)
         for column in ["可比公司", "当前倍数", "隐含溢价/折价"]:
             self.assertIn(column, template)
 ```
@@ -413,10 +428,10 @@ must state the specific evidence that overrides the fade.
 
 - [ ] **Step 4: Add the comps section to report-template**
 
-In `skills/analyzing-stocks/references/report-template.md`, insert a new subsection after `### 7.4 盈利基准 re-basing ...` block (before `## 8. 安全边际...`):
+In `skills/analyzing-stocks/references/report-template.md`, insert a new subsection after the merged-in `### 7.5 Cycle-trough cross-check ...` block (before `## 8. 安全边际...`):
 
 ```markdown
-### 7.5 横截面对标（live comps，必填）
+### 7.6 横截面对标（live comps，必填）
 
 对标 3-5 家可比公司，用估值家族对应的当前倍数，并解释隐含溢价/折价（参见 valuation-scenarios §8）。
 
