@@ -47,7 +47,7 @@ The single highest-leverage fix: a wrong diluted share count or net-debt figure 
 - Modify: `skills/analyzing-stocks/references/report-template.md` (§7.2 explicit math line; §10.4 verification block)
 - Modify: `tests/test_skill_contracts.py` (new class `InputVerificationContractTests`)
 
-- [ ] **Step 1: Write the failing contract tests**
+- [x] **Step 1: Write the failing contract tests**
 
 Append to `tests/test_skill_contracts.py` (before the `if __name__` block):
 
@@ -81,7 +81,7 @@ class InputVerificationContractTests(unittest.TestCase):
         self.assertIn("币种与交易线核对", template)
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_skill_contracts.InputVerificationContractTests -v
@@ -89,7 +89,7 @@ class InputVerificationContractTests(unittest.TestCase):
 
 Expected: all four FAIL (`AssertionError: ... not found`).
 
-- [ ] **Step 3: Add Step 6.5 to the controller**
+- [x] **Step 3: Add Step 6.5 to the controller**
 
 In `skills/analyzing-stocks/SKILL.md`, in the `## Control Flow` numbered list, change the current step 8 to keep the report last but insert a verification step. Replace the line:
 
@@ -126,7 +126,7 @@ corrupts Weighted Fair Value, margin of safety, and sizing.
 - Record the pass in report Section 10.4's `输入验证块` so skipping it is visible.
 ```
 
-- [ ] **Step 4: Add the Critical-Input Verification section to source-policy**
+- [x] **Step 4: Add the Critical-Input Verification section to source-policy**
 
 In `skills/analyzing-stocks/references/source-policy.md`, insert a new section immediately before `## Failure Conditions`:
 
@@ -152,7 +152,7 @@ This is the ordinary-path equivalent of the fact-checker that `debating-stocks`
 runs; it is not optional.
 ```
 
-- [ ] **Step 5: Add the WFV math line and verification block to report-template**
+- [x] **Step 5: Add the WFV math line and verification block to report-template**
 
 In `skills/analyzing-stocks/references/report-template.md`, in `### 7.2 估值结果`, after the line `- 期望收益与收益/风险比：` add:
 
@@ -175,7 +175,7 @@ Then in `### 10.4 证据台账`, after the line `- 数据缺口及影响：` and
 - 币种与交易线核对（ADR / 双重上市时必填）：`<primary currency ↔ tradable line>`
 ```
 
-- [ ] **Step 6: Run the tests, full suite, and validator**
+- [x] **Step 6: Run the tests, full suite, and validator**
 
 ```bash
 .venv/bin/python -m unittest tests.test_skill_contracts.InputVerificationContractTests -v
@@ -185,7 +185,7 @@ Then in `### 10.4 证据台账`, after the line `- 数据缺口及影响：` and
 
 Expected: new tests PASS; full suite OK; validator passes.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add skills/analyzing-stocks/SKILL.md skills/analyzing-stocks/references/source-policy.md skills/analyzing-stocks/references/report-template.md tests/test_skill_contracts.py
@@ -214,7 +214,7 @@ Bound the free parameters that dominate value: discount rate, terminal value, sc
 > value-investing-lens.md and macro-overlay.md were NOT touched by the Gate, so §3 / §5 /
 > the macro floor note apply cleanly.
 
-- [ ] **Step 1: Write the failing contract tests**
+- [x] **Step 1: Write the failing contract tests**
 
 Append to `tests/test_skill_contracts.py`:
 
@@ -256,7 +256,7 @@ class ValuationInputDisciplineContractTests(unittest.TestCase):
         self.assertIn("概率分配理由", template)
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_skill_contracts.ValuationInputDisciplineContractTests -v
@@ -264,7 +264,7 @@ class ValuationInputDisciplineContractTests(unittest.TestCase):
 
 Expected: all six FAIL.
 
-- [ ] **Step 3: Add the WACC construction rule and TV guardrail to value-investing-lens §3**
+- [x] **Step 3: Add the WACC construction rule and TV guardrail to value-investing-lens §3**
 
 In `skills/analyzing-stocks/references/value-investing-lens.md`, replace the `Modeling rules:` block (currently rules 1–5 ending with "Avoid terminal value dominating all value without justification.") with:
 
@@ -296,7 +296,7 @@ with contracted-visibility evidence justifies the durability. Report the TV shar
 in Section 7.1.
 ```
 
-- [ ] **Step 4: Add the probability prior and bear benchmark to valuation-scenarios §1**
+- [x] **Step 4: Add the probability prior and bear benchmark to valuation-scenarios §1**
 
 In `skills/analyzing-stocks/references/valuation-scenarios.md`, in `## 1) Scenario Construction Rules`, extend the `Hard rules:` list by appending two bullets after `- Do not change Bear/Base/Bull fair values solely because the current share price changed.`:
 
@@ -310,7 +310,7 @@ In `skills/analyzing-stocks/references/valuation-scenarios.md`, in `## 1) Scenar
   −20% Bear is too mild for cyclicals; **a milder Bear must be justified** in one line.
 ```
 
-- [ ] **Step 5: Add the floor note to macro-overlay**
+- [x] **Step 5: Add the floor note to macro-overlay**
 
 In `skills/analyzing-stocks/references/macro-overlay.md`, in `## 1) Rate Regime`, after the per-family adjustments block (after the `Regulated utilities / telecom` bullet), add:
 
@@ -322,7 +322,7 @@ in `value-investing-lens.md` (§3 Discount Rate Construction) and
 `Falling`-rate cut that would push the rate below the floor is capped at the floor.
 ```
 
-- [ ] **Step 6: Add the discipline rows to report-template §7.1**
+- [x] **Step 6: Add the discipline rows to report-template §7.1**
 
 In `skills/analyzing-stocks/references/report-template.md`, in `### 7.1 假设表`, immediately after the assumption table (after the `| 概率 |  |  |  |` row), add:
 
@@ -334,7 +334,7 @@ In `skills/analyzing-stocks/references/report-template.md`, in `### 7.1 假设�
 - 概率分配理由（probability rationale，偏离 25/50/25 超过 ±15pp 时必须给证据）：
 ```
 
-- [ ] **Step 7: Run the tests, full suite, and validator**
+- [x] **Step 7: Run the tests, full suite, and validator**
 
 ```bash
 .venv/bin/python -m unittest tests.test_skill_contracts.ValuationInputDisciplineContractTests -v
@@ -344,7 +344,7 @@ In `skills/analyzing-stocks/references/report-template.md`, in `### 7.1 假设�
 
 Expected: new tests PASS; full suite OK; validator passes.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/analyzing-stocks/references/value-investing-lens.md skills/analyzing-stocks/references/valuation-scenarios.md skills/analyzing-stocks/references/macro-overlay.md skills/analyzing-stocks/references/report-template.md tests/test_skill_contracts.py
@@ -368,7 +368,7 @@ No valuation finalizes without live peer context and a moat-consistent terminal 
 > concept from the Gate's "Cycle-Trough Cross-Check" (own-history cycle trough) — do not
 > conflate or merge the two sections.
 
-- [ ] **Step 1: Write the failing contract tests**
+- [x] **Step 1: Write the failing contract tests**
 
 Append to `tests/test_skill_contracts.py`:
 
@@ -393,7 +393,7 @@ class CrossSectionalReconciliationContractTests(unittest.TestCase):
             self.assertIn(column, template)
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_skill_contracts.CrossSectionalReconciliationContractTests -v
@@ -401,7 +401,7 @@ class CrossSectionalReconciliationContractTests(unittest.TestCase):
 
 Expected: all three FAIL.
 
-- [ ] **Step 3: Make cross-sectional reconciliation required in valuation-scenarios**
+- [x] **Step 3: Make cross-sectional reconciliation required in valuation-scenarios**
 
 In `skills/analyzing-stocks/references/valuation-scenarios.md`, in `## 8) Sanity Checks`, after the existing four bullets (ending `- Confirm valuation does not ignore balance-sheet, dilution, or refinancing downside.`) add:
 
@@ -426,7 +426,7 @@ may not persist to perpetuity. A weak-moat name modeling decade-long above-peer 
 must state the specific evidence that overrides the fade.
 ```
 
-- [ ] **Step 4: Add the comps section to report-template**
+- [x] **Step 4: Add the comps section to report-template**
 
 In `skills/analyzing-stocks/references/report-template.md`, insert a new subsection after the merged-in `### 7.5 Cycle-trough cross-check ...` block (before `## 8. 安全边际...`):
 
@@ -445,7 +445,7 @@ In `skills/analyzing-stocks/references/report-template.md`, insert a new subsect
 - 护城河—终值联动（moat verdict < 3.0 时必须说明 excess-return fade 处理）：
 ```
 
-- [ ] **Step 5: Run the tests, full suite, and validator**
+- [x] **Step 5: Run the tests, full suite, and validator**
 
 ```bash
 .venv/bin/python -m unittest tests.test_skill_contracts.CrossSectionalReconciliationContractTests -v
@@ -455,7 +455,7 @@ In `skills/analyzing-stocks/references/report-template.md`, insert a new subsect
 
 Expected: new tests PASS; full suite OK; validator passes.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add skills/analyzing-stocks/references/valuation-scenarios.md skills/analyzing-stocks/references/report-template.md tests/test_skill_contracts.py
@@ -475,7 +475,7 @@ Make estimate noise visible and directional bias resistible, without new infrast
 - Modify: `skills/analyzing-stocks/references/report-template.md` (opposing-case line in §9.0)
 - Modify: `tests/test_skill_contracts.py` (new class `RunStabilityAdversarialContractTests`)
 
-- [ ] **Step 1: Write the failing contract tests**
+- [x] **Step 1: Write the failing contract tests**
 
 Append to `tests/test_skill_contracts.py`:
 
@@ -504,7 +504,7 @@ class RunStabilityAdversarialContractTests(unittest.TestCase):
         self.assertIn("用户方向观点隔离", template)
 ```
 
-- [ ] **Step 2: Run to verify they fail**
+- [x] **Step 2: Run to verify they fail**
 
 ```bash
 .venv/bin/python -m unittest tests.test_skill_contracts.RunStabilityAdversarialContractTests -v
@@ -512,7 +512,7 @@ class RunStabilityAdversarialContractTests(unittest.TestCase):
 
 Expected: all four FAIL.
 
-- [ ] **Step 3: Add the Material-Decision Second Opinion to the workflow**
+- [x] **Step 3: Add the Material-Decision Second Opinion to the workflow**
 
 In `skills/investment-decision-workflow/SKILL.md`, in `## Adversarial Stress-Test (optional escalation)`, after the existing paragraph add:
 
@@ -528,7 +528,7 @@ until the divergence is reconciled. This is the manual precursor to measured run
 (P2 will score the paired WFVs).
 ```
 
-- [ ] **Step 4: Add User-View Isolation to controller Step 1**
+- [x] **Step 4: Add User-View Isolation to controller Step 1**
 
 In `skills/analyzing-stocks/SKILL.md`, in `## Step 1: Define Scope`, after the line `- If user gives no constraints, assume a fundamental-investor context and label assumptions.` add:
 
@@ -539,7 +539,7 @@ In `skills/analyzing-stocks/SKILL.md`, in `## Step 1: Define Scope`, after the l
   construction is not anchored to the user's prior. Record it in report Section 9.0.
 ```
 
-- [ ] **Step 5: Add the MoS process-noise floor to value-investing-lens §5**
+- [x] **Step 5: Add the MoS process-noise floor to value-investing-lens §5**
 
 In `skills/analyzing-stocks/references/value-investing-lens.md`, in `## 5) Margin of Safety Rules`, after the line `Do not use margin of safety in isolation. Combine with quality and balance-sheet checks.` add:
 
@@ -553,7 +553,7 @@ non-valuation reason (quality re-rating with contracted visibility, catalyst, or
 asymmetric optionality), stated explicitly.
 ```
 
-- [ ] **Step 6: Add the opposing-case line to report-template §9.0**
+- [x] **Step 6: Add the opposing-case line to report-template §9.0**
 
 In `skills/analyzing-stocks/references/report-template.md`, in `### 9.0 Red-Team Gate（sign-off 前必答，不可留空）`, after the confirmation-bias check item (item 3, ending `结论：`) and before item 4, add a new mandatory line:
 
@@ -567,7 +567,7 @@ In `skills/analyzing-stocks/references/report-template.md`, in `### 9.0 Red-Team
 
 (Renumber is unnecessary — this is an added falsification item; keep it as item 5 after the existing four. Update the sentence "如果四条中有任一条" to "如果以上各条中有任一条" so the count is not hardcoded.)
 
-- [ ] **Step 7: Run the tests, full suite, and validator**
+- [x] **Step 7: Run the tests, full suite, and validator**
 
 ```bash
 .venv/bin/python -m unittest tests.test_skill_contracts.RunStabilityAdversarialContractTests -v
@@ -577,7 +577,7 @@ In `skills/analyzing-stocks/references/report-template.md`, in `### 9.0 Red-Team
 
 Expected: new tests PASS; full suite OK; validator passes.
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 git add skills/investment-decision-workflow/SKILL.md skills/analyzing-stocks/SKILL.md skills/analyzing-stocks/references/value-investing-lens.md skills/analyzing-stocks/references/report-template.md tests/test_skill_contracts.py
