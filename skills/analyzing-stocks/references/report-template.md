@@ -300,6 +300,8 @@
 | 估值盈利基数 valuation earnings base |  |  |  |
 
 - 币种与交易线核对（ADR / 双重上市时必填）：`<primary currency ↔ tradable line>`
+- 盈利基数 vs 最新已报季度核对（earnings base vs annualized latest reported quarter）：`<base-year EPS ↔ 4× latest reported quarter EPS；若低于则给出明确理由，否则回查来源 re-verify before finalizing>`
+- 修正已传导、无残留旧值（corrections propagated, no stale figures）：`<被修正的关键输入已重算所有下游 EPS / 倍数 / Weighted Fair Value / margin of safety，确认无 section 仍用旧值>`
 
 最后一行固定输出（与 Section 9.0 Red-Team Gate 第 2 条呼应）：
 `最可能错的地方是：...`

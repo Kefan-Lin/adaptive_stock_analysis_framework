@@ -194,6 +194,19 @@ corrupts Weighted Fair Value, margin of safety, and sizing.
   cash), and the **valuation earnings base** (the earnings/cash-flow numerator the
   valuation actually uses). Each must be confirmed by two independent sources or one
   filing-direct citation; state any discrepancy and lower confidence one band.
+- **Earnings-base sanity floor:** reconcile the base-year / normalized EPS (or
+  earnings numerator) used in the valuation to the **annualized latest reported
+  quarter**. Setting the base **below** that annualized figure requires an explicit
+  stated reason (e.g. deliberate cyclical normalization off a peak quarter); an
+  **unexplained below-annualized base** is a red flag to re-verify the source before
+  finalizing, because it usually signals a data or estimate error rather than a real
+  earnings base. This is a justify-or-re-verify check, not an absolute block —
+  legitimate peak-normalization is allowed with a stated reason.
+- **Post-correction consistency sweep:** if input verification corrects any critical
+  input *after* scenarios or multiples are drafted, re-derive every dependent figure
+  and confirm no section still uses the superseded value. A corrected input may not
+  leave stale figures elsewhere — EPS, multiples, Weighted Fair Value, and margin of
+  safety must all reflect the corrected input.
 - Recompute Weighted Fair Value as an explicit shown line, `sum(probability ×
   scenario value)`, not an asserted scalar; it must reconcile with the scenario
   table.

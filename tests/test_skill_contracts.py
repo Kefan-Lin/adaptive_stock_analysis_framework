@@ -471,6 +471,30 @@ class InputVerificationContractTests(unittest.TestCase):
             self.assertIn(column, template)
         self.assertIn("币种与交易线核对", template)
 
+    def test_controller_step65_has_earnings_base_sanity_floor(self) -> None:
+        controller = read("skills/analyzing-stocks/SKILL.md")
+        self.assertIn("Earnings-base sanity floor:", controller)
+        self.assertIn("justify-or-re-verify check", controller)
+        self.assertIn("unexplained below-annualized base", controller)
+
+    def test_controller_step65_has_post_correction_consistency_sweep(self) -> None:
+        controller = read("skills/analyzing-stocks/SKILL.md")
+        self.assertIn("Post-correction consistency sweep:", controller)
+        self.assertIn("re-derive every dependent figure", controller)
+        self.assertIn("no section still uses the superseded value", controller)
+
+    def test_source_policy_has_valuation_earnings_base_sanity_floor(self) -> None:
+        source = read("skills/analyzing-stocks/references/source-policy.md")
+        self.assertIn("Valuation-earnings-base sanity floor", source)
+        self.assertIn("annualized latest reported", source)
+        self.assertIn("unexplained below-annualized base", source)
+        self.assertIn("justify-or-re-verify", source)
+
+    def test_report_template_input_block_has_earnings_base_and_propagation_lines(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("earnings base vs annualized latest reported quarter", template)
+        self.assertIn("corrections propagated, no stale figures", template)
+
 
 class ValuationInputDisciplineContractTests(unittest.TestCase):
     def test_lens_has_discount_rate_construction_rule_with_floor(self) -> None:

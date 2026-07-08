@@ -199,6 +199,18 @@ service) or **one filing-direct citation** (the primary document itself, cited w
 date and line). If the two sources disagree, state the discrepancy, use the
 filing-direct value, and **lower confidence one band**. Do not silently pick one.
 
+### Valuation-earnings-base sanity floor
+
+The valuation earnings base carries an extra reconciliation because a wrong estimate
+here silently mis-rates the near-year multiple. Reconcile the base-year / normalized
+EPS (or earnings numerator) the valuation uses to the **annualized latest reported
+quarter**. If the base is set **below** that annualized figure, the report must state
+an explicit reason (e.g. deliberate cyclical normalization off a peak quarter); an
+**unexplained below-annualized base** is a red flag to **re-verify the source before
+finalizing**, because it usually means a data or estimate error, not a real earnings
+base. This is a **justify-or-re-verify** check, not an absolute block — legitimate
+peak-normalization is allowed with a stated reason.
+
 This is the ordinary-path equivalent of the fact-checker that `debating-stocks`
 runs; it is not optional.
 
