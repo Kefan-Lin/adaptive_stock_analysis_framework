@@ -211,7 +211,7 @@
 
 ### 9.0 Red-Team Gate（sign-off 前必答，不可留空）
 
-在写下最终 Stance 之前，完成以下四项强制falsification检查：
+在写下最终 Stance 之前，完成以下各项强制falsification检查：
 
 1. **最高风险桶驱动的反转场景**：如果 `risk-register.md` 中评级最高的一个桶演变成现实，
    Stance 将如何变化？（例如："监管风险升为高 → 营收下降 20% → DCF 价值降至 Bear 场景以下 → Stance 降为 Avoid"）
