@@ -41,6 +41,11 @@ Assess the direction of policy rates at the time of the report:
 - **Regulated utilities / telecom (DDM / DCF):** Allowed ROE often lags rate moves by 1–2 years;
   note the regulatory lag in the assumption table.
 
+**Floor interaction:** these regime adjustments apply on top of the discount-rate build
+in `value-investing-lens.md` (§3 Discount Rate Construction) and
+**may not breach the discount-rate floor** (risk-free + 300 bps for equities). A
+`Falling`-rate cut that would push the rate below the floor is capped at the floor.
+
 ## 2) Inflation Regime
 
 | Regime | Signal | Key adjustments |

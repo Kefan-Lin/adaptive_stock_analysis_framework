@@ -55,9 +55,28 @@ Baseline formula:
 Modeling rules:
 1. Explicit forecast horizon: 5-10 years.
 2. Growth and margin path must match moat and industry logic.
-3. Discount rate must reflect business risk and leverage.
+3. Discount rate must reflect business risk and leverage, built by the rule below.
 4. Terminal growth should be conservative and below long-run nominal GDP in mature cases.
-5. Avoid terminal value dominating all value without justification.
+5. Avoid terminal value dominating all value without justification, bounded by the guardrail below.
+
+### Discount Rate Construction
+
+Build the discount rate explicitly, do not assert a round number:
+
+- **Base:** current 10Y risk-free of the pricing currency + a stated
+  **equity risk premium** (name the source/vintage) + business and leverage adders.
+- **Floor:** for equities the discount rate may not fall below **risk-free + 300 bps**
+  (adjust the exact adder only with stated justification). Macro-overlay regime
+  adjustments apply on top of this build and may not breach the floor.
+- State the build as a one-line sum in report Section 7.1 so the number is auditable.
+
+### Terminal Value Guardrail
+
+If **terminal value exceeds 75%** of total present value, a
+**terminal sensitivity is mandatory** (vary terminal growth / exit multiple across a
+plausible band) and **confidence caps at `Medium`** unless a Structural Re-rating Gate
+with contracted-visibility evidence justifies the durability. Report the TV share of PV
+in Section 7.1.
 
 ## 4) Non-DCF Margin-of-Safety Translation
 

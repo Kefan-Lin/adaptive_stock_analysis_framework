@@ -19,6 +19,13 @@ Hard rules:
 - Keep probability sum at 100%.
 - Keep downside scenario economically plausible, not mechanically pessimistic.
 - Do not change Bear/Base/Bull fair values solely because the current share price changed.
+- Probability discipline: start from a **default prior of 25 / 50 / 25** (Bear / Base /
+  Bull). Deviations beyond **±15 pp** on any scenario require stated evidence; the
+  **Bull scenario may not silently carry the thesis** via a probability shift in place
+  of an assumption change.
+- Bear plausibility benchmark: compare the Bear KPI path against the name's (or
+  industry's) **worst historical drawdown** (revenue/margin/KPI). A generic −10% /
+  −20% Bear is too mild for cyclicals; **a milder Bear must be justified** in one line.
 
 ### Scenario Change Control
 

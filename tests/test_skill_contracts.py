@@ -472,5 +472,42 @@ class InputVerificationContractTests(unittest.TestCase):
         self.assertIn("币种与交易线核对", template)
 
 
+class ValuationInputDisciplineContractTests(unittest.TestCase):
+    def test_lens_has_discount_rate_construction_rule_with_floor(self) -> None:
+        lens = read("skills/analyzing-stocks/references/value-investing-lens.md")
+        self.assertIn("Discount Rate Construction", lens)
+        self.assertIn("risk-free", lens)
+        self.assertIn("equity risk premium", lens)
+        self.assertIn("floor", lens)
+        self.assertIn("300 bps", lens)
+
+    def test_lens_has_terminal_value_numeric_guardrail(self) -> None:
+        lens = read("skills/analyzing-stocks/references/value-investing-lens.md")
+        self.assertIn("terminal value exceeds 75%", lens)
+        self.assertIn("terminal sensitivity is mandatory", lens)
+        self.assertIn("confidence caps at `Medium`", lens)
+
+    def test_scenarios_have_probability_prior_rule(self) -> None:
+        scenarios = read("skills/analyzing-stocks/references/valuation-scenarios.md")
+        self.assertIn("default prior of 25 / 50 / 25", scenarios)
+        self.assertIn("±15 pp", scenarios)
+        self.assertIn("Bull scenario may not silently carry the thesis", scenarios)
+
+    def test_scenarios_have_bear_plausibility_benchmark(self) -> None:
+        scenarios = read("skills/analyzing-stocks/references/valuation-scenarios.md")
+        self.assertIn("worst historical drawdown", scenarios)
+        self.assertIn("a milder Bear must be justified", scenarios)
+
+    def test_macro_overlay_adjustments_respect_wacc_floor(self) -> None:
+        macro = read("skills/analyzing-stocks/references/macro-overlay.md")
+        self.assertIn("may not breach the discount-rate floor", macro)
+
+    def test_report_template_71_has_discipline_rows(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("折现率构建", template)
+        self.assertIn("终值占 PV 比例", template)
+        self.assertIn("概率分配理由", template)
+
+
 if __name__ == "__main__":
     unittest.main()

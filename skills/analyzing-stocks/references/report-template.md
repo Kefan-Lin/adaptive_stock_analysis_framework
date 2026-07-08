@@ -107,6 +107,11 @@
 | 资本、杠杆、稀释或跑道假设 |  |  |  |
 | 概率 |  |  |  |
 
+估值纪律行（必填，配合 value-investing-lens §3 与 valuation-scenarios §1）：
+- 折现率构建（discount-rate build 一行式）：`risk-free <x%> + ERP <y%> + adders <z%> = WACC <w%>`（不得低于 risk-free + 300 bps 地板）
+- 终值占 PV 比例（TV share of PV）：`<pct>`（若 > 75% 则终值敏感性必填、confidence 上限 Medium）
+- 概率分配理由（probability rationale，偏离 25/50/25 超过 ±15pp 时必须给证据）：
+
 ### 7.2 估值结果
 
 | 场景 | 主估值方法 | 辅助估值方法 | 综合每股价值 |
