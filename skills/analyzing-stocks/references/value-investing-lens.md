@@ -101,6 +101,13 @@ Interpretation bands:
 
 Do not use margin of safety in isolation. Combine with quality and balance-sheet checks.
 
+**Process-noise floor:** the valuation engine has unmeasured run-to-run variance, so a
+margin of safety below the **process-noise floor** (default **25-30%** for
+long-duration / growth names, where estimate dispersion is widest)
+**cannot justify `Buy` on valuation grounds alone**. Below the floor, a Buy needs a
+non-valuation reason (quality re-rating with contracted visibility, catalyst, or
+asymmetric optionality), stated explicitly.
+
 ## 6) Value-Trap Diagnostics
 
 A cheap multiple is not enough. Run these checks:

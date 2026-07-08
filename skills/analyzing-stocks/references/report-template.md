@@ -229,7 +229,12 @@
    （若 run-rate 与 trailing 无显著背离，写 `N/A - trailing base representative`。）
    结论：
 
-如果四条中有任一条导致论点无法支持当前 Stance，必须将 Stance 至少降低一档后再继续。
+5. **用户方向观点隔离（User-View Isolation）**：如果用户在 intake 时给了方向性观点，
+   在写估值前已构建的最强反方案（strongest opposing case）是什么？（若用户未给方向观点，
+   写 `N/A - no user directional view`。）
+   结论：
+
+如果以上各条中有任一条导致论点无法支持当前 Stance，必须将 Stance 至少降低一档后再继续。
 
 ### 9.1 投资结论
 

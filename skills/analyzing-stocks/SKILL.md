@@ -38,6 +38,10 @@ Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selec
 - State the final user-facing `Stance`: `Buy / Add / Hold / Reduce / Avoid`.
 - If working notes use `initiate / trim`, normalize them to `Buy / Reduce` before the final report.
 - If user gives no constraints, assume a fundamental-investor context and label assumptions.
+- **User-View Isolation:** if the user states a directional view at intake (e.g. "this
+  looks like a golden pit", "I think this is a short"), construct and document the
+  **strongest opposing case** before writing the valuation section, so the scenario
+  construction is not anchored to the user's prior. Record it in report Section 9.0.
 
 ## Step 2: Route to One Industry Skill (Mandatory)
 

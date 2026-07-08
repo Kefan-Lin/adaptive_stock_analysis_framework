@@ -91,6 +91,15 @@ Do not change Bear/Base/Bull fair values solely because current price changed. P
 
 When bull and bear cases are both credible, the call is high-stakes or contested, or the name is a top portfolio driver, run `$debating-stocks` before finalizing the Decision Brief. It runs a fact-checked bull/bear (or multi-stakeholder) debate and returns cruxes, confidence, scenario expected returns measured from the current price, and flip conditions. Feed its verdict into the Red-Team / value-trap line of the Decision Brief; it informs `Stance` and `Most likely error` but does not override the Valuation Evidence Gate.
 
+**Material-Decision Second Opinion (required, not optional):** for a decision at or
+above the material-exposure threshold (`>= 2% - 3%` of net liquidation value, or a top
+portfolio driver), a single valuation pass is not enough. Require **either** a
+`$debating-stocks` run **or** an independent second valuation pass before execution, and
+**record both** Weighted Fair Values in the decision record. If the two WFVs show
+**divergence > 15%**, cap confidence one band and **defaults the execution to `Wait`**
+until the divergence is reconciled. This is the manual precursor to measured run-variance
+(P2 will score the paired WFVs).
+
 ## Existing Report Path
 
 For `Existing Report to Action`, `Position Review`, and `Event Review`, use this path:

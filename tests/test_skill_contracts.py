@@ -529,5 +529,29 @@ class CrossSectionalReconciliationContractTests(unittest.TestCase):
             self.assertIn(column, template)
 
 
+class RunStabilityAdversarialContractTests(unittest.TestCase):
+    def test_workflow_requires_second_opinion_on_material_decisions(self) -> None:
+        workflow = read("skills/investment-decision-workflow/SKILL.md")
+        self.assertIn("Material-Decision Second Opinion", workflow)
+        self.assertIn("record both", workflow)
+        self.assertIn("divergence > 15%", workflow)
+        self.assertIn("defaults the execution to `Wait`", workflow)
+
+    def test_controller_step1_isolates_user_directional_view(self) -> None:
+        controller = read("skills/analyzing-stocks/SKILL.md")
+        self.assertIn("User-View Isolation", controller)
+        self.assertIn("strongest opposing case", controller)
+
+    def test_lens_has_mos_process_noise_floor(self) -> None:
+        lens = read("skills/analyzing-stocks/references/value-investing-lens.md")
+        self.assertIn("process-noise floor", lens)
+        self.assertIn("25-30%", lens)
+        self.assertIn("cannot justify `Buy` on valuation grounds alone", lens)
+
+    def test_report_template_red_team_has_opposing_case(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("用户方向观点隔离", template)
+
+
 if __name__ == "__main__":
     unittest.main()
