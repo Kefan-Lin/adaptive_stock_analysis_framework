@@ -607,7 +607,7 @@ Expected: everything passes. This mirrors CI (3.9/3.11/3.12 with `pip install py
 | M6 terminal-value dominance no guardrail | 2 | value-investing-lens §3 `Terminal Value Guardrail` |
 | M7 bear plausibility benchmark | 2 | valuation-scenarios §1 bear-vs-worst-drawdown |
 | M8 probability elicitation rules | 2 | valuation-scenarios §1 25/50/25 prior + ±15pp |
-| M10 cross-sectional reconciliation | 3 | valuation-scenarios §8 required comps, report-template §7.5 |
+| M10 cross-sectional reconciliation | 3 | valuation-scenarios §8 required comps, report-template §7.6 |
 | M9 moat→terminal linkage | 3 | valuation-scenarios §8 `Moat–Terminal Linkage` |
 | E1 consumption (MoS noise floor) | 4 | value-investing-lens §5 process-noise floor |
 | E3 (run-variance) / material second opinion | 4 | workflow `Material-Decision Second Opinion` |
