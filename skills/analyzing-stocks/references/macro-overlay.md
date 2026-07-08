@@ -23,6 +23,11 @@ dependencies to enforce these adjustments.
 
 Assess the direction of policy rates at the time of the report:
 
+The **baseline** these regime rows adjust is the §3 Discount Rate Construction build
+(`value-investing-lens.md`: current risk-free + ERP + adders), optionally smoothed to a
+trailing 5-year average; the regime adjustment moves that baseline and is bounded by the
+floor below.
+
 | Regime | Signal | Effect on discount rate |
 | --- | --- | --- |
 | `Falling` | Central bank cutting or signaling imminent cuts; long-end yields declining | Reduce WACC / cost of equity by 50–100 bps vs the 5-year average |
