@@ -509,5 +509,25 @@ class ValuationInputDisciplineContractTests(unittest.TestCase):
         self.assertIn("概率分配理由", template)
 
 
+class CrossSectionalReconciliationContractTests(unittest.TestCase):
+    def test_scenarios_require_live_comps_reconciliation(self) -> None:
+        scenarios = read("skills/analyzing-stocks/references/valuation-scenarios.md")
+        self.assertIn("Cross-Sectional Reconciliation", scenarios)
+        self.assertIn("3-5 peers", scenarios)
+        self.assertIn("implied premium/discount", scenarios)
+        self.assertIn("required output", scenarios)
+
+    def test_scenarios_have_moat_terminal_linkage_rule(self) -> None:
+        scenarios = read("skills/analyzing-stocks/references/valuation-scenarios.md")
+        self.assertIn("moat verdict below 3.0", scenarios)
+        self.assertIn("excess-return fade", scenarios)
+
+    def test_report_template_has_live_comps_section(self) -> None:
+        template = read("skills/analyzing-stocks/references/report-template.md")
+        self.assertIn("7.6 横截面对标", template)
+        for column in ["可比公司", "当前倍数", "隐含溢价/折价"]:
+            self.assertIn(column, template)
+
+
 if __name__ == "__main__":
     unittest.main()

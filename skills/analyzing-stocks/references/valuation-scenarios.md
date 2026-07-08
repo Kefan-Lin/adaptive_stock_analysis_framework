@@ -347,6 +347,24 @@ Before finalizing:
 - Reconcile valuation conclusion with identified risks and the diagnostic-family stress test.
 - Confirm valuation does not ignore balance-sheet, dilution, or refinancing downside.
 
+### Cross-Sectional Reconciliation (required output)
+
+A compact **live comps table** is a **required output**, not an optional sanity check:
+
+- **3-5 peers** appropriate to the valuation family, with current multiples (the family's
+  own multiple: EV/EBITDA or P/E for operating; P/TBV or P/B for financials; NAV or
+  P/FFO for real estate; EV/resource for cyclicals).
+- One-line reconciliation of the name's **implied premium/discount** vs the closest
+  peer and why it is justified. A valuation implying an unexplained premium to the
+  entire live peer set fails this check and must be revised or explained.
+
+### Moat–Terminal Linkage
+
+A **moat verdict below 3.0** (from `business-moat.md`) forces an explicit
+**excess-return fade** horizon in the terminal assumptions: above-peer growth or margins
+may not persist to perpetuity. A weak-moat name modeling decade-long above-peer economics
+must state the specific evidence that overrides the fade.
+
 If sanity checks fail, revise assumptions before publishing.
 
 ## 9) Required Output Block
