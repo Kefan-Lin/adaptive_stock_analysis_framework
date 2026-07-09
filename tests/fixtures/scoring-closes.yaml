@@ -1,0 +1,16 @@
+# Fictional historical closes {symbol: {YYYY-MM-DD: close}} for offline scoring.
+GAINR:
+  "2026-01-05": 100.0
+  "2026-04-05": 118.0    # +90d: up, bear_base, converging toward WFV 140
+  "2026-07-04": 135.0    # +180d
+  "2027-01-05": 160.0    # +365d
+FADE:
+  "2026-01-10": 200.0
+  "2026-04-10": 180.0    # +90d: down (Reduce hit)
+  "2026-07-09": 165.0    # +180d
+  "2027-01-10": 150.0    # +365d
+HOLDR:
+  "2026-02-01": 50.0
+  "2026-05-02": 52.0     # +90d: inside [40,65] band (Hold hit)
+  "2026-07-31": 48.0     # +180d
+  "2027-02-01": 58.0     # +365d
