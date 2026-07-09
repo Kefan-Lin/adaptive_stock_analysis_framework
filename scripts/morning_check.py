@@ -222,6 +222,9 @@ def _price_trigger_findings(symbol, meta, spot):
 
 
 def _drawdown_findings(symbol, meta, spot):
+    # Deterministic layer flags only the actionable bear-scenario breach; richer
+    # base/bull/WFV positioning is left to the LLM layer (design §Drawdown). The
+    # guard also skips research-mode records, which carry no scenarios.
     scenarios = meta.get("scenarios")
     if not isinstance(scenarios, dict) or not is_number(scenarios.get("bear")):
         return []
@@ -374,7 +377,8 @@ def evaluate_state(home, price_source, as_of, *, earnings_window=7, review_windo
     # (no thesis, no triggers) — surface them as a data gap rather than silently
     # dropping them from the sweep.
     universe = build_universe(portfolio, latest)
-    for symbol in sorted(universe - set(latest)):
+    already_flagged = {g["symbol"] for g in data_gaps}
+    for symbol in sorted(universe - set(latest) - already_flagged):
         data_gaps.append({"symbol": symbol,
                           "reason": "held/underlying but no decision record on file"})
 
@@ -446,9 +450,26 @@ def main(argv=None) -> int:
         print(f"state home is not a directory: {home}", file=sys.stderr)
         return 2
 
-    as_of = as_date(args.as_of) if args.as_of else datetime.date.today()
+    if args.as_of:
+        try:
+            as_of = as_date(args.as_of)
+        except (ValueError, TypeError):
+            print(f"--as-of is not an ISO date (YYYY-MM-DD): {args.as_of!r}", file=sys.stderr)
+            return 2
+    else:
+        as_of = datetime.date.today()
+
+    try:
+        source = _build_source(args)
+    except OSError as exc:
+        print(f"could not read --prices file: {exc}", file=sys.stderr)
+        return 2
+    except yaml.YAMLError as exc:
+        print(f"--prices file is not valid YAML: {exc}", file=sys.stderr)
+        return 2
+
     result = evaluate_state(
-        home, _build_source(args), as_of,
+        home, source, as_of,
         earnings_window=args.earnings_window, review_window=args.review_window,
     )
     if args.format == "json":

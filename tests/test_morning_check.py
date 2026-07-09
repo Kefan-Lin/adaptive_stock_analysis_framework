@@ -92,6 +92,15 @@ class StateLoadingTests(unittest.TestCase):
         universe = mc.build_universe(portfolio, latest)
         self.assertEqual(universe, {"ACME", "1234.HK", "NVDA"})
 
+    def test_latest_key_tie_break(self):
+        # Same date: higher-priority mode (position-review) outranks research.
+        pr = {"date": "2026-07-01", "mode": "position-review"}
+        research = {"date": "2026-07-01", "mode": "research"}
+        newer_research = {"date": "2026-07-02", "mode": "research"}
+        self.assertGreater(mc._latest_key(pr), mc._latest_key(research))
+        # A newer date always wins regardless of mode priority.
+        self.assertGreater(mc._latest_key(newer_research), mc._latest_key(pr))
+
 
 # --------------------------- Task 4: equity checks ---------------------------
 
@@ -207,6 +216,22 @@ class CliTests(unittest.TestCase):
         result = subprocess.run(
             [sys.executable, str(SCRIPT), "--home",
              str(REPO_ROOT / "tests" / "fixtures" / "does-not-exist"), "--offline"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 2)
+
+    def test_bad_as_of_is_environment_error(self):
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--home", str(FIXTURE_HOME),
+             "--as-of", "not-a-date", "--offline"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 2)
+
+    def test_missing_prices_file_is_environment_error(self):
+        result = subprocess.run(
+            [sys.executable, str(SCRIPT), "--home", str(FIXTURE_HOME), "--offline",
+             "--prices", str(REPO_ROOT / "tests" / "fixtures" / "no-such-quotes.yaml")],
             capture_output=True, text=True,
         )
         self.assertEqual(result.returncode, 2)

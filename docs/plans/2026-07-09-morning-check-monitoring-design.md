@@ -114,6 +114,11 @@ available: report spot's position vs `bear`/`base`/`bull` and vs WFV
 (e.g. "spot 82 below bear 80" → `urgency: review`). Informational, not a hard
 trigger.
 
+**Implementation scope:** the deterministic script fires this only on the
+actionable **bear-scenario breach** (`spot < bear`). Richer base/bull/WFV
+positioning is left to the LLM layer, which already reads the full record —
+keeping the script's output to the one case that demands attention.
+
 ### `review_by` expiry
 `review_by < as_of` → `urgency: review` (thesis stale). Within the review
 window (default 14d) → `urgency: watch`.
