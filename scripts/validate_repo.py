@@ -43,6 +43,8 @@ FULL_REQUIRED = [
     "skills/discovering-inflections/agents/openai.yaml",
     "skills/morning-check/SKILL.md",
     "skills/morning-check/agents/openai.yaml",
+    "skills/outcome-scoring/SKILL.md",
+    "skills/outcome-scoring/agents/openai.yaml",
     "skills/analyzing-banks/SKILL.md",
     "skills/analyzing-banks/agents/openai.yaml",
     "skills/analyzing-consumer-retail/SKILL.md",

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Outcome Scoring"
+  short_description: "Forward-only scoring of past decision records against realized 90/180/365-day prices, with a calibration table by stance, confidence, valuation zone, and market"
+  default_prompt: "Use $outcome-scoring to score my past decisions against how prices actually moved and show me a calibration table by stance, confidence, valuation zone, and market."
