@@ -1,0 +1,15 @@
+schema: portfolio/v1
+as_of: 2026-07-08
+base_currency: USD
+cash: {USD: 25000, HKD: 80000}
+holdings:
+  - {symbol: ACME, qty: 100, avg_cost: 150.0, currency: USD,
+     opened: 2026-06-02, thesis_record: records/ACME/2026-06-01-new-idea.md}
+  - {symbol: 1234.HK, qty: 2000, avg_cost: 470.0, currency: HKD,
+     opened: 2026-05-02, thesis_record: records/1234.HK/2026-07-02-research.md}
+option_legs:
+  - {kind: cash-secured-put, underlying: NVDA, strike: 140, expiry: 2026-07-14,
+     qty: -1, premium: 4.20, currency: USD, opened: 2026-06-20, multiplier: 100}
+constraints:
+  single_name_cap_pct: 10
+  cash_reserve_floor_pct: 15
