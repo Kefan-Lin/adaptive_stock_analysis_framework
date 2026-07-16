@@ -321,6 +321,12 @@ class Checker:
                 self.err(path, f"holding {holding.get('symbol')!r} currency must be a 3-letter code, got {cur!r}")
             if holding.get("symbol") is not None and not is_canonical(holding["symbol"]):
                 self.err(path, f"holding symbol {holding['symbol']!r} is not canonical")
+            bcid = holding.get("broker_contract_id")
+            if bcid is not None and not is_number(bcid):
+                self.err(path, f"holding {holding.get('symbol')!r} broker_contract_id must be numeric, got {bcid!r}")
+            acct = holding.get("account")
+            if acct is not None and not (isinstance(acct, str) and acct.strip()):
+                self.err(path, f"holding {holding.get('symbol')!r} account must be a non-empty string")
             thesis = holding.get("thesis_record")
             if thesis is not None:
                 target = (self.home / str(thesis)).resolve()
@@ -350,6 +356,41 @@ class Checker:
                 self.err(path, f"option leg {leg_id} currency must be a 3-letter code, got {cur!r}")
             if leg.get("underlying") is not None and not is_canonical(leg["underlying"]):
                 self.err(path, f"option underlying {leg['underlying']!r} is not canonical")
+            bcid = leg.get("broker_contract_id")
+            if bcid is not None and not is_number(bcid):
+                self.err(path, f"option leg {leg_id} broker_contract_id must be numeric, got {bcid!r}")
+            acct = leg.get("account")
+            if acct is not None and not (isinstance(acct, str) and acct.strip()):
+                self.err(path, f"option leg {leg_id} account must be a non-empty string")
+
+        accounts = data.get("accounts")
+        if accounts is not None:
+            if not isinstance(accounts, dict):
+                self.err(path, f"accounts must be a mapping, got {accounts!r}")
+            else:
+                for name, info in accounts.items():
+                    if not isinstance(info, dict):
+                        self.err(path, f"accounts[{name!r}] must be a mapping")
+                        continue
+                    last = info.get("last_synced")
+                    if last is not None:
+                        try:
+                            as_date(last)
+                        except (ValueError, TypeError):
+                            self.err(path, f"accounts[{name!r}].last_synced is not ISO: {last!r}")
+
+        for row in data.get("suspected_closed") or []:
+            if not isinstance(row, dict):
+                self.err(path, f"suspected_closed entry must be a mapping: {row!r}")
+                continue
+            try:
+                as_date(row.get("suspected_closed_on"))
+            except (ValueError, TypeError):
+                self.err(path, "suspected_closed entry missing/invalid suspected_closed_on: "
+                               f"{row.get('symbol') or row.get('underlying')!r}")
+            ident = row.get("symbol") or row.get("underlying")
+            if ident is not None and not is_canonical(ident):
+                self.err(path, f"suspected_closed symbol {ident!r} is not canonical")
 
     # ---------------- index ----------------
 

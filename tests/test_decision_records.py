@@ -640,5 +640,47 @@ class ControllerContractTests(unittest.TestCase):
         self.assertIn("archive-ready", controller)
 
 
+class PortfolioP4SectionTests(unittest.TestCase):
+    """P4 sync sections: accounts, suspected_closed, broker_contract_id, account."""
+
+    def _run(self, portfolio_yaml: str) -> "subprocess.CompletedProcess[str]":
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        home = pathlib.Path(tmp.name) / "home"
+        (home / "records").mkdir(parents=True)
+        (home / "portfolio.yaml").write_text(portfolio_yaml, encoding="utf-8")
+        return run_validator(home)
+
+    BASE = (
+        "schema: portfolio/v1\nas_of: 2026-07-13\nbase_currency: USD\n"
+        "holdings:\n- {symbol: ACME, qty: 10, avg_cost: 100.0, currency: USD,\n"
+        "   account: U200, broker_contract_id: 42}\n")
+
+    def test_valid_p4_sections_pass(self):
+        result = self._run(self.BASE + (
+            "accounts:\n  U200: {last_synced: 2026-07-13}\n"
+            "suspected_closed:\n"
+            "- {symbol: OLD, qty: 5, avg_cost: 9.0, currency: USD, account: U200,\n"
+            "   suspected_closed_on: 2026-07-13}\n"))
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+    def test_accounts_bad_date_fails(self):
+        result = self._run(self.BASE + "accounts:\n  U200: {last_synced: soon}\n")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("last_synced", result.stdout)
+
+    def test_suspected_closed_requires_date(self):
+        result = self._run(self.BASE + (
+            "suspected_closed:\n- {symbol: OLD, qty: 5, account: U200}\n"))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("suspected_closed_on", result.stdout)
+
+    def test_broker_contract_id_must_be_numeric(self):
+        result = self._run(
+            self.BASE.replace("broker_contract_id: 42", "broker_contract_id: abc"))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("broker_contract_id", result.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()
