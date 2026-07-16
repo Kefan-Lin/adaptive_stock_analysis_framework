@@ -18,7 +18,9 @@ from __future__ import annotations
 import argparse
 import datetime
 import json
+import os
 import sys
+import tempfile
 from pathlib import Path
 
 _URGENCY_ORDER = {"act": 0, "review": 1, "watch": 2}
@@ -57,6 +59,7 @@ def decide(sweep: dict, sync: dict, state: dict, *, now: datetime.datetime,
            max_gap_hours: float) -> "tuple[dict, dict]":
     """Return (decision, new_state). Pure; callers own file I/O."""
     old = (state or {}).get("findings") or {}
+    old = old if isinstance(old, dict) else {}  # tolerate a corrupted shape
     runs = list((state or {}).get("runs") or [])
 
     new_items, escalated, standing = [], [], []
@@ -73,6 +76,7 @@ def decide(sweep: dict, sync: dict, state: dict, *, now: datetime.datetime,
         urgency = item.get("urgency", "review")
         entry = {"key": key, "item": item}
         prev = old.get(key)
+        prev = prev if isinstance(prev, dict) else None  # ignore junk entries
         first = (prev or {}).get("first_notified") or now.isoformat()
         current[key] = {"urgency": urgency, "first_notified": first,
                         "last_seen": now.isoformat()}
@@ -103,7 +107,7 @@ def decide(sweep: dict, sync: dict, state: dict, *, now: datetime.datetime,
             gap = (now - last).total_seconds() / 3600.0
             if gap > max_gap_hours:
                 missed_gap = round(gap, 2)
-        except ValueError:
+        except (ValueError, TypeError):  # unparseable or tz-aware vs naive
             pass
     runs = (runs + [now.isoformat()])[-_MAX_RUNS_KEPT:]
 
@@ -125,6 +129,24 @@ def _load(path_str: "str | None", fallback: dict) -> dict:
         return fallback
     data = json.loads(path.read_text(encoding="utf-8"))
     return data if isinstance(data, dict) else fallback
+
+
+def _write_state(path: Path, state: dict) -> None:
+    """Atomic write: a torn write must never truncate state.json, which would
+    make every later run fail to parse it and silently disable monitoring."""
+    handle = tempfile.NamedTemporaryFile(
+        "w", encoding="utf-8", dir=str(path.parent),
+        prefix=".state-", suffix=".tmp", delete=False)
+    try:
+        with handle:
+            handle.write(json.dumps(state, indent=2, ensure_ascii=False))
+        os.replace(handle.name, str(path))
+    except BaseException:
+        try:
+            os.unlink(handle.name)
+        except OSError:
+            pass
+        raise
 
 
 def main(argv=None) -> int:
@@ -161,8 +183,7 @@ def main(argv=None) -> int:
         new_state["last_run_id"] = args.run_id
     state_path = Path(args.state).expanduser()
     state_path.parent.mkdir(parents=True, exist_ok=True)
-    state_path.write_text(json.dumps(new_state, indent=2, ensure_ascii=False),
-                          encoding="utf-8")
+    _write_state(state_path, new_state)
     print(json.dumps(decision, indent=2, ensure_ascii=False, default=str))
     return 0
 

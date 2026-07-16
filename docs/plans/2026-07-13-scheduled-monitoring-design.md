@@ -272,13 +272,12 @@ script.)
 
 P1 findings are level-triggered; naive gating would push the same standing
 condition twice a day until the owner mutes notifications. This small script
-(stdlib + PyYAML) owns the run-over-run state so dedup never rides on LLM
+(stdlib only) owns the run-over-run state so dedup never rides on LLM
 memory:
 
 ```
 python scripts/notify_gate.py --findings FILE --changes FILE
-    [--state FILE] [--run-id "YYYY-MM-DD am"] [--max-gap-hours 36]
-    [--format json]
+    --state FILE [--run-id "YYYY-MM-DD am"] [--max-gap-hours 36]
 ```
 
 - **Stable finding keys:** `price_trigger` → symbol+trigger_group+level;

@@ -172,6 +172,54 @@ class GateTests(unittest.TestCase):
             state = json.loads(state_path.read_text())
             self.assertEqual(len(state["runs"]), 2)
 
+    def test_corrupted_state_is_tolerated(self):
+        # findings is the wrong top-level shape (a list, not a dict).
+        d1, _ = ng.decide(_sweep([_finding()]), _sync(),
+                          {"findings": ["garbage"], "runs": []},
+                          now=NOW, max_gap_hours=36.0)
+        self.assertTrue(d1["notify"])
+        self.assertEqual(len(d1["new"]), 1)
+        # findings is a dict but a value is a non-dict string.
+        corrupt = {"findings": {"ACME|price_trigger|trim_exit|185": "nope"},
+                   "runs": []}
+        d2, _ = ng.decide(_sweep([_finding()]), _sync(), corrupt,
+                          now=NOW, max_gap_hours=36.0)
+        self.assertTrue(d2["notify"])
+        self.assertEqual(len(d2["new"]), 1)
+
+    def test_normal_gap_reports_no_missed_hours(self):
+        _, state = self._decide({})
+        decision, _ = self._decide(state,
+                                   now=NOW + datetime.timedelta(hours=8))
+        self.assertIsNone(decision["missed_gap_hours"])
+
+    def test_de_escalation_is_silent_but_tracked(self):
+        _, state = self._decide({}, findings=[_finding(urgency="act")])
+        decision, new_state = self._decide(
+            state, findings=[_finding(urgency="watch")],
+            now=NOW + datetime.timedelta(hours=8))
+        self.assertFalse(decision["notify"])
+        self.assertEqual(
+            new_state["findings"]["ACME|price_trigger|trim_exit|185"]["urgency"],
+            "watch")
+
+    def test_main_creates_missing_state_parent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = pathlib.Path(tmp)
+            (tmp / "sweep.json").write_text(json.dumps(_sweep([_finding()])))
+            (tmp / "sync.json").write_text(json.dumps(_sync()))
+            state_path = tmp / "nested" / "deeper" / "state.json"
+            cmd = [sys.executable, str(REPO_ROOT / "scripts" / "notify_gate.py"),
+                   "--findings", str(tmp / "sweep.json"),
+                   "--changes", str(tmp / "sync.json"),
+                   "--state", str(state_path),
+                   "--now", "2026-07-13T08:30:00"]
+            proc = subprocess.run(cmd, capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertTrue(state_path.exists())
+            # R1 atomic write cleans up its temp file on success.
+            self.assertEqual(list(state_path.parent.glob(".state-*")), [])
+
 
 if __name__ == "__main__":
     unittest.main()
