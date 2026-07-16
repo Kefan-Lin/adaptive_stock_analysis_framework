@@ -557,6 +557,22 @@ class CliTests(unittest.TestCase):
             row = [h for h in data["holdings"] if h["symbol"] == "011790.KS"][0]
             self.assertEqual(row["broker_contract_id"], 4)
 
+    def test_resolve_invalid_utf8_is_not_fatal(self):
+        # A resolve file with invalid UTF-8 bytes must not abort the run:
+        # read_text raises UnicodeDecodeError (a ValueError, not OSError), the
+        # file is treated as unreadable, the resolve map stays empty, and
+        # contract 4 falls to needs_mapping instead of crashing the run.
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            resolve = pathlib.Path(tmp) / "resolve.yaml"
+            resolve.write_bytes(b"\xff\xfe bad\n")
+            proc = _run("--positions", str(POSITIONS), "--account", "U200",
+                        "--resolve", str(resolve), home=home)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            report = json.loads(proc.stdout)
+            self.assertEqual([n["contract_id"] for n in report["needs_mapping"]], [4])
+
     def test_emit_prices_contains_stk_rows_only(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:

@@ -611,7 +611,11 @@ def main(argv=None) -> int:
     if args.resolve and Path(args.resolve).expanduser().exists():
         try:
             loaded = _load_yaml_or_json(args.resolve)
-        except (yaml.YAMLError, OSError) as exc:
+        except (yaml.YAMLError, ValueError, OSError) as exc:
+            # ValueError covers UnicodeDecodeError from read_text on a non-UTF-8
+            # file; the outer guard only wraps file read + YAML parse — per-key
+            # int() coercion is handled in the loop below, so restoring
+            # ValueError does not reintroduce the all-or-nothing discard.
             print(f"--resolve file unreadable, ignoring: {exc}", file=sys.stderr)
             loaded = None
         if isinstance(loaded, dict):
