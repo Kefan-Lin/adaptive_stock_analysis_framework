@@ -6,6 +6,8 @@ import subprocess
 import sys
 import unittest
 
+import yaml
+
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
@@ -464,3 +466,147 @@ class MergeAccountingTests(unittest.TestCase):
                     and not c["evidence"].get("below_epsilon")]
         self.assertEqual(material, [])
         self.assertEqual(second, first)
+
+
+SCRIPT = REPO_ROOT / "scripts" / "sync_portfolio.py"
+FIXTURE_HOME = REPO_ROOT / "tests" / "fixtures" / "sync-home"
+POSITIONS = REPO_ROOT / "tests" / "fixtures" / "sync-positions.json"
+
+
+def _run(*args, home=None):
+    cmd = [sys.executable, str(SCRIPT), "--home", str(home or FIXTURE_HOME),
+           "--as-of", "2026-07-13", "--format", "json", *args]
+    return subprocess.run(cmd, capture_output=True, text=True)
+
+
+def _copy_home(tmpdir):
+    import shutil
+    dst = pathlib.Path(tmpdir) / "home"
+    shutil.copytree(FIXTURE_HOME, dst)
+    return dst
+
+
+class CliTests(unittest.TestCase):
+    def test_dry_run_reports_and_leaves_file_byte_identical(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            before = (home / "portfolio.yaml").read_bytes()
+            proc = _run("--positions", str(POSITIONS), "--account", "U200",
+                        "--dry-run", home=home)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            report = json.loads(proc.stdout)
+            self.assertFalse(report["wrote"])
+            self.assertTrue(report["changes"])
+            self.assertEqual((home / "portfolio.yaml").read_bytes(), before)
+
+    def test_write_bumps_as_of_and_is_idempotent(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            proc = _run("--positions", str(POSITIONS), "--account", "U200",
+                        home=home)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertTrue(json.loads(proc.stdout)["wrote"])
+            data = yaml.safe_load((home / "portfolio.yaml").read_text())
+            self.assertEqual(str(data["as_of"]), "2026-07-13")
+            self.assertEqual(str(data["accounts"]["U200"]["last_synced"]),
+                             "2026-07-13")
+            mu = [h for h in data["holdings"] if h["symbol"] == "MU"][0]
+            self.assertEqual(mu["qty"], 45)
+            # BOXX resized; GOOG (U100) untouched; ACME leg matched.
+            proc2 = _run("--positions", str(POSITIONS), "--account", "U200",
+                         home=home)
+            report2 = json.loads(proc2.stdout)
+            material = [c for c in report2["changes"]
+                        if c["kind"] != "sync_staleness"
+                        and not c.get("evidence", {}).get("below_epsilon")]
+            self.assertEqual(material, [])
+            self.assertFalse(report2["wrote"])
+
+    def test_resolve_round_trip_pins_contract_id(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            resolve = pathlib.Path(tmp) / "resolve.yaml"
+            resolve.write_text("4: 011790.KS\n")
+            proc = _run("--positions", str(POSITIONS), "--account", "U200",
+                        "--resolve", str(resolve), home=home)
+            report = json.loads(proc.stdout)
+            self.assertEqual(report["needs_mapping"], [])
+            data = yaml.safe_load((home / "portfolio.yaml").read_text())
+            row = [h for h in data["holdings"] if h["symbol"] == "011790.KS"][0]
+            self.assertEqual(row["broker_contract_id"], 4)
+
+    def test_emit_prices_contains_stk_rows_only(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            out = pathlib.Path(tmp) / "spots.yaml"
+            _run("--positions", str(POSITIONS), "--account", "U200",
+                 "--resolve", str(pathlib.Path(tmp) / "nope.yaml"),
+                 home=home)  # missing resolve file must not crash the next run
+            proc = _run("--positions", str(POSITIONS), "--account", "U200",
+                        "--emit-prices", str(out), home=home)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            prices = yaml.safe_load(out.read_text())
+            self.assertEqual(prices.get("MU"), 921.51)
+            self.assertEqual(prices.get("BOXX"), 117.4)
+            self.assertNotIn("ACME", prices)  # OPT leg price must not leak
+
+    def test_comment_guard_refuses_to_write(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            path = home / "portfolio.yaml"
+            path.write_text("# hand note\n" + path.read_text())
+            before = path.read_bytes()
+            proc = _run("--positions", str(POSITIONS), "--account", "U200",
+                        home=home)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            report = json.loads(proc.stdout)
+            self.assertFalse(report["wrote"])
+            self.assertIn("comment", report["blocked"])
+            self.assertEqual(path.read_bytes(), before)
+
+    def test_degraded_mode_emits_staleness_without_positions(self):
+        proc = _run()  # no --positions, read-only fixture home
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        report = json.loads(proc.stdout)
+        self.assertFalse(report["wrote"])
+        stale = [c for c in report["changes"] if c["kind"] == "sync_staleness"]
+        self.assertEqual({c["account"] for c in stale}, {"U100", "U200"})
+
+    def test_no_account_with_positions_is_report_only(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            before = (home / "portfolio.yaml").read_bytes()
+            proc = _run("--positions", str(POSITIONS), home=home)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            report = json.loads(proc.stdout)
+            self.assertFalse(report["wrote"])
+            self.assertEqual(report["inferred_account"], "U200")
+            self.assertEqual((home / "portfolio.yaml").read_bytes(), before)
+
+    def test_bad_home_is_exit_2(self):
+        proc = _run(home="/nonexistent/nowhere")
+        self.assertEqual(proc.returncode, 2)
+
+    def test_bad_positions_json_is_exit_2(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            bad = pathlib.Path(tmp) / "bad.json"
+            bad.write_text("{not json")
+            proc = _run("--positions", str(bad), "--account", "U200")
+            self.assertEqual(proc.returncode, 2)
+
+    def test_post_write_file_passes_validate_records(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            _run("--positions", str(POSITIONS), "--account", "U200", home=home)
+            proc = subprocess.run(
+                [sys.executable, str(REPO_ROOT / "scripts" / "validate_records.py"),
+                 "--home", str(home)], capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)

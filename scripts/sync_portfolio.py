@@ -445,3 +445,247 @@ def _staleness(portfolio: dict, account: "str | None", as_of: datetime.date,
                 "sync_staleness", "review", detail,
                 {"last_synced": str(last) if last else None, "age_days": age},
                 account=name))
+
+
+# ----------------------------- inference fallback -----------------------------
+
+def infer_account(portfolio: dict, payload: dict) -> "str | None":
+    """Majority-quorum account inference for manual runs without --account.
+
+    Report-only by contract: callers must never write on an inferred account.
+    """
+    positions = [p for p in (payload.get("positions") or []) if isinstance(p, dict)]
+    holdings = [h for h in (portfolio.get("holdings") or []) if isinstance(h, dict)]
+    legs = [l for l in (portfolio.get("option_legs") or []) if isinstance(l, dict)]
+    votes: "dict[str, int]" = {}
+    by_cid = {}
+    for row in holdings + legs:
+        if is_number(row.get("broker_contract_id")) and row.get("account"):
+            by_cid[row["broker_contract_id"]] = str(row["account"])
+    sym_accounts: "dict[str, set]" = {}
+    for row in holdings:
+        if row.get("symbol") and row.get("account"):
+            sym_accounts.setdefault(str(row["symbol"]), set()).add(str(row["account"]))
+    existing_symbols = set(sym_accounts)
+    for pos in positions:
+        acct = by_cid.get(pos.get("contract_id"))
+        if acct is None and pos.get("asset_class") == "STK":
+            symbol = canonical_for(parse_description(pos.get("contract_description")),
+                                   existing_symbols)
+            owners = sym_accounts.get(symbol or "", set())
+            acct = next(iter(owners)) if len(owners) == 1 else None
+        if acct:
+            votes[acct] = votes.get(acct, 0) + 1
+    if not votes or not positions:
+        return None
+    best = max(sorted(votes), key=lambda a: votes[a])
+    return best if votes[best] * 2 > len(positions) else None
+
+
+# ----------------------------- write discipline -----------------------------
+
+_SECTION_ORDER = ("schema", "as_of", "base_currency", "note", "cash", "accounts",
+                  "holdings", "option_legs", "suspected_closed", "constraints")
+
+
+def has_comment_lines(text: str) -> bool:
+    return any(line.lstrip().startswith("#") for line in text.splitlines())
+
+
+def dump_portfolio(portfolio: dict) -> str:
+    ordered = {k: portfolio[k] for k in _SECTION_ORDER if k in portfolio}
+    for key in portfolio:
+        if key not in ordered:
+            ordered[key] = portfolio[key]
+    return yaml.safe_dump(ordered, sort_keys=False, allow_unicode=True,
+                          default_flow_style=False, width=88)
+
+
+def write_portfolio(path: Path, portfolio: dict) -> None:
+    handle = tempfile.NamedTemporaryFile(
+        "w", encoding="utf-8", dir=str(path.parent),
+        prefix=".portfolio-", suffix=".tmp", delete=False)
+    try:
+        with handle:
+            handle.write(dump_portfolio(portfolio))
+        os.replace(handle.name, str(path))
+    except BaseException:
+        try:
+            os.unlink(handle.name)
+        except OSError:
+            pass
+        raise
+
+
+def emit_prices(payload: dict, resolve_map: dict, existing_symbols: "set[str]",
+                out_path: Path) -> int:
+    prices: "dict[str, float]" = {}
+    for pos in payload.get("positions") or []:
+        if not isinstance(pos, dict) or pos.get("asset_class") != "STK":
+            continue
+        if not is_number(pos.get("market_price")) or pos["market_price"] <= 0:
+            continue
+        cid = pos.get("contract_id")
+        symbol = resolve_map.get(int(cid)) if is_number(cid) else None
+        if symbol is None:
+            symbol = canonical_for(parse_description(pos.get("contract_description")),
+                                   existing_symbols)
+        if symbol is not None:
+            prices[symbol] = float(pos["market_price"])
+    out_path.write_text(yaml.safe_dump(prices, sort_keys=True), encoding="utf-8")
+    return len(prices)
+
+
+# ----------------------------- rendering + CLI -----------------------------
+
+def render_markdown(report: dict) -> str:
+    lines = [f"# Portfolio Sync — {report['as_of']}", ""]
+    if report.get("blocked"):
+        lines += [f"**BLOCKED:** {report['blocked']}", ""]
+    for change in report["changes"]:
+        who = change.get("symbol") or change.get("account")
+        lines.append(f"- **{who}** — {change['kind']}: {change['detail']}")
+    for item in report["needs_mapping"]:
+        lines.append(f"- needs mapping: {item['contract_description']!r} "
+                     f"(contract {item['contract_id']}) — {item['reason']}")
+    for item in report["uncovered_accounts"]:
+        lines.append(f"- uncovered account {item['account']} "
+                     f"(last synced {item['last_synced']})")
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _load_yaml_or_json(path_str: str) -> object:
+    text = Path(path_str).expanduser().read_text(encoding="utf-8")
+    return yaml.safe_load(text)
+
+
+def main(argv=None) -> int:
+    parser = argparse.ArgumentParser(
+        description="Merge an IBKR positions payload into portfolio.yaml.")
+    parser.add_argument("--positions", help="JSON payload from get_account_positions")
+    parser.add_argument("--home", help="state-home path (default: ~/.investing-home pointer)")
+    parser.add_argument("--as-of", help="sync date YYYY-MM-DD (default: today)")
+    parser.add_argument("--account", help="pinned broker account id (required to write)")
+    parser.add_argument("--resolve", help="YAML/JSON {contract_id: canonical_symbol}")
+    parser.add_argument("--emit-prices", help="write {symbol: market_price} YAML (STK only)")
+    parser.add_argument("--resize-epsilon-pct", type=float, default=0.5)
+    parser.add_argument("--staleness-days", type=int, default=3)
+    parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--format", choices=("json", "md"), default="md")
+    args = parser.parse_args(argv)
+
+    home = resolve_home(args.home)
+    if not home.is_dir():
+        print(f"state home is not a directory: {home}", file=sys.stderr)
+        return 2
+    path = home / "portfolio.yaml"
+    if not path.exists():
+        print(f"portfolio.yaml not found in {home}", file=sys.stderr)
+        return 2
+
+    if args.as_of:
+        try:
+            as_of = as_date(args.as_of)
+        except (ValueError, TypeError):
+            print(f"--as-of is not an ISO date: {args.as_of!r}", file=sys.stderr)
+            return 2
+    else:
+        as_of = datetime.date.today()
+
+    raw_text = path.read_text(encoding="utf-8-sig")
+    try:
+        portfolio = yaml.safe_load(raw_text)
+    except yaml.YAMLError as exc:
+        print(f"portfolio.yaml is not valid YAML: {exc}", file=sys.stderr)
+        return 2
+    if not isinstance(portfolio, dict):
+        print("portfolio.yaml is not a mapping", file=sys.stderr)
+        return 2
+
+    resolve_map: dict = {}
+    if args.resolve and Path(args.resolve).expanduser().exists():
+        try:
+            loaded = _load_yaml_or_json(args.resolve)
+            if isinstance(loaded, dict):
+                resolve_map = {int(k): str(v) for k, v in loaded.items()}
+        except (yaml.YAMLError, ValueError, OSError) as exc:
+            print(f"--resolve file unreadable, ignoring: {exc}", file=sys.stderr)
+
+    payload: "dict | None" = None
+    if args.positions:
+        try:
+            loaded = json.loads(Path(args.positions).expanduser()
+                                .read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"--positions unreadable: {exc}", file=sys.stderr)
+            return 2
+        if not isinstance(loaded, dict) or not isinstance(
+                loaded.get("positions"), list):
+            print("--positions must be a JSON object with a positions[] list",
+                  file=sys.stderr)
+            return 2
+        payload = loaded
+
+    account = args.account
+    inferred = None
+    write_allowed = bool(account) and not args.dry_run
+    if payload is not None and not account:
+        inferred = infer_account(portfolio, payload)
+        account = inferred  # report-only below
+
+    if payload is None:
+        # Degraded mode: freshness accounting only.
+        report = {"as_of": as_of.isoformat(), "account": account,
+                  "guard_triggered": False, "changes": [], "needs_mapping": [],
+                  "uncovered_accounts": [], "mode": "degraded"}
+        shadow = json.loads(json.dumps(portfolio, default=str))
+        _staleness(shadow, account or "", as_of, args.staleness_days, report,
+                   bump=False)
+        report["uncovered_accounts"] = [
+            u for u in report["uncovered_accounts"] if u["account"]]
+        merged = portfolio
+        wrote = False
+        blocked = None
+    elif account is None:
+        print("no --account and inference found no majority; report-only, "
+              "nothing written", file=sys.stderr)
+        report = {"as_of": as_of.isoformat(), "account": None, "mode": "unpinned",
+                  "guard_triggered": False, "changes": [], "needs_mapping": [],
+                  "uncovered_accounts": []}
+        merged, wrote, blocked = portfolio, False, None
+    else:
+        merged, report = merge(
+            portfolio, payload, account=account, as_of=as_of,
+            resolve_map=resolve_map, epsilon_pct=args.resize_epsilon_pct,
+            staleness_days=args.staleness_days)
+        report["mode"] = "synced" if write_allowed else "report-only"
+        blocked = None
+        wrote = False
+        if has_comment_lines(raw_text):
+            blocked = ("portfolio.yaml contains comment lines; move them into "
+                       "note: fields before sync can write (design §write discipline)")
+        elif write_allowed and not report["guard_triggered"] and merged != portfolio:
+            merged["as_of"] = as_of.isoformat()
+            write_portfolio(path, merged)
+            wrote = True
+
+    report["blocked"] = blocked
+    report["wrote"] = wrote
+    if inferred is not None:
+        report["inferred_account"] = inferred
+
+    if args.emit_prices and payload is not None:
+        existing = {str(h.get("symbol")) for h in merged.get("holdings") or []
+                    if isinstance(h, dict) and h.get("symbol")}
+        report["prices_emitted"] = emit_prices(
+            payload, resolve_map, existing, Path(args.emit_prices).expanduser())
+
+    if args.format == "json":
+        print(json.dumps(report, indent=2, ensure_ascii=False, default=str))
+    else:
+        print(render_markdown(report))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

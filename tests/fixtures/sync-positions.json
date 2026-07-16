@@ -1,0 +1,18 @@
+{"positions": [
+  {"contract_id": 9939, "contract_description": "MU", "position": 45,
+   "market_price": 921.51, "market_value": 41467.95, "currency": "USD",
+   "average_price": 943.81, "unrealized_pnl": -1003.49, "daily_pnl": -2600.55,
+   "asset_class": "STK"},
+  {"contract_id": 2, "contract_description": "BOXX", "position": 2955,
+   "market_price": 117.4, "market_value": 346917.0, "currency": "USD",
+   "average_price": 117.0066, "unrealized_pnl": 1162.52, "daily_pnl": 0.0,
+   "asset_class": "STK"},
+  {"contract_id": 4, "contract_description": "011790 @KRX", "position": 200,
+   "market_price": 87800, "market_value": 17560000, "currency": "KRW",
+   "average_price": 96557.9, "unrealized_pnl": -1751580, "daily_pnl": -1360000,
+   "asset_class": "STK"},
+  {"contract_id": 12, "contract_description": "ACME Sep18'26 90 PUT",
+   "position": -1, "market_price": 2.5, "market_value": -250.0,
+   "currency": "USD", "average_price": 3.5, "unrealized_pnl": 100.0,
+   "daily_pnl": 0.0, "asset_class": "OPT"}
+]}
