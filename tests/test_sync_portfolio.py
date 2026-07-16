@@ -538,6 +538,25 @@ class CliTests(unittest.TestCase):
             row = [h for h in data["holdings"] if h["symbol"] == "011790.KS"][0]
             self.assertEqual(row["broker_contract_id"], 4)
 
+    def test_resolve_null_key_is_skipped_not_fatal(self):
+        # A resolve file built from needs_mapping entries can carry a null key
+        # (unkeyable option legs surface contract_id: null). int(None) must not
+        # abort the whole scheduled run: the null key is skipped and the good
+        # key (4) still resolves the KRX row.
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            resolve = pathlib.Path(tmp) / "resolve.yaml"
+            resolve.write_text("null: 011790.KS\n4: 011790.KS\n")
+            proc = _run("--positions", str(POSITIONS), "--account", "U200",
+                        "--resolve", str(resolve), home=home)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            report = json.loads(proc.stdout)
+            self.assertEqual(report["needs_mapping"], [])
+            data = yaml.safe_load((home / "portfolio.yaml").read_text())
+            row = [h for h in data["holdings"] if h["symbol"] == "011790.KS"][0]
+            self.assertEqual(row["broker_contract_id"], 4)
+
     def test_emit_prices_contains_stk_rows_only(self):
         import tempfile
         with tempfile.TemporaryDirectory() as tmp:
@@ -568,6 +587,41 @@ class CliTests(unittest.TestCase):
             self.assertFalse(report["wrote"])
             self.assertIn("comment", report["blocked"])
             self.assertEqual(path.read_bytes(), before)
+
+    def test_emit_prices_survives_a_blocked_run(self):
+        # A blocked write must not starve the price sweep: STK spots are still
+        # emitted so the downstream monitor has fresh marks even when the merge
+        # cannot land.
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            path = home / "portfolio.yaml"
+            path.write_text("# hand note\n" + path.read_text())
+            out = pathlib.Path(tmp) / "spots.yaml"
+            proc = _run("--positions", str(POSITIONS), "--account", "U200",
+                        "--emit-prices", str(out), home=home)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            report = json.loads(proc.stdout)
+            self.assertTrue(report["blocked"])
+            self.assertFalse(report["wrote"])
+            emitted = out.read_text()
+            self.assertIn("MU", emitted)
+            self.assertIn("BOXX", emitted)
+
+    def test_md_format_renders_blocked_run(self):
+        # _run hardcodes --format json, so drive --format md directly and
+        # confirm the human-readable report surfaces the BLOCKED banner.
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            home = _copy_home(tmp)
+            path = home / "portfolio.yaml"
+            path.write_text("# hand note\n" + path.read_text())
+            cmd = [sys.executable, str(SCRIPT), "--home", str(home),
+                   "--as-of", "2026-07-13", "--format", "md",
+                   "--positions", str(POSITIONS), "--account", "U200"]
+            proc = subprocess.run(cmd, capture_output=True, text=True)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertIn("BLOCKED", proc.stdout)
 
     def test_degraded_mode_emits_staleness_without_positions(self):
         proc = _run()  # no --positions, read-only fixture home
@@ -610,3 +664,33 @@ class CliTests(unittest.TestCase):
                 [sys.executable, str(REPO_ROOT / "scripts" / "validate_records.py"),
                  "--home", str(home)], capture_output=True, text=True)
             self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
+class InferAccountTests(unittest.TestCase):
+    # Report-only inference quorum: a majority must be strict (> 50% of payload
+    # rows mapping to one account), so a tie or no-signal payload declines.
+    PORTFOLIO = {"holdings": [
+        {"symbol": "MU", "broker_contract_id": 1, "account": "U200"},
+        {"symbol": "AAPL", "broker_contract_id": 2, "account": "U200"},
+    ]}
+
+    @staticmethod
+    def _payload(*cids):
+        # Descriptionless STK rows: any cid not in by_cid casts no vote.
+        return {"positions": [{"contract_id": c, "asset_class": "STK"}
+                              for c in cids]}
+
+    def test_strict_majority_wins(self):
+        # 2 of 3 rows map to U200 -> quorum (2*2 > 3).
+        self.assertEqual(
+            sp.infer_account(self.PORTFOLIO, self._payload(1, 2, 99)), "U200")
+
+    def test_exactly_half_is_no_quorum(self):
+        # 2 of 4 rows map -> a tie is not a strict majority (2*2 == 4).
+        self.assertIsNone(
+            sp.infer_account(self.PORTFOLIO, self._payload(1, 2, 98, 99)))
+
+    def test_no_votes_returns_none(self):
+        # No payload row maps to any account -> nothing to infer.
+        self.assertIsNone(
+            sp.infer_account(self.PORTFOLIO, self._payload(97, 98)))

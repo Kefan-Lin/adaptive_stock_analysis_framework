@@ -234,8 +234,12 @@ fault). This is deliberately the *only* destructive-adjacent path, and it is
 two-phase.
 
 **Write discipline.** Atomic write (tmp + rename), stable field order, bumps
-top-level `as_of` to the sync date on any write (a no-change run leaves the
-file untouched, `as_of` included),
+top-level `as_of` to the sync date on any write (an *intraday* no-change re-run
+leaves the file untouched, `as_of` included; a new-day sync always writes,
+though, because the pinned account's `last_synced` advances on each successful
+merge — deliberate, so staleness accounting stays honest and quiet days still
+produce a daily "monitor-alive" audit commit, notifications remaining separately
+gated),
 idempotent (re-running on the same snapshot yields zero changes), `--dry-run`
 for tests and manual inspection, exit codes mirror P1 (`0` clean with or
 without changes, `2` environment error). **`portfolio.yaml` becomes a

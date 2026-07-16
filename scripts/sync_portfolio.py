@@ -16,6 +16,7 @@ Exit codes: 0 clean run (with or without changes), 2 environment error.
 from __future__ import annotations
 
 import argparse
+import copy
 import datetime
 import json
 import os
@@ -489,6 +490,10 @@ _SECTION_ORDER = ("schema", "as_of", "base_currency", "note", "cash", "accounts"
 
 
 def has_comment_lines(text: str) -> bool:
+    # Leading-# lines only: an inline trailing comment (qty: 5  # note) is not
+    # caught — a ` #` scan would false-positive on quoted values containing '#'
+    # (note: 'filed #2'). The vault's git auto-commit is the backstop for any
+    # lossy round-trip.
     return any(line.lstrip().startswith("#") for line in text.splitlines())
 
 
@@ -606,10 +611,15 @@ def main(argv=None) -> int:
     if args.resolve and Path(args.resolve).expanduser().exists():
         try:
             loaded = _load_yaml_or_json(args.resolve)
-            if isinstance(loaded, dict):
-                resolve_map = {int(k): str(v) for k, v in loaded.items()}
-        except (yaml.YAMLError, ValueError, OSError) as exc:
+        except (yaml.YAMLError, OSError) as exc:
             print(f"--resolve file unreadable, ignoring: {exc}", file=sys.stderr)
+            loaded = None
+        if isinstance(loaded, dict):
+            for k, v in loaded.items():
+                try:
+                    resolve_map[int(k)] = str(v)
+                except (ValueError, TypeError):
+                    print(f"--resolve: ignoring un-coercible key {k!r}", file=sys.stderr)
 
     payload: "dict | None" = None
     if args.positions:
@@ -638,7 +648,7 @@ def main(argv=None) -> int:
         report = {"as_of": as_of.isoformat(), "account": account,
                   "guard_triggered": False, "changes": [], "needs_mapping": [],
                   "uncovered_accounts": [], "mode": "degraded"}
-        shadow = json.loads(json.dumps(portfolio, default=str))
+        shadow = copy.deepcopy(portfolio)
         _staleness(shadow, account or "", as_of, args.staleness_days, report,
                    bump=False)
         report["uncovered_accounts"] = [
