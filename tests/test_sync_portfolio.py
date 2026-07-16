@@ -240,6 +240,21 @@ class MergeStockTests(unittest.TestCase):
         mu = [h for h in new["holdings"] if h["symbol"] == "MU"][0]
         self.assertEqual(mu["qty"], 30)  # not updated
 
+    def test_broker_contract_id_is_write_once(self):
+        # Stored id 1234 + payload cid 9999 for the same symbol: numerics
+        # still update via the symbol match, the stored id is never rewritten.
+        p = _portfolio()
+        mu = [h for h in p["holdings"] if h["symbol"] == "MU"][0]
+        mu["broker_contract_id"] = 1234
+        snap = [_pos(9999, "MU", 45, 943.81),
+                _pos(1, "000660 @KRX", 80, 2335525, cur="KRW"),
+                _pos(2, "BOXX", 3860, 117.01)]
+        new, _ = _merge(p, snap)
+        row = [h for h in new["holdings"] if h["symbol"] == "MU"][0]
+        self.assertEqual(row["broker_contract_id"], 1234)
+        self.assertEqual(row["qty"], 45)
+        self.assertAlmostEqual(row["avg_cost"], 943.81)
+
 
 class MergeCloseTests(unittest.TestCase):
     def test_absent_pinned_row_moves_to_suspected_closed(self):
@@ -274,6 +289,26 @@ class MergeCloseTests(unittest.TestCase):
         material = [c for c in _changes(report) if c["kind"] != "sync_staleness"]
         self.assertEqual(material, [])  # staleness accounting still runs
         self.assertEqual(new, _portfolio())  # untouched
+
+    def test_stk_only_snapshot_never_closes_option_legs(self):
+        # OPT wholly absent from the snapshot is ambiguous (partial dump vs
+        # sold-all), so the legs close pass must not run at all.
+        snap = [_pos(9939, "MU", 30, 902.08),
+                _pos(1, "000660 @KRX", 80, 2335525, cur="KRW"),
+                _pos(2, "BOXX", 3860, 117.01)]
+        new, report = _merge(_portfolio(), snap)
+        self.assertEqual(new["option_legs"], _portfolio()["option_legs"])
+        self.assertNotIn("suspected_closed", new)
+        self.assertEqual(_changes(report, "option_leg_closed"), [])
+
+    def test_opt_only_snapshot_never_closes_holdings(self):
+        snap = [_pos(10, "QQQ Jul31'26 700 PUT @AMEX", 5, 27.38, asset="OPT"),
+                _pos(11, "QQQ Jul31'26 665 PUT @AMEX", -5, 15.37, asset="OPT"),
+                _pos(12, "ACME Sep18'26 90 PUT", -1, 3.5, asset="OPT")]
+        new, report = _merge(_portfolio(), snap)
+        self.assertEqual(new["holdings"], _portfolio()["holdings"])
+        self.assertNotIn("suspected_closed", new)
+        self.assertEqual(_changes(report, "position_closed"), [])
 
 
 class MergeOptionTests(unittest.TestCase):
@@ -361,6 +396,35 @@ class MergeOptionTests(unittest.TestCase):
         snap = self.SNAP_BASE + [_pos(99, "ESZ6", 1, 5000.0, asset="FUT")]
         _, report = _merge(_portfolio(), snap)
         self.assertTrue(any(n["contract_id"] == 99 for n in report["needs_mapping"]))
+
+    def test_unkeyable_leg_is_left_in_place_not_quarantined(self):
+        # kind='synthetic' derives no PUT/CALL right and the leg has no
+        # broker_contract_id, so it can never match any payload row. It must
+        # stay in option_legs untouched, surface in needs_mapping, never enter
+        # suspected_closed — and the payload row for that contract must not
+        # create a default-kind duplicate.
+        p = _portfolio()
+        p["option_legs"].append(
+            {"kind": "synthetic", "underlying": "QQQ", "strike": 720,
+             "expiry": D(2026, 9, 18), "qty": 1, "currency": "USD",
+             "multiplier": 100, "account": ACCT})
+        snap = self.SNAP_BASE + [
+            _pos(10, "QQQ Jul31'26 700 PUT @AMEX", 5, 27.38, asset="OPT"),
+            _pos(11, "QQQ Jul31'26 665 PUT @AMEX", -5, 15.37, asset="OPT"),
+            _pos(12, "ACME Sep18'26 90 PUT", -1, 3.5, asset="OPT"),
+            _pos(13, "QQQ Sep18'26 720 PUT @AMEX", 1, 34.64, asset="OPT"),
+        ]
+        new, report = _merge(p, snap)
+        synth = [l for l in new["option_legs"] if l.get("kind") == "synthetic"]
+        self.assertEqual(len(synth), 1)                    # left in place
+        self.assertEqual(synth[0], p["option_legs"][-1])   # all fields untouched
+        self.assertNotIn("suspected_closed", new)
+        self.assertEqual(_changes(report, "option_leg_closed"), [])
+        self.assertTrue(any("not indexable" in n["reason"]
+                            for n in report["needs_mapping"]))
+        self.assertEqual([l for l in new["option_legs"]
+                          if l.get("broker_contract_id") == 13], [])  # no dup
+        self.assertEqual(len(new["option_legs"]), 4)
 
 
 class MergeAccountingTests(unittest.TestCase):

@@ -161,7 +161,9 @@ def merge(portfolio: dict, payload: dict, *, account: str,
 
     Returns (new_portfolio, report). Never mutates the input. The report's
     `changes` mirror the P1 findings shape so notify_gate/skill consume one
-    vocabulary.
+    vocabulary. Matched-row numerics (qty/avg_cost/leg qty) are assumed valid
+    per validate_records; malformed state homes are not this function's
+    contract.
     """
     import copy as _copy
 
@@ -200,12 +202,39 @@ def merge(portfolio: dict, payload: dict, *, account: str,
     by_cid_l = {l["broker_contract_id"]: l for l in pinned_legs
                 if is_number(l.get("broker_contract_id"))}
     by_key_l: "dict[tuple, list]" = {}
+    indexable_l: "set[int]" = {id(l) for l in by_cid_l.values()}
+    unkeyed_loose: "set[tuple]" = set()
     for leg in pinned_legs:
         right = _right_of(leg)
-        if leg.get("underlying") and is_number(leg.get("strike")) and right:
+        keyable = bool(leg.get("underlying")) and is_number(leg.get("strike")) and bool(right)
+        if keyable:
+            try:
+                as_date(leg.get("expiry"))
+            except (ValueError, TypeError):
+                keyable = False
+        if keyable:
             by_key_l.setdefault(
                 _leg_key(str(leg["underlying"]), leg.get("expiry"),
                          leg["strike"], right), []).append(leg)
+            indexable_l.add(id(leg))
+        elif id(leg) not in indexable_l:
+            # Never-indexable: no broker_contract_id and no derivable
+            # (underlying, expiry, strike, right) key. Such a leg can never
+            # match a payload row, so quarantining it as "absent" would be a
+            # false close; it is exempted from the close pass, left in place,
+            # and surfaced for one-time owner resolution instead.
+            needs_mapping.append(_needs(
+                leg.get("broker_contract_id"),
+                "option_leg " + " ".join(str(leg.get(k)) for k in
+                                         ("underlying", "strike", "expiry", "kind")),
+                "leg not indexable (kind/strike/expiry unmappable); left in place"))
+            if leg.get("underlying") and is_number(leg.get("strike")):
+                try:
+                    unkeyed_loose.add((str(leg["underlying"]),
+                                       as_date(leg.get("expiry")).isoformat(),
+                                       float(leg["strike"])))
+                except (ValueError, TypeError):
+                    pass
 
     matched_h: "set[int]" = set()   # id() of matched holding rows
     matched_l: "set[int]" = set()
@@ -320,6 +349,16 @@ def merge(portfolio: dict, payload: dict, *, account: str,
                 if "premium" in leg:
                     leg["premium"] = round(float(avg), 4)
             else:
+                if (underlying, parsed["expiry"].isoformat(),
+                        float(parsed["strike"])) in unkeyed_loose:
+                    # This contract lines up with a never-indexable pinned leg
+                    # on underlying/expiry/strike; creating a default-kind row
+                    # would duplicate it. Owner resolves the leg first.
+                    needs_mapping.append(_needs(
+                        cid, desc,
+                        "matches an unindexable portfolio leg on underlying/"
+                        "expiry/strike; resolve that leg before merging"))
+                    continue
                 new_leg = {"kind": default_kind(parsed["right"], float(qty)),
                            "underlying": underlying, "strike": parsed["strike"],
                            "expiry": parsed["expiry"], "qty": qty,
@@ -339,25 +378,32 @@ def merge(portfolio: dict, payload: dict, *, account: str,
             needs_mapping.append(_needs(cid, desc, f"unsupported asset_class {asset!r}"))
 
     # Close pass: pinned rows the snapshot no longer contains -> quarantine.
+    # Removal is identity-based (id()) — matching is by identity throughout,
+    # and value-equal duplicate rows must not shadow each other. Legs that
+    # never entered an index are exempt: "absent" is unprovable for them
+    # (routed to needs_mapping above and left in place).
     suspected = [s for s in (new.get("suspected_closed") or []) if isinstance(s, dict)]
-    for row in list(pinned_holdings):
-        if snap_has_stk and id(row) not in matched_h and row in holdings:
-            holdings.remove(row)
-            quarantined = dict(row, suspected_closed_on=as_of.isoformat())
-            suspected.append(quarantined)
+    closed_ids: "set[int]" = set()
+    for row in pinned_holdings:
+        if snap_has_stk and id(row) not in matched_h:
+            closed_ids.add(id(row))
+            suspected.append(dict(row, suspected_closed_on=as_of.isoformat()))
             changes.append(_change(
                 "position_closed", "review",
                 f"absent from {account} snapshot; quarantined pending confirmation",
                 {"qty": row.get("qty")}, symbol=str(row.get("symbol"))))
-    for leg in list(pinned_legs):
-        if snap_has_opt and id(leg) not in matched_l and leg in legs:
-            legs.remove(leg)
+    for leg in pinned_legs:
+        if (snap_has_opt and id(leg) in indexable_l
+                and id(leg) not in matched_l):
+            closed_ids.add(id(leg))
             suspected.append(dict(leg, suspected_closed_on=as_of.isoformat()))
             changes.append(_change(
                 "option_leg_closed", "review",
                 f"leg absent from {account} snapshot; quarantined pending confirmation",
                 {"strike": leg.get("strike"), "qty": leg.get("qty")},
                 symbol=str(leg.get("underlying"))))
+    holdings = [h for h in holdings if id(h) not in closed_ids]
+    legs = [l for l in legs if id(l) not in closed_ids]
 
     new["holdings"] = holdings
     new["option_legs"] = legs
