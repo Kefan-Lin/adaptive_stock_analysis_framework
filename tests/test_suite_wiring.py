@@ -126,5 +126,38 @@ class RiskRegisterConsistencyTests(unittest.TestCase):
         self.assertIn("reduce stance by at least one tier", register)
 
 
+class ScheduledMonitoringWiringTests(unittest.TestCase):
+    """P4: the skill must document the scheduled pipeline it claims to run."""
+
+    def test_morning_check_documents_scheduled_and_weekly_modes(self) -> None:
+        skill = read("skills/morning-check/SKILL.md")
+        self.assertIn("## Scheduled Mode", skill)
+        self.assertIn("## Weekly Mode", skill)
+        self.assertNotIn("scheduling is out of scope", skill)
+
+    def test_scheduled_mode_wires_all_three_scripts(self) -> None:
+        skill = read("skills/morning-check/SKILL.md")
+        for script in ("sync_portfolio.py", "morning_check.py", "notify_gate.py"):
+            self.assertIn(script, skill)
+
+    def test_skill_pins_read_only_guardrail(self) -> None:
+        skill = read("skills/morning-check/SKILL.md")
+        self.assertIn("read-only", skill.lower())
+        self.assertIn("never place", skill.lower())
+
+    def test_scheduled_prompts_reference_exists_and_covers_four_tasks(self) -> None:
+        prompts = read("skills/morning-check/references/scheduled-prompts.md")
+        for task_id in ("morning-check-am", "morning-check-pm",
+                        "portfolio-weekly", "outcome-scoring-monthly"):
+            self.assertIn(task_id, prompts)
+        self.assertIn(".venv/bin/python", prompts)
+        self.assertIn("--account", prompts)
+
+    def test_openai_metadata_mentions_scheduled(self) -> None:
+        meta = read("skills/morning-check/agents/openai.yaml")
+        self.assertIn("scheduled", meta.lower())
+        self.assertNotIn("Manual morning monitoring sweep", meta)
+
+
 if __name__ == "__main__":
     unittest.main()
