@@ -290,12 +290,13 @@ python scripts/notify_gate.py --findings FILE --changes FILE
   escalated vs `monitoring/state.json`; standing keys are suppressed; keys
   absent from the current run are dropped from state, so a condition that
   clears and later recurs notifies again.
-- **Output:** `{notify, new, escalated, standing, cleared, missed_runs}` —
+- **Output:** `{notify, new, escalated, standing, cleared, missed_gap_hours}` —
   the skill notifies iff `notify` is true, and the brief may list `standing`
   for context without re-pushing it.
 - **Run-ledger watchdog:** state records each run's timestamp; a gap larger
   than `--max-gap-hours` (default 36 — wider than the widest normal
-  weekend/weekly gap) yields `missed_runs > 0`, which always notifies. This is
+  weekend/weekly gap) reports `missed_gap_hours` (the elapsed gap in hours,
+  else null), which always notifies. This is
   a catch-up alert on the next successful run (missed tasks also fire on next
   app launch); true same-instant death of a session cannot alert itself.
 
