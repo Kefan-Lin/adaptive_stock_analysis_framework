@@ -221,5 +221,46 @@ class GateTests(unittest.TestCase):
             self.assertEqual(list(state_path.parent.glob(".state-*")), [])
 
 
+class MissingInputGuardTests(unittest.TestCase):
+    """P4 hardening: a botched file handoff must exit 2 (loud), never fall back
+    to an empty sweep/sync and silently emit notify:false. A missing --state
+    file stays legitimate (first run), so it must still exit 0."""
+
+    def _run(self, args):
+        cmd = [sys.executable, str(REPO_ROOT / "scripts" / "notify_gate.py")]
+        return subprocess.run(cmd + args, capture_output=True, text=True)
+
+    def test_missing_findings_path_exits_2(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = pathlib.Path(tmp)
+            (tmp / "sync.json").write_text(json.dumps(_sync()))
+            proc = self._run(["--findings", str(tmp / "nope.json"),
+                              "--changes", str(tmp / "sync.json"),
+                              "--state", str(tmp / "state.json"),
+                              "--now", "2026-07-13T08:30:00"])
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+    def test_missing_changes_path_exits_2(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = pathlib.Path(tmp)
+            (tmp / "sweep.json").write_text(json.dumps(_sweep([_finding()])))
+            proc = self._run(["--findings", str(tmp / "sweep.json"),
+                              "--changes", str(tmp / "nope.json"),
+                              "--state", str(tmp / "state.json"),
+                              "--now", "2026-07-13T08:30:00"])
+            self.assertEqual(proc.returncode, 2, proc.stdout + proc.stderr)
+
+    def test_missing_state_file_is_legitimate_first_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tmp = pathlib.Path(tmp)
+            (tmp / "sweep.json").write_text(json.dumps(_sweep([_finding()])))
+            (tmp / "sync.json").write_text(json.dumps(_sync()))
+            proc = self._run(["--findings", str(tmp / "sweep.json"),
+                              "--changes", str(tmp / "sync.json"),
+                              "--state", str(tmp / "absent-state.json"),
+                              "--now", "2026-07-13T08:30:00"])
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()

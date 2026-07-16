@@ -159,6 +159,15 @@ def main(argv=None) -> int:
     parser.add_argument("--max-gap-hours", type=float, default=36.0)
     args = parser.parse_args(argv)
 
+    # A passed-but-missing input is a botched handoff, not an empty result:
+    # exit loud (2) so the scheduled prompt notifies, rather than letting
+    # _load's fallback yield a silent notify:false. A missing --state file is
+    # legitimate on the first run, so it keeps the tolerant fallback below.
+    for flag, given in (("--findings", args.findings), ("--changes", args.changes)):
+        if given is not None and not Path(given).expanduser().exists():
+            print(f"{flag} path does not exist: {given}", file=sys.stderr)
+            return 2
+
     try:
         sweep = _load(args.findings, {"findings": []})
         sync = _load(args.changes, {"changes": [], "needs_mapping": [],
