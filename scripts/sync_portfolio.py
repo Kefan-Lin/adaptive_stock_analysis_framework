@@ -81,11 +81,12 @@ def parse_description(desc: object) -> "dict | None":
 def canonical_for(parsed: "dict | None", existing_symbols: "set[str]") -> "str | None":
     """Deterministic canonical symbol for a parsed stock description.
 
-    Bare ticker -> US; @ASX -> .AX; @KRX -> adopt an existing row's .KS/.KQ
-    suffix for the same 6-digit code (KOSPI/KOSDAQ is not inferable from the
-    payload); @SEHK -> zero-padded .HK (assumed form — unverified until an HK
-    row is observed live; see design §mapping). Anything else, or a result
-    that is not canonical, -> None (caller emits needs_mapping).
+    Bare ticker -> US; @ASX -> .AX; @KRX -> adopt .KS/.KQ when an existing
+    row already holds this code with that suffix (KOSPI/KOSDAQ is not
+    inferable from the payload); @SEHK -> zero-padded .HK (assumed form —
+    unverified until an HK row is observed live; see design §mapping).
+    Anything else, or a result that is not canonical, -> None (caller emits
+    needs_mapping).
     """
     if not parsed or parsed.get("asset") != "stock":
         return None

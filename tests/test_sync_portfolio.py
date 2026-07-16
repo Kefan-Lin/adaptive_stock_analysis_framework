@@ -49,6 +49,17 @@ class ParseDescriptionTests(unittest.TestCase):
         self.assertIsNone(sp.parse_description("SOMETHING WEIRD 123 XX"))
         self.assertIsNone(sp.parse_description(""))
 
+    def test_non_string_input_returns_none(self):
+        self.assertIsNone(sp.parse_description(None))
+
+    def test_unknown_month_token_returns_none(self):
+        # The regex month group accepts any capitalized triple; the _MONTHS
+        # lookup is what rejects a non-month token.
+        self.assertIsNone(sp.parse_description("MU Zzz16'28 450 CALL"))
+
+    def test_impossible_calendar_date_returns_none(self):
+        self.assertIsNone(sp.parse_description("MU Feb30'28 450 CALL"))
+
 
 class CanonicalForTests(unittest.TestCase):
     def test_bare_ticker_is_us(self):
