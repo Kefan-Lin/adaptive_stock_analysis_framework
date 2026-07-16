@@ -379,7 +379,11 @@ class Checker:
                         except (ValueError, TypeError):
                             self.err(path, f"accounts[{name!r}].last_synced is not ISO: {last!r}")
 
-        for row in data.get("suspected_closed") or []:
+        suspected = data.get("suspected_closed")
+        if suspected is not None and not isinstance(suspected, list):
+            self.err(path, f"suspected_closed must be a list, got {suspected!r}")
+            suspected = None
+        for row in suspected or []:
             if not isinstance(row, dict):
                 self.err(path, f"suspected_closed entry must be a mapping: {row!r}")
                 continue

@@ -681,6 +681,21 @@ class PortfolioP4SectionTests(unittest.TestCase):
         self.assertEqual(result.returncode, 1)
         self.assertIn("broker_contract_id", result.stdout)
 
+    def test_account_must_be_string(self):
+        result = self._run(self.BASE.replace("account: U200", "account: 123"))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("account", result.stdout)
+
+    def test_accounts_must_be_mapping(self):
+        result = self._run(self.BASE + "accounts:\n- U200\n")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("accounts", result.stdout)
+
+    def test_suspected_closed_scalar_fails(self):
+        result = self._run(self.BASE + "suspected_closed: 5\n")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("suspected_closed must be a list", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()
