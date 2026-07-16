@@ -697,5 +697,43 @@ class PortfolioP4SectionTests(unittest.TestCase):
         self.assertIn("suspected_closed must be a list", result.stdout)
 
 
+class PortfolioOnlyScopingTests(unittest.TestCase):
+    """--portfolio-only scopes the P4 post-sync check to portfolio.yaml.
+
+    The records/ walk is skipped so unrelated pre-existing decision-record
+    errors elsewhere in the home cannot fail a scheduled sync's well-formedness
+    check on the machine-written portfolio.yaml.
+    """
+
+    def _build_home(self, portfolio_yaml: str) -> pathlib.Path:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        home = pathlib.Path(tmp.name) / "home"
+        # A non-canonical record dir name makes the records/ walk fail while
+        # portfolio.yaml itself stays clean — the exact production shape where
+        # in-progress records carry pre-existing validation errors.
+        bad_dir = home / "records" / "badname"
+        bad_dir.mkdir(parents=True)
+        (bad_dir / "2026-07-13-new-idea.md").write_text(
+            "# in-progress idea, no frontmatter yet\n", encoding="utf-8")
+        (home / "portfolio.yaml").write_text(portfolio_yaml, encoding="utf-8")
+        return home
+
+    def test_portfolio_only_skips_record_errors(self):
+        home = self._build_home(PortfolioP4SectionTests.BASE)
+        full = run_validator(home)
+        self.assertEqual(full.returncode, 1, msg=full.stdout + full.stderr)
+        scoped = run_validator(home, "--portfolio-only")
+        self.assertEqual(scoped.returncode, 0, msg=scoped.stdout + scoped.stderr)
+
+    def test_portfolio_only_still_catches_portfolio_errors(self):
+        home = self._build_home(
+            PortfolioP4SectionTests.BASE.replace(
+                "broker_contract_id: 42", "broker_contract_id: abc"))
+        scoped = run_validator(home, "--portfolio-only")
+        self.assertEqual(scoped.returncode, 1, msg=scoped.stdout + scoped.stderr)
+        self.assertIn("broker_contract_id", scoped.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

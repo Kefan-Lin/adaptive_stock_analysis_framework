@@ -508,6 +508,16 @@ class Checker:
                 self.check_index(symbol_dir, metas_by_dir[symbol_dir.name], see_also[symbol_dir.name])
         return self.errors
 
+    def run_portfolio_only(self) -> "list[str]":
+        """Validate ONLY portfolio.yaml (skip the records/ walk).
+
+        The P4 post-sync check needs to know the machine write is well-formed
+        without failing on unrelated pre-existing record errors elsewhere in
+        the home.
+        """
+        self.check_portfolio()
+        return self.errors
+
 
 def record_path_hint(meta: dict) -> str:
     try:
@@ -622,6 +632,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate an investing state home.")
     parser.add_argument("--home", help="state-home path (default: ~/.investing-home pointer)")
     parser.add_argument("--reindex", action="store_true", help="rebuild INDEX.md files, then validate")
+    parser.add_argument(
+        "--portfolio-only", action="store_true",
+        help="validate only portfolio.yaml, skipping decision-record checks",
+    )
     args = parser.parse_args()
 
     home = resolve_home(args.home)
@@ -633,7 +647,7 @@ def main() -> int:
         for note in reindex(home):
             print(f"note: {note}", file=sys.stderr)
 
-    errors = Checker(home).run()
+    errors = Checker(home).run_portfolio_only() if args.portfolio_only else Checker(home).run()
     if errors:
         print("State-home validation failed:")
         for item in errors:

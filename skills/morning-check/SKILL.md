@@ -89,9 +89,11 @@ system temp dir (e.g. `$TMPDIR`) — never inside the state home. Steps:
       `.venv/bin/python scripts/sync_portfolio.py --home <home> --positions <dump> --account U17780156 --emit-prices $TMPDIR/p4-spots.yaml --format json > $TMPDIR/p4-sync.json`
       (`<sync>`=p4-sync.json, `<spots>`=p4-spots.yaml). If it wrote
       (`"wrote": true`), run
-      `.venv/bin/python scripts/validate_records.py --home <home>`; a non-zero
-      exit means a malformed machine write — send the error notification and
-      stop before sweeping. Then:
+      `.venv/bin/python scripts/validate_records.py --home <home> --portfolio-only`;
+      `--portfolio-only` scopes the check to the just-written portfolio.yaml
+      (unrelated in-progress decision records elsewhere in the home are not
+      checked here), so a non-zero exit means a malformed machine write — send
+      the error notification and stop before sweeping. Then:
       `.venv/bin/python scripts/morning_check.py --home <home> --prices <spots> --format json > $TMPDIR/p4-sweep.json`
       (`<sweep>`=p4-sweep.json). `--emit-prices` is STK-only; option
       underlyings (QQQ/MSFT) not in `<spots>` are live-fetched automatically —
