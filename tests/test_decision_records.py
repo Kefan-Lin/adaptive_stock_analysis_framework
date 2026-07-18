@@ -640,5 +640,100 @@ class ControllerContractTests(unittest.TestCase):
         self.assertIn("archive-ready", controller)
 
 
+class PortfolioP4SectionTests(unittest.TestCase):
+    """P4 sync sections: accounts, suspected_closed, broker_contract_id, account."""
+
+    def _run(self, portfolio_yaml: str) -> "subprocess.CompletedProcess[str]":
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        home = pathlib.Path(tmp.name) / "home"
+        (home / "records").mkdir(parents=True)
+        (home / "portfolio.yaml").write_text(portfolio_yaml, encoding="utf-8")
+        return run_validator(home)
+
+    BASE = (
+        "schema: portfolio/v1\nas_of: 2026-07-13\nbase_currency: USD\n"
+        "holdings:\n- {symbol: ACME, qty: 10, avg_cost: 100.0, currency: USD,\n"
+        "   account: U200, broker_contract_id: 42}\n")
+
+    def test_valid_p4_sections_pass(self):
+        result = self._run(self.BASE + (
+            "accounts:\n  U200: {last_synced: 2026-07-13}\n"
+            "suspected_closed:\n"
+            "- {symbol: OLD, qty: 5, avg_cost: 9.0, currency: USD, account: U200,\n"
+            "   suspected_closed_on: 2026-07-13}\n"))
+        self.assertEqual(result.returncode, 0, msg=result.stdout + result.stderr)
+
+    def test_accounts_bad_date_fails(self):
+        result = self._run(self.BASE + "accounts:\n  U200: {last_synced: soon}\n")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("last_synced", result.stdout)
+
+    def test_suspected_closed_requires_date(self):
+        result = self._run(self.BASE + (
+            "suspected_closed:\n- {symbol: OLD, qty: 5, account: U200}\n"))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("suspected_closed_on", result.stdout)
+
+    def test_broker_contract_id_must_be_numeric(self):
+        result = self._run(
+            self.BASE.replace("broker_contract_id: 42", "broker_contract_id: abc"))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("broker_contract_id", result.stdout)
+
+    def test_account_must_be_string(self):
+        result = self._run(self.BASE.replace("account: U200", "account: 123"))
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("account", result.stdout)
+
+    def test_accounts_must_be_mapping(self):
+        result = self._run(self.BASE + "accounts:\n- U200\n")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("accounts", result.stdout)
+
+    def test_suspected_closed_scalar_fails(self):
+        result = self._run(self.BASE + "suspected_closed: 5\n")
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("suspected_closed must be a list", result.stdout)
+
+
+class PortfolioOnlyScopingTests(unittest.TestCase):
+    """--portfolio-only scopes the P4 post-sync check to portfolio.yaml.
+
+    The records/ walk is skipped so unrelated pre-existing decision-record
+    errors elsewhere in the home cannot fail a scheduled sync's well-formedness
+    check on the machine-written portfolio.yaml.
+    """
+
+    def _build_home(self, portfolio_yaml: str) -> pathlib.Path:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        home = pathlib.Path(tmp.name) / "home"
+        # A non-canonical record dir name makes the records/ walk fail while
+        # portfolio.yaml itself stays clean — the exact production shape where
+        # in-progress records carry pre-existing validation errors.
+        bad_dir = home / "records" / "badname"
+        bad_dir.mkdir(parents=True)
+        (bad_dir / "2026-07-13-new-idea.md").write_text(
+            "# in-progress idea, no frontmatter yet\n", encoding="utf-8")
+        (home / "portfolio.yaml").write_text(portfolio_yaml, encoding="utf-8")
+        return home
+
+    def test_portfolio_only_skips_record_errors(self):
+        home = self._build_home(PortfolioP4SectionTests.BASE)
+        full = run_validator(home)
+        self.assertEqual(full.returncode, 1, msg=full.stdout + full.stderr)
+        scoped = run_validator(home, "--portfolio-only")
+        self.assertEqual(scoped.returncode, 0, msg=scoped.stdout + scoped.stderr)
+
+    def test_portfolio_only_still_catches_portfolio_errors(self):
+        home = self._build_home(
+            PortfolioP4SectionTests.BASE.replace(
+                "broker_contract_id: 42", "broker_contract_id: abc"))
+        scoped = run_validator(home, "--portfolio-only")
+        self.assertEqual(scoped.returncode, 1, msg=scoped.stdout + scoped.stderr)
+        self.assertIn("broker_contract_id", scoped.stdout)
+
+
 if __name__ == "__main__":
     unittest.main()

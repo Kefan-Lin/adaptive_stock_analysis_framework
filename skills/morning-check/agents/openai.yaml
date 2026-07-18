@@ -1,4 +1,4 @@
 interface:
   display_name: "Morning Check"
-  short_description: "Manual morning monitoring sweep of the private state home that flags crossed triggers, stale reviews, upcoming earnings, and put-assignment risk"
+  short_description: "Morning monitoring sweep of the private state home — manual, or scheduled with broker position sync and exception-gated notifications — flagging crossed triggers, position drift, stale reviews, upcoming earnings, and put-assignment risk"
   default_prompt: "Use $morning-check to sweep my tracked names, flag any crossed price triggers, stale review dates, upcoming earnings, and cash-secured-put assignment risk, and give me one action brief."

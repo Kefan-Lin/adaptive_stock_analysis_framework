@@ -194,13 +194,22 @@ See also: [1234.HK](../1234.HK/INDEX.md)
 schema: portfolio/v1
 as_of: 2026-07-01
 base_currency: USD
+note: cash reflects the 2026-06 dividend sweep (hand-maintained; survives sync)
 cash: {USD: 10000, HKD: 20000}
+accounts:
+  U100: {last_synced: 2026-07-01}
+  U200: {last_synced: 2026-07-01}
 holdings:
-  - {symbol: ACME, qty: 10, avg_cost: 101.5, currency: USD,
-     opened: 2026-06-02, thesis_record: records/ACME/2026-06-01-new-idea.md}
+  - {symbol: ACME, qty: 10, avg_cost: 101.5, currency: USD, account: U100,
+     broker_contract_id: 265598, opened: 2026-06-02,
+     thesis_record: records/ACME/2026-06-01-new-idea.md}
 option_legs:
   - {kind: cash-secured-put, underlying: ACME, strike: 90, expiry: 2026-09-18,
-     qty: -1, premium: 3.5, currency: USD, opened: 2026-06-15, multiplier: 100}
+     qty: -1, premium: 3.5, currency: USD, account: U100,
+     broker_contract_id: 512, opened: 2026-06-15, multiplier: 100}
+suspected_closed:
+  - {symbol: OLDCO, qty: 5, avg_cost: 42.0, currency: USD, account: U200,
+     suspected_closed_on: 2026-07-01}
 constraints:
   single_name_cap_pct: 10
   cash_reserve_floor_pct: 15
@@ -214,6 +223,25 @@ constraints:
   must be set explicitly for other contract sizes. `underlying` and `symbol`
   use the canonical form.
 - `constraints` feeds the workflow's Portfolio Risk Budget verbatim.
+- **P4 broker sync (machine-written).** `portfolio.yaml` may be rewritten by
+  `scripts/sync_portfolio.py` from a broker positions snapshot. Hand comments
+  do not survive machine writes — annotations belong in `note:` fields (cash
+  provenance in a top-level `note:`, since `cash` is a currency→amount map).
+  Sync updates only `qty` / `avg_cost` / `premium` (where present) /
+  `broker_contract_id`; `kind`, `combo`, `thesis_record`, `account`,
+  `constraints`, and `cash` are owner-owned and sync-invariant.
+- **`accounts:`** maps each broker account to `{last_synced: date}` — the
+  per-account freshness the single `as_of` cannot express. Sync is pinned to
+  one account per run; other accounts' rows are never matched, updated, or
+  closed.
+- **`suspected_closed:`** is the two-phase close quarantine: rows absent from
+  their account's snapshot move here (with `suspected_closed_on:`), leaving
+  the held universe; physical deletion happens only on owner confirmation.
+  Restore a row by moving it back.
+- **`monitoring/` layout:** `log.md` (one line per scheduled run),
+  `state.json` (notify-gate ledger + run timestamps), and dated briefs
+  `YYYY-MM-DD-{am|pm|weekly}.md` alongside the P1 manual
+  `YYYY-MM-DD-morning-check.md`.
 
 ## Validation
 

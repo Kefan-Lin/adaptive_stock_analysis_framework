@@ -1,0 +1,38 @@
+schema: portfolio/v1
+as_of: 2026-07-05
+base_currency: USD
+note: fixture state home for sync_portfolio tests (fictional)
+cash:
+  USD: 1000.0
+accounts:
+  U100:
+    last_synced: 2026-07-05
+  U200:
+    last_synced: 2026-07-05
+holdings:
+- symbol: GOOG
+  qty: 200
+  avg_cost: 358.59
+  currency: USD
+  account: U100
+- symbol: MU
+  qty: 30
+  avg_cost: 902.08
+  currency: USD
+  account: U200
+- symbol: BOXX
+  qty: 3860
+  avg_cost: 117.01
+  currency: USD
+  account: U200
+option_legs:
+- kind: cash-secured-put
+  underlying: ACME
+  strike: 90
+  expiry: 2026-09-18
+  qty: -1
+  premium: 3.5
+  currency: USD
+  multiplier: 100
+  account: U200
+  broker_contract_id: 12

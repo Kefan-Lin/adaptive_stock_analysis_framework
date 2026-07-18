@@ -47,7 +47,7 @@ re-derives return or convergence math by hand. Early on, most records will be
 
 ## Scope
 
-- Manual trigger only. Scheduling / cron is a later phase.
+- Manual trigger, or the P4 monthly scheduled task (see `skills/morning-check/references/scheduled-prompts.md`).
 - Absolute native-currency returns; no FX and no benchmark this pass.
 - Grouping uses fields the record already carries (stance, confidence,
   valuation zone, market); sector / valuation-family grouping is deferred.

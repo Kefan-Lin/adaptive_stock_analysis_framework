@@ -321,6 +321,12 @@ class Checker:
                 self.err(path, f"holding {holding.get('symbol')!r} currency must be a 3-letter code, got {cur!r}")
             if holding.get("symbol") is not None and not is_canonical(holding["symbol"]):
                 self.err(path, f"holding symbol {holding['symbol']!r} is not canonical")
+            bcid = holding.get("broker_contract_id")
+            if bcid is not None and not is_number(bcid):
+                self.err(path, f"holding {holding.get('symbol')!r} broker_contract_id must be numeric, got {bcid!r}")
+            acct = holding.get("account")
+            if acct is not None and not (isinstance(acct, str) and acct.strip()):
+                self.err(path, f"holding {holding.get('symbol')!r} account must be a non-empty string")
             thesis = holding.get("thesis_record")
             if thesis is not None:
                 target = (self.home / str(thesis)).resolve()
@@ -350,6 +356,45 @@ class Checker:
                 self.err(path, f"option leg {leg_id} currency must be a 3-letter code, got {cur!r}")
             if leg.get("underlying") is not None and not is_canonical(leg["underlying"]):
                 self.err(path, f"option underlying {leg['underlying']!r} is not canonical")
+            bcid = leg.get("broker_contract_id")
+            if bcid is not None and not is_number(bcid):
+                self.err(path, f"option leg {leg_id} broker_contract_id must be numeric, got {bcid!r}")
+            acct = leg.get("account")
+            if acct is not None and not (isinstance(acct, str) and acct.strip()):
+                self.err(path, f"option leg {leg_id} account must be a non-empty string")
+
+        accounts = data.get("accounts")
+        if accounts is not None:
+            if not isinstance(accounts, dict):
+                self.err(path, f"accounts must be a mapping, got {accounts!r}")
+            else:
+                for name, info in accounts.items():
+                    if not isinstance(info, dict):
+                        self.err(path, f"accounts[{name!r}] must be a mapping")
+                        continue
+                    last = info.get("last_synced")
+                    if last is not None:
+                        try:
+                            as_date(last)
+                        except (ValueError, TypeError):
+                            self.err(path, f"accounts[{name!r}].last_synced is not ISO: {last!r}")
+
+        suspected = data.get("suspected_closed")
+        if suspected is not None and not isinstance(suspected, list):
+            self.err(path, f"suspected_closed must be a list, got {suspected!r}")
+            suspected = None
+        for row in suspected or []:
+            if not isinstance(row, dict):
+                self.err(path, f"suspected_closed entry must be a mapping: {row!r}")
+                continue
+            try:
+                as_date(row.get("suspected_closed_on"))
+            except (ValueError, TypeError):
+                self.err(path, "suspected_closed entry missing/invalid suspected_closed_on: "
+                               f"{row.get('symbol') or row.get('underlying')!r}")
+            ident = row.get("symbol") or row.get("underlying")
+            if ident is not None and not is_canonical(ident):
+                self.err(path, f"suspected_closed symbol {ident!r} is not canonical")
 
     # ---------------- index ----------------
 
@@ -461,6 +506,16 @@ class Checker:
             )
             for symbol_dir in symbol_dirs:
                 self.check_index(symbol_dir, metas_by_dir[symbol_dir.name], see_also[symbol_dir.name])
+        return self.errors
+
+    def run_portfolio_only(self) -> "list[str]":
+        """Validate ONLY portfolio.yaml (skip the records/ walk).
+
+        The P4 post-sync check needs to know the machine write is well-formed
+        without failing on unrelated pre-existing record errors elsewhere in
+        the home.
+        """
+        self.check_portfolio()
         return self.errors
 
 
@@ -577,6 +632,10 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Validate an investing state home.")
     parser.add_argument("--home", help="state-home path (default: ~/.investing-home pointer)")
     parser.add_argument("--reindex", action="store_true", help="rebuild INDEX.md files, then validate")
+    parser.add_argument(
+        "--portfolio-only", action="store_true",
+        help="validate only portfolio.yaml, skipping decision-record checks",
+    )
     args = parser.parse_args()
 
     home = resolve_home(args.home)
@@ -588,7 +647,7 @@ def main() -> int:
         for note in reindex(home):
             print(f"note: {note}", file=sys.stderr)
 
-    errors = Checker(home).run()
+    errors = Checker(home).run_portfolio_only() if args.portfolio_only else Checker(home).run()
     if errors:
         print("State-home validation failed:")
         for item in errors:
