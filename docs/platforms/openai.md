@@ -25,6 +25,8 @@ Industry companion skills live alongside it under `skills/`.
 If your environment supports GitHub-path installation, reference the repository paths directly. Typical paths are:
 
 - `skills/analyzing-stocks`
+- `skills/investment-decision-workflow`
+- `skills/debating-stocks`
 - `skills/analyzing-software-platforms`
 - `skills/analyzing-banks`
 - `skills/analyzing-consumer-retail`
@@ -50,6 +52,9 @@ If your OpenAI-compatible environment loads skills from local directories:
 For most setups, start with:
 
 - `skills/analyzing-stocks`
+- `skills/investment-decision-workflow` and `skills/debating-stocks` for the decision and red-team layer
 - the 2-4 industry skills you use most often
 
 If you want the full framework, install all directories under `skills/`.
+
+`morning-check`, `outcome-scoring`, and `discovering-inflections` execute code from the repository itself (`scripts/*.py`, `inflection_discovery/`), so install them from a full local clone rather than as standalone skill directories.
