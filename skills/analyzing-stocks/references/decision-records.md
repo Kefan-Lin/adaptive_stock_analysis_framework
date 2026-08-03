@@ -194,13 +194,18 @@ See also: [1234.HK](../1234.HK/INDEX.md)
 schema: portfolio/v1
 as_of: 2026-07-01
 base_currency: USD
+note: USD cash is stale — the 2026-06-28 sale proceeds await a fill price
 cash: {USD: 10000, HKD: 20000}
+accounts:
+  U100: {last_synced: 2026-07-01}
+  U200: {last_synced: 2026-06-24}
 holdings:
-  - {symbol: ACME, qty: 10, avg_cost: 101.5, currency: USD,
+  - {symbol: ACME, qty: 10, avg_cost: 101.5, currency: USD, account: U100,
      opened: 2026-06-02, thesis_record: records/ACME/2026-06-01-new-idea.md}
 option_legs:
   - {kind: cash-secured-put, underlying: ACME, strike: 90, expiry: 2026-09-18,
-     qty: -1, premium: 3.5, currency: USD, opened: 2026-06-15, multiplier: 100}
+     qty: -1, premium: 3.5, currency: USD, account: U100,
+     opened: 2026-06-15, multiplier: 100}
 constraints:
   single_name_cap_pct: 10
   cash_reserve_floor_pct: 15
@@ -214,6 +219,21 @@ constraints:
   must be set explicitly for other contract sizes. `underlying` and `symbol`
   use the canonical form.
 - `constraints` feeds the workflow's Portfolio Risk Budget verbatim.
+- `portfolio.yaml` is hand-maintained. YAML `#` comments are fine, as are the
+  three optional annotation fields below; nothing machine-rewrites this file.
+- **`note:`** (top level, or on any holding / leg) carries the provenance and
+  staleness the structured fields cannot: where a snapshot came from, which
+  values are hand-transcribed from a screenshot, which are stale pending a
+  fill. Cash provenance belongs in the top-level `note:`, since `cash` is a
+  currency→amount map with nowhere to hang an annotation.
+- **`account:`** (on a holding or leg) records which broker account holds the
+  row, for a portfolio split across several. Descriptive only — position math,
+  concentration, and `constraints` aggregate across accounts regardless.
+- **`accounts:`** maps each broker account to `{last_synced: date}`: the
+  per-account freshness the single top-level `as_of` cannot express when
+  accounts get reconciled on different days. Update an entry when you
+  reconcile that account against the broker; a date well behind `as_of` marks
+  that account's rows as the least trustworthy in the file.
 
 ## Validation
 
