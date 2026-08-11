@@ -502,7 +502,6 @@ except ImportError:  # pragma: no cover
 from validate_records import (  # noqa: E402
     FRONTMATTER,
     MODE_PRIORITY,
-    SYMBOL_PATTERNS,
     as_date,
     is_number,
     resolve_home,
@@ -512,7 +511,7 @@ import outcome_score as osc  # noqa: E402
 SCHEMA = "web-export/v1"
 PRICE_BASIS = "current share basis (split-adjusted, ex-dividend)"
 WINDOWS = osc.WINDOWS_DEFAULT
-PUT_MONEYNESS = 1.05   # short-put badge: spot <= strike * this ...
+PUT_MONEYNESS = 1.05   # short-put badge: spot < strike * this ...
 PUT_DTE = 45           # ... and 0 <= days-to-expiry <= this
 _LINK = re.compile(r"\[([^\]]+)\]\(([^)]+)\)")
 
@@ -680,7 +679,7 @@ class CardSignalTests(unittest.TestCase):
         self.assertTrue(card["held"])
         self.assertEqual(card["qty"], 40)
         self.assertEqual(card["option_legs"], 1)
-        # spot 66 <= 64 * 1.05 = 67.2 and expiry 2026-09-10 is 30 DTE
+        # spot 66 < 64 * 1.05 = 67.2 and expiry 2026-09-10 is 30 DTE
         self.assertTrue(card["put_assignment_risk"])
         self.assertFalse(self._card(price=70.0)["put_assignment_risk"])
 
@@ -784,7 +783,7 @@ def build_card(symbol: str, meta: dict, *, price, price_as_of, price_stale,
         if not is_number(strike) or expiry is None:
             continue
         dte = (expiry - today).days
-        if 0 <= dte <= PUT_DTE and price <= float(strike) * PUT_MONEYNESS:
+        if 0 <= dte <= PUT_DTE and price < float(strike) * PUT_MONEYNESS:
             put_risk = True
 
     return {
@@ -904,16 +903,19 @@ class SplitFactorTests(unittest.TestCase):
 
 
 class ProviderSymbolTests(unittest.TestCase):
+    # Mapping examples are each market's canonical index heavyweight —
+    # deliberately uninformative about vault contents (sanitization rule:
+    # never use symbols joinable to the design doc's real-data observations).
     def test_us_dot_class_maps_to_dash(self):
         self.assertEqual(ew.provider_symbol("BRK.B", "US"), "BRK-B")
 
     def test_hk_five_digit_strips_leading_zero(self):
-        self.assertEqual(ew.provider_symbol("02513.HK", "HK"), "2513.HK")
+        self.assertEqual(ew.provider_symbol("00700.HK", "HK"), "0700.HK")
 
     def test_jp_kr_au_pass_through(self):
         self.assertEqual(ew.provider_symbol("7203.T", "JP"), "7203.T")
-        self.assertEqual(ew.provider_symbol("000660.KS", "KR"), "000660.KS")
-        self.assertEqual(ew.provider_symbol("RGL.AX", "AU"), "RGL.AX")
+        self.assertEqual(ew.provider_symbol("005930.KS", "KR"), "005930.KS")
+        self.assertEqual(ew.provider_symbol("BHP.AX", "AU"), "BHP.AX")
 ```
 
 - [ ] **Step 3: Run to verify failure**
@@ -952,8 +954,11 @@ def adjusted_series(series: "dict[datetime.date, float]", splits):
 
 
 def provider_symbol(symbol: str, market: str) -> str:
-    """Canonical vault symbol -> yfinance symbol (CN goes to akshare via
-    morning_check.provider_for and never hits this normalization)."""
+    """Canonical vault symbol -> yfinance symbol. CN routes to akshare via
+    morning_check.provider_for and never reaches this. NOTE: this
+    normalization is new and export-side only — P1/P2 pass canonical symbols
+    to yfinance raw; unifying them on this map is a follow-up upstream patch
+    (design doc, export pipeline)."""
     if market == "US":
         return symbol.replace(".", "-")
     if market == "HK":
@@ -981,6 +986,10 @@ class FileHistoryProvider:
 
     def splits(self, symbol: str) -> "list | None":
         return self._splits.get(symbol, [])
+
+    def load(self, symbol: str, market: str) -> None:
+        """No-op: a file provider is fully loaded at construction. Interface
+        parity with LiveHistoryProvider so callers never probe."""
 
     def as_of(self, symbol: str) -> "datetime.date | None":
         series = self.series(symbol)
@@ -1015,20 +1024,25 @@ git commit -m "feat(webapp): history provider seam, split-factor adjustment, pro
 - Test: `tests/test_export_web.py` (append)
 
 The live provider is unit-tested by injecting a fake fetch function — no
-network in the main suite; one network-gated smoke test at the end.
+network in the main suite; network-gated smoke tests come in Task 12. Retry
+on transient failure is part of this task — the design doc makes it
+mandatory, not nice-to-have (ticket 02).
 
 - [ ] **Step 1: Write the failing tests** (append)
 
 ```python
 class _FakeFetch:
-    """Stands in for LiveHistoryProvider._fetch(symbol, market, start)."""
+    """Stands in for LiveHistoryProvider._fetch(symbol, market, start).
+    `error=True` fails every call; `fail_first=N` fails only the first N
+    calls (transient failure, for the retry tests)."""
 
-    def __init__(self, result=None, error=False):
+    def __init__(self, result=None, error=False, fail_first=0):
         self.result, self.error, self.calls = result, error, []
+        self.fail_first = fail_first
 
     def __call__(self, symbol, market, start):
         self.calls.append((symbol, market, start))
-        if self.error:
+        if self.error or len(self.calls) <= self.fail_first:
             raise RuntimeError("provider down")
         return self.result
 
@@ -1036,7 +1050,8 @@ class _FakeFetch:
 class LiveCacheTests(unittest.TestCase):
     def _provider(self, tmp_name, fetch, today=AS_OF):
         cache = pathlib.Path(self.cache_dir.name) / tmp_name
-        return ew.LiveHistoryProvider(cache_path=cache, fetch=fetch, today=today)
+        return ew.LiveHistoryProvider(cache_path=cache, fetch=fetch,
+                                      today=today, backoff=0.0)
 
     def setUp(self):
         import tempfile
@@ -1055,6 +1070,26 @@ class LiveCacheTests(unittest.TestCase):
         provider2 = self._provider("c1.json", _FakeFetch(error=True))
         provider2.load("ACME", "US")
         self.assertEqual(provider2.series("ACME")[D(2026, 8, 10)], 11.0)
+
+    def test_transient_failure_retries_then_succeeds(self):
+        # ticket 02: retry is mandatory — one transient error must neither
+        # mark the series stale nor fall back to cache
+        fetch = _FakeFetch(result=({D(2026, 8, 10): 11.0}, []), fail_first=1)
+        provider = self._provider("c6.json", fetch)
+        provider.load("ACME", "US")
+        self.assertEqual(len(fetch.calls), 2)
+        self.assertEqual(provider.series("ACME")[D(2026, 8, 10)], 11.0)
+        self.assertFalse(provider.stale("ACME"))
+
+    def test_exhausted_retries_fall_back_to_cache(self):
+        fetch = _FakeFetch(error=True)
+        provider = self._provider("c7.json", fetch)
+        provider._cache["symbols"]["ACME"] = {
+            "closes": {"2026-08-01": 9.5}, "splits": [],
+            "fetched_through": "2026-08-05"}
+        provider.load("ACME", "US")
+        self.assertEqual(len(fetch.calls), 1 + ew.FETCH_RETRIES)
+        self.assertTrue(provider.stale("ACME"))
 
     def test_incremental_fetch_starts_near_cache_tail(self):
         fetch = _FakeFetch(result=({D(2026, 8, 10): 11.0}, []))
@@ -1084,13 +1119,16 @@ class LiveCacheTests(unittest.TestCase):
 
     def test_schema_mismatched_cache_is_discarded(self):
         cache = pathlib.Path(self.cache_dir.name) / "c5.json"
-        cache.write_text(json.dumps({"schema": "web-export/v0", "symbols": {
+        # even the DATASET schema tag is not a valid cache tag: the cache
+        # carries its own CACHE_SCHEMA, so dataset bumps keep cached history
+        cache.write_text(json.dumps({"schema": "web-export/v1", "symbols": {
             "ACME": {"closes": {"2026-08-01": 9.5}, "splits": [],
                      "fetched_through": "2026-08-05"}}}), encoding="utf-8")
         provider = ew.LiveHistoryProvider(cache_path=cache,
-                                          fetch=_FakeFetch(error=True), today=AS_OF)
+                                          fetch=_FakeFetch(error=True),
+                                          today=AS_OF, backoff=0.0)
         provider.load("ACME", "US")
-        self.assertEqual(provider.series("ACME"), {})  # old cache refused
+        self.assertEqual(provider.series("ACME"), {})  # mismatched cache refused
 ```
 
 - [ ] **Step 2: Run to verify failure**
@@ -1098,28 +1136,44 @@ class LiveCacheTests(unittest.TestCase):
 Run: `.venv/bin/python -m unittest tests.test_export_web.LiveCacheTests -v`
 Expected: FAIL (`LiveHistoryProvider` not defined).
 
-- [ ] **Step 3: Implement** (append to `scripts/export_web.py`)
+- [ ] **Step 3: Implement**
+
+First extend the import block at the top of `scripts/export_web.py`: add
+`import time` to the stdlib imports and, next to the `outcome_score` import,
+`from morning_check import provider_for  # noqa: E402` — the design doc
+mandates reusing P1's provider routing, not re-implementing it
+(`morning_check` keeps its heavy deps lazy, so this import is
+pyyaml-safe).
+
+Then append:
 
 ```python
 CACHE_OVERLAP_DAYS = 7
 HISTORY_YEARS = 5
+CACHE_SCHEMA = "web-export-cache/v1"  # the cache carries its OWN schema tag:
+                                      # a dataset-schema bump must not throw
+                                      # away cached price history
+FETCH_RETRIES = 2                     # ticket 02: retry is mandatory,
+BACKOFF_SECONDS = 2.0                 # not nice-to-have
 
 
 def _default_fetch(symbol: str, market: str, start: datetime.date):
     """Live fetch: (series {date: close}, splits [(date, ratio)] | None).
-    yfinance for every market except CN A-shares (akshare). Heavy imports stay
-    inside. Raises on provider failure — caller handles fallback."""
-    if SYMBOL_PATTERNS["CN"].match(symbol):
+    Routing reuses morning_check.provider_for (CN A-shares -> akshare as the
+    bare code, everything else -> yfinance); the yfinance symbol is further
+    normalized by provider_symbol(). Heavy imports stay inside. Raises on
+    provider failure — the caller handles retry/fallback."""
+    provider, psym = provider_for(symbol)
+    if provider == "akshare":
         import akshare as ak
 
-        code = symbol.split(".")[0]
-        df = ak.stock_zh_a_hist(symbol=code, period="daily",
+        df = ak.stock_zh_a_hist(symbol=psym, period="daily",
                                 start_date=start.strftime("%Y%m%d"),
                                 end_date=datetime.date.today().strftime("%Y%m%d"),
                                 adjust="")  # fqt=0 nominal; fqt=1 (qfq) is banned
         series = {as_date(str(row["日期"])[:10]): float(row["收盘"])
                   for _, row in df.iterrows()}
-        splits = _cn_splits(code)
+        splits = _cn_splits(psym)
         return series, splits
     import yfinance as yf
 
@@ -1163,21 +1217,27 @@ def _cn_splits(code: str):
 class LiveHistoryProvider:
     """Live daily history with a local incremental cache of RAW closes.
 
-    Cache file: {"schema": SCHEMA, "symbols": {SYM: {"closes": {iso: px},
-    "splits": [[iso, ratio]] | null, "fetched_through": iso}}}.
-    A schema-mismatched cache is discarded (design: the generator refuses
-    mismatched caches). Fetch failure falls back to cache and marks stale.
+    Cache file: {"schema": CACHE_SCHEMA, "symbols": {SYM: {"closes":
+    {iso: px}, "splits": [[iso, ratio]] | null, "fetched_through": iso}}}.
+    The cache carries its own schema tag so a dataset-schema bump never
+    invalidates cached history; a mismatched cache is discarded (design: the
+    generator refuses mismatched caches). A failed fetch is retried
+    FETCH_RETRIES times with linear backoff (ticket 02: mandatory); only
+    exhausted retries fall back to cache and mark the series stale.
     """
 
-    def __init__(self, cache_path: Path, fetch=_default_fetch, today=None) -> None:
+    def __init__(self, cache_path: Path, fetch=_default_fetch, today=None,
+                 retries=FETCH_RETRIES, backoff=BACKOFF_SECONDS) -> None:
         self._path = Path(cache_path)
         self._fetch = fetch
         self._today = today or datetime.date.today()
-        self._cache = {"schema": SCHEMA, "symbols": {}}
+        self._retries = retries
+        self._backoff = backoff
+        self._cache = {"schema": CACHE_SCHEMA, "symbols": {}}
         if self._path.exists():
             try:
                 loaded = json.loads(self._path.read_text(encoding="utf-8"))
-                if loaded.get("schema") == SCHEMA:
+                if loaded.get("schema") == CACHE_SCHEMA:
                     self._cache = loaded
             except (json.JSONDecodeError, OSError):
                 pass
@@ -1194,14 +1254,19 @@ class LiveHistoryProvider:
         start = (as_date(tail) - datetime.timedelta(days=CACHE_OVERLAP_DAYS)
                  if tail else
                  self._today - datetime.timedelta(days=HISTORY_YEARS * 365))
-        try:
-            series, splits = self._fetch(symbol, market, start)
-        except Exception as exc:
-            if entry["closes"]:
-                self._stale.add(symbol)
-            else:
-                self._failed[symbol] = f"fetch failed: {exc}"
-            return
+        for attempt in range(1 + self._retries):
+            try:
+                series, splits = self._fetch(symbol, market, start)
+                break
+            except Exception as exc:
+                if attempt < self._retries:
+                    time.sleep(self._backoff * (attempt + 1))
+                    continue
+                if entry["closes"]:
+                    self._stale.add(symbol)
+                else:
+                    self._failed[symbol] = f"fetch failed: {exc}"
+                return
         if not series and not entry["closes"]:
             self._failed[symbol] = "no data from provider"
             return
@@ -1265,8 +1330,8 @@ git commit -m "feat(webapp): live history provider with incremental cache + stal
 
 **Files:**
 - Modify: `scripts/export_web.py` (append)
-- Modify: `.github/workflows/ci.yml` (inflection job: add `markdown` +
-  the export test file so CI exercises the renderer)
+- Modify: `.github/workflows/ci.yml` (new `webapp-tests` job so CI exercises
+  the renderer without touching unrelated jobs)
 - Test: `tests/test_export_web.py` (append)
 
 - [ ] **Step 1: Write the failing tests** (append)
@@ -1378,17 +1443,23 @@ Expected: PASS (RenderTests run locally because the venv has `markdown`).
 
 - [ ] **Step 5: CI wiring**
 
-In `.github/workflows/ci.yml`, the inflection job's install line (`:49`,
-`pip install -r inflection_discovery/requirements.txt pytest pyyaml`) gains
-`markdown`, and its pytest line (`:51`) gains `tests/test_export_web.py` so
-the renderer tests run in CI:
+Add a dedicated `webapp-tests` job to `.github/workflows/ci.yml`. Do NOT
+piggyback on the inflection job — the webapp tests must change for webapp
+reasons only, and the inflection job stays untouched. (Task 10 later adds
+the builder test file to this job's unittest line.)
 
 ```yaml
-          pip install -r inflection_discovery/requirements.txt pytest pyyaml markdown
-```
-
-```yaml
-          python -m pytest inflection_discovery/tests tests/test_contract.py tests/test_export_web.py -v
+  webapp-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install webapp export dependencies
+        run: pip install pyyaml markdown
+      - name: Webapp tests (markdown-dependent subset included)
+        run: python -m unittest tests.test_export_web -v
 ```
 
 - [ ] **Step 6: Run the full suite + commit**
@@ -1409,16 +1480,29 @@ actually changed — check `git status`.)
 ### Task 7: P2 ride-along + simulated-maturity preview
 
 **Files:**
+- Modify: `scripts/outcome_score.py` (promote the scoring primitives to
+  public names — `export_web` consumes them as a library and must not
+  reach for underscore internals across the module line)
 - Modify: `scripts/export_web.py` (append)
 - Test: `tests/test_export_web.py` (append)
 
 - [ ] **Step 1: Write the failing tests** (append)
 
 ```python
+import outcome_score as osc  # noqa: E402
+
+
 class OutcomeTests(unittest.TestCase):
     def setUp(self):
         self.provider = ew.FileHistoryProvider(PRICES)
         self.recs = ew.load_symbol_records(FIXTURE_HOME, "ACME")
+
+    def test_scoring_primitives_are_public(self):
+        # export_web consumes outcome_score as a library; the primitives are
+        # API, not internals — no underscore name crosses the module line
+        for name in ("pick_close", "pick_low_high", "direction_hit",
+                     "wfv_convergence", "scenario_landing"):
+            self.assertTrue(callable(getattr(osc, name)))
 
     def test_matured_window_scored_on_adjusted_basis(self):
         outcome = ew.outcome_for(self.recs[0], self.provider, AS_OF)
@@ -1453,7 +1537,23 @@ class OutcomeTests(unittest.TestCase):
 Run: `.venv/bin/python -m unittest tests.test_export_web.OutcomeTests -v`
 Expected: FAIL (`outcome_for` not defined).
 
-- [ ] **Step 3: Implement** (append to `scripts/export_web.py`)
+- [ ] **Step 3: Implement**
+
+First, in `scripts/outcome_score.py`, right after `_scenario_landing`,
+promote the scoring primitives to public names (aliases — every existing
+internal caller and test keeps working):
+
+```python
+# Public formula surface. export_web.py consumes these as a library; the
+# scoring primitives are part of the module's API, not internals.
+pick_close = _pick_close
+pick_low_high = _pick_low_high
+direction_hit = _direction_hit
+wfv_convergence = _wfv
+scenario_landing = _scenario_landing
+```
+
+Then append to `scripts/export_web.py`:
 
 ```python
 # ----------------------------- P2 ride-along -----------------------------
@@ -1470,10 +1570,10 @@ class _AdjustedHistory:
                         for d, px in zip(dates, closes)}
 
     def close_on(self, symbol: str, target: datetime.date):
-        return osc._pick_close(self._series, target)
+        return osc.pick_close(self._series, target)
 
     def low_high(self, symbol: str, start, end):
-        return osc._pick_low_high(self._series, start, end)
+        return osc.pick_low_high(self._series, start, end)
 
 
 def _meta_adjusted(meta: dict, factor: float) -> dict:
@@ -1502,10 +1602,13 @@ def _meta_adjusted(meta: dict, factor: float) -> dict:
     return adjusted
 
 
-def outcome_for(meta: dict, provider, today: datetime.date) -> dict:
+def outcome_for(meta: dict, provider, today: datetime.date,
+                history=None) -> dict:
+    """`history` shares one _AdjustedHistory across a symbol's records so the
+    adjusted series is built once, not once per record."""
     symbol = meta["symbol"]
     factor = factor_for(provider.splits(symbol), as_date(meta["date"])) or 1.0
-    history = _AdjustedHistory(provider, symbol)
+    history = history or _AdjustedHistory(provider, symbol)
     record, pending, gaps = osc.score_record(
         _meta_adjusted(meta, factor), history, today, WINDOWS)
     return {"windows": (record or {}).get("windows", {}),
@@ -1514,7 +1617,8 @@ def outcome_for(meta: dict, provider, today: datetime.date) -> dict:
             "gaps": gaps}
 
 
-def simulate_outcome(meta: dict, provider, today: datetime.date) -> "dict | None":
+def simulate_outcome(meta: dict, provider, today: datetime.date,
+                     history=None) -> "dict | None":
     """Deterministic PREVIEW of matured windows (private build only): 90d exit
     = latest adjusted close; 180/365d drift 1/3, 2/3 of the way toward the
     adjusted base scenario. Reuses outcome_score's own formulas so the
@@ -1524,7 +1628,7 @@ def simulate_outcome(meta: dict, provider, today: datetime.date) -> "dict | None
     adjusted = _meta_adjusted(meta, factor)
     scen = adjusted.get("scenarios") or {}
     base = scen.get("base")
-    history = _AdjustedHistory(provider, symbol)
+    history = history or _AdjustedHistory(provider, symbol)
     last = history.close_on(symbol, today)
     p0 = adjusted.get("price_at_decision")
     if last is None or not is_number(base) or not is_number(p0):
@@ -1534,12 +1638,13 @@ def simulate_outcome(meta: dict, provider, today: datetime.date) -> "dict | None
         exit_price = round(last + (base - last) * drift, 4)
         ret = (exit_price - p0) / p0
         result = {"exit_price": exit_price, "return": round(ret, 4),
-                  "direction_hit": osc._direction_hit(
+                  "direction_hit": osc.direction_hit(
                       adjusted.get("stance"), ret, exit_price, scen)}
-        wfv_res = osc._wfv(p0, exit_price, adjusted.get("weighted_fair_value"))
+        wfv_res = osc.wfv_convergence(p0, exit_price,
+                                      adjusted.get("weighted_fair_value"))
         if wfv_res is not None:
             result["gap_closed"], result["converged"] = wfv_res
-        landing = osc._scenario_landing(exit_price, scen)
+        landing = osc.scenario_landing(exit_price, scen)
         if landing is not None:
             result["scenario_landing"] = landing
         out[str(window)] = result
@@ -1554,8 +1659,8 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/export_web.py tests/test_export_web.py
-git commit -m "feat(webapp): P2 outcome ride-along + simulated-maturity preview"
+git add scripts/outcome_score.py scripts/export_web.py tests/test_export_web.py
+git commit -m "feat(webapp): P2 outcome ride-along + simulated-maturity preview (public scoring primitives)"
 ```
 
 ---
@@ -1652,11 +1757,50 @@ class CliTests(unittest.TestCase):
             self.assertEqual(code, 0)
             payload = json.loads(out.read_text(encoding="utf-8"))
             self.assertEqual(payload["schema"], "web-export/v1")
+
+
+class ConsumptionChecklistTests(unittest.TestCase):
+    """Freezes the field list the frontend may consume (design doc: 'the
+    implementation plan freezes the exact consumption checklist as a
+    contract test'). Task 11's port sweep greps the templates against it."""
+
+    OPTIONAL_RECORD_FIELDS = {"action_taken", "related_symbols",
+                              "scenario_probabilities", "next_earnings"}
+
+    @classmethod
+    def setUpClass(cls):
+        if not HAS_MARKDOWN:
+            raise unittest.SkipTest("markdown not installed")
+        provider = ew.FileHistoryProvider(PRICES)
+        cls.payload = ew.export_dataset(FIXTURE_HOME, provider, AS_OF,
+                                        dataset="private", include_sim=True,
+                                        fx=None)
+
+    def test_every_consumed_field_is_exported(self):
+        pay = self.payload
+        for field in ew.CONSUMPTION_CHECKLIST["envelope"]:
+            self.assertIn(field, pay)
+        card = pay["board"]["cards"][0]
+        for field in ew.CONSUMPTION_CHECKLIST["card"]:
+            self.assertIn(field, card)
+        acme = pay["symbols"]["ACME"]
+        for field in ew.CONSUMPTION_CHECKLIST["symbol"]:
+            self.assertIn(field, acme)
+        for field in ew.CONSUMPTION_CHECKLIST["price"]:
+            self.assertIn(field, acme["price"])
+        record = acme["records"][0]
+        for field in ew.CONSUMPTION_CHECKLIST["record"]:
+            if field in self.OPTIONAL_RECORD_FIELDS:
+                continue  # optional frontmatter: exported only when recorded
+            self.assertIn(field, record)
+        report = next(iter(pay["reports"].values()))
+        for field in ew.CONSUMPTION_CHECKLIST["report"]:
+            self.assertIn(field, report)
 ```
 
 - [ ] **Step 2: Run to verify failure**
 
-Run: `.venv/bin/python -m unittest tests.test_export_web.DatasetTests tests.test_export_web.CliTests -v`
+Run: `.venv/bin/python -m unittest tests.test_export_web.DatasetTests tests.test_export_web.CliTests tests.test_export_web.ConsumptionChecklistTests -v`
 Expected: FAIL (`export_dataset` not defined).
 
 - [ ] **Step 3: Implement** (append to `scripts/export_web.py`)
@@ -1713,6 +1857,34 @@ def _public_meta(meta: dict) -> dict:
     return {k: _jsonable(v) for k, v in meta.items() if not k.startswith("_")}
 
 
+# The exact consumption checklist, frozen as a contract (design doc: "the
+# implementation plan freezes the exact consumption checklist as a contract
+# test"). The frontend may read ONLY these fields; everything else in the
+# payload is passthrough for audit and future views. Extending the UI to a
+# new field means adding it here first (additive — no schema bump).
+CONSUMPTION_CHECKLIST = {
+    "envelope": ("schema", "dataset", "generated_at", "as_of", "price_basis",
+                 "fx", "board", "symbols", "reports", "warnings"),
+    "card": ("symbol", "market", "currency", "record_date", "mode", "stance",
+             "confidence", "position_size", "valuation_zone", "wfv", "bear",
+             "base", "bull", "price", "price_as_of", "price_stale",
+             "no_price_reason", "price_at_decision", "split_factor", "cursor",
+             "discount", "triggers_touched", "scenario_breach", "stale_days",
+             "review_by", "earnings_in", "next_earnings", "drawdown", "held",
+             "qty", "avg_cost", "option_legs", "put_assignment_risk"),
+    "symbol": ("market", "currency", "held", "qty", "avg_cost", "price",
+               "records", "ghosts", "actions"),
+    "price": ("dates", "closes", "as_of", "stale", "splits"),
+    "record": ("date", "mode", "stance", "confidence", "position_size",
+               "valuation_zone", "weighted_fair_value", "scenarios",
+               "scenario_probabilities", "action_taken", "related_symbols",
+               "review_by", "next_earnings", "currency", "file", "adj",
+               "split_factor", "summary", "delta", "body_html", "report",
+               "outcome", "sim_outcome"),
+    "report": ("title", "html", "blocks", "part_anchor"),
+}
+
+
 def export_dataset(home: Path, provider, today: datetime.date, *,
                    dataset: str, include_sim: bool, fx) -> dict:
     holdings, legs = load_portfolio(home)
@@ -1742,11 +1914,11 @@ def export_dataset(home: Path, provider, today: datetime.date, *,
         records = load_symbol_records(home, symbol)
         if not records:
             continue
-        if hasattr(provider, "load"):
-            provider.load(symbol, records[-1].get("market") or "US")
+        provider.load(symbol, records[-1].get("market") or "US")
         series = provider.series(symbol)
         splits = provider.splits(symbol)
         dates, closes = adjusted_series(series, splits)
+        history = _AdjustedHistory(provider, symbol)  # shared across records
         price = closes[-1] if closes else None
         price_as_of = dates[-1] if dates else None
         as_of_day = provider.as_of(symbol)
@@ -1796,8 +1968,10 @@ def export_dataset(home: Path, provider, today: datetime.date, *,
                 "delta": delta,
                 "body_html": body_html,
                 "report": report_key,
-                "outcome": outcome_for(meta, provider, today),
-                "sim_outcome": (simulate_outcome(meta, provider, today)
+                "outcome": outcome_for(meta, provider, today,
+                                       history=history),
+                "sim_outcome": (simulate_outcome(meta, provider, today,
+                                                 history=history)
                                 if include_sim else None),
             })
             previous = meta
@@ -1976,6 +2150,8 @@ git commit -m "chore(webapp): vendor ECharts 5.6.0"
 **Files:**
 - Create: `webapp/templates/board.html` (ported from prototype 06)
 - Create: `scripts/build_webapp.py`
+- Modify: `.github/workflows/ci.yml` (webapp-tests job gains the builder
+  tests)
 - Test: `tests/test_build_webapp.py`
 
 - [ ] **Step 1: Port the board template**
@@ -2192,6 +2368,7 @@ def _symbol_slice(payload: dict, symbol: str) -> dict:
         "schema": payload["schema"], "dataset": payload["dataset"],
         "as_of": payload["as_of"], "price_basis": payload["price_basis"],
         "symbol": symbol, "data": entry,
+        "site_symbols": sorted(payload["symbols"]),  # see-also link targets
         "reports": {k: payload["reports"][k] for k in sorted(report_keys)
                     if k in payload["reports"]},
     }
@@ -2274,6 +2451,15 @@ Expected: PASS. (`test_builds_index_and_symbol_pages` asserts the record date
 string appears in the symbol page — the stand-in satisfies that via the
 inlined data blob.)
 
+- [ ] **Step 5b: CI wiring**
+
+The `webapp-tests` job (added in Task 6) gains the builder test file — its
+unittest line becomes:
+
+```yaml
+        run: python -m unittest tests.test_export_web tests.test_build_webapp -v
+```
+
 - [ ] **Step 6: Eyeball the board against the prototype (manual)**
 
 ```bash
@@ -2292,7 +2478,7 @@ parity of card anatomy.
 - [ ] **Step 7: Commit**
 
 ```bash
-git add webapp/templates/board.html webapp/templates/symbol.html scripts/build_webapp.py tests/test_build_webapp.py
+git add webapp/templates/board.html webapp/templates/symbol.html scripts/build_webapp.py tests/test_build_webapp.py .github/workflows/ci.yml
 git commit -m "feat(webapp): builder core + zone board page (ported prototype 06 variant A)"
 ```
 
@@ -2343,7 +2529,16 @@ changes:
    plotting — the prototype already plotted from `adj`); `record.file`
    replaces `_file`; `price.stale` is new (render the stale flag next to
    `as_of` in the masthead when true). Grep the ported JS for `DATA.symbols`,
-   `report_path`, `_file` — all three must have zero remaining hits.
+   `report_path`, `_file` — all three must have zero remaining hits. Then
+   sweep the other way: every record/card field the ported JS reads must
+   appear in `export_web.CONSUMPTION_CHECKLIST` — the frontend must not
+   depend on fields outside the frozen consumption contract.
+7. **See-also strip (new — contract: "`related_symbols` renders as
+   see-also").** The prototypes never rendered it. In the selected-node
+   detail panel, when `record.related_symbols` is a non-empty list, render a
+   `参见` row of symbol chips; a chip links to `./<sym>.html` when the
+   symbol is in `DATA.site_symbols` (the builder injects the site's page
+   list), and renders as a plain unlinked chip otherwise.
 
 - [ ] **Step 2: Extend the builder tests** (append to
   `tests/test_build_webapp.py`)
@@ -2366,7 +2561,7 @@ class SymbolPageTests(unittest.TestCase):
         page = self._page()
         # markers that live in the template itself (not the data blob):
         # the legend button, the P2 detail-table label, the inlined chart lib
-        for marker in ("echarts", "复盘明细", "图例"):
+        for marker in ("echarts", "复盘明细", "图例", "related_symbols"):
             self.assertIn(marker, page)
         self.assertNotIn("__DATA_JSON__", page)
         self.assertNotIn("DATA.symbols", page)   # single-symbol contract
@@ -2469,15 +2664,41 @@ class LiveSmokeTests(unittest.TestCase):
             provider.save()
             reloaded = ew.LiveHistoryProvider(
                 cache_path=pathlib.Path(tmp) / "cache.json",
-                fetch=lambda *a: (_ for _ in ()).throw(RuntimeError("down")))
+                fetch=lambda *a: (_ for _ in ()).throw(RuntimeError("down")),
+                backoff=0.0)
             reloaded.load("AAPL", "US")
             self.assertTrue(reloaded.stale("AAPL"))  # cache served, marked stale
+
+
+try:
+    import akshare  # noqa: F401
+    HAS_AK = True
+except ImportError:
+    HAS_AK = False
+
+
+@unittest.skipUnless(HAS_AK, "akshare not installed (pyyaml-only job)")
+class LiveSmokeCnTests(unittest.TestCase):
+    def test_live_fetch_one_cn_symbol(self):
+        # design: one real symbol per provider path — AAPL covers yfinance
+        # above; the canonical A-share index heavyweight covers akshare here
+        if not _network_available():
+            self.skipTest("no network")
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            provider = ew.LiveHistoryProvider(
+                cache_path=pathlib.Path(tmp) / "cache.json", backoff=0.0)
+            provider.load("600519.SH", "CN")
+            if not provider.series("600519.SH"):
+                self.skipTest("provider unavailable/rate-limited")
+            self.assertGreater(len(provider.series("600519.SH")), 100)
+            self.assertIsNotNone(provider.as_of("600519.SH"))
 ```
 
-- [ ] **Step 2: Run it (venv has yfinance)**
+- [ ] **Step 2: Run it (venv has yfinance + akshare)**
 
-Run: `.venv/bin/python -m unittest tests.test_export_web.LiveSmokeTests -v`
-Expected: PASS (or SKIP offline).
+Run: `.venv/bin/python -m unittest tests.test_export_web.LiveSmokeTests tests.test_export_web.LiveSmokeCnTests -v`
+Expected: PASS (or SKIP offline) — both provider paths.
 
 - [ ] **Step 3: Commit**
 
@@ -2507,7 +2728,8 @@ with `--offline --prices demo/prices.yaml`:
 
 Two fictional symbols with deep multi-mode timelines + synthetic prices from
 a seeded piecewise drift/vol random walk. Real non-position sample records
-are added later by actually running the framework (never backfilled). Regenerate:
+are added by a real framework run on generation day (Task 13 Step 4 —
+never backfilled). Regenerate:
   .venv/bin/python scripts/make_demo_vault.py --as-of 2026-08-11
 """
 from __future__ import annotations
@@ -2718,7 +2940,50 @@ class DemoVaultTests(unittest.TestCase):
 Run: `.venv/bin/python -m unittest tests.test_export_web.DemoVaultTests -v`
 Expected: PASS.
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 4: Real same-day sample records (manual, required before the
+  first Pages deploy)**
+
+Design (Demo dataset): "1–2 real, well-known, non-position symbols run
+through the framework *on the day of generation*, producing a single genuine
+record each." The demo banner explicitly claims same-day sample records, so
+Task 14's first deploy must not happen before this step.
+
+1. Pick 1–2 symbols that are household names, **not** current positions, and
+   **not** joinable to any real-data observation in the design doc (check
+   `portfolio.yaml` and the vault before choosing).
+2. Run the analyzing-stocks workflow on them for real and save the resulting
+   decision-record + report under `demo/state-home/records/<SYM>/` /
+   `demo/state-home/reports/`, with a single-row `INDEX.md` in the format
+   the generator writes.
+3. Snapshot their real closes+splits into `demo/prices.yaml` so the demo
+   export stays offline-reproducible:
+
+```bash
+.venv/bin/python - <<'EOF'
+import pathlib, sys, yaml
+sys.path.insert(0, "scripts")
+from export_web import LiveHistoryProvider
+SYMBOLS = {"<SYM>": "US"}  # the chosen sample symbols: {symbol: market}
+provider = LiveHistoryProvider(pathlib.Path(".webapp_cache/demo-snap.json"))
+doc = yaml.safe_load(pathlib.Path("demo/prices.yaml").read_text()) or {}
+for sym, market in SYMBOLS.items():
+    provider.load(sym, market)
+    assert provider.series(sym), f"no data for {sym}"
+    doc[sym] = {
+        "splits": [[d.isoformat(), r] for d, r in provider.splits(sym) or []],
+        "closes": {d.isoformat(): px
+                   for d, px in sorted(provider.series(sym).items())},
+    }
+pathlib.Path("demo/prices.yaml").write_text(
+    yaml.safe_dump(doc, sort_keys=True), encoding="utf-8")
+print("snapshotted:", ", ".join(SYMBOLS))
+EOF
+```
+
+4. Re-run Step 2's export/build; verify each sample card renders and its
+   record is dated today.
+
+- [ ] **Step 5: Commit**
 
 ```bash
 git add scripts/make_demo_vault.py demo/ tests/test_export_web.py .gitignore
@@ -2731,6 +2996,10 @@ git commit -m "feat(webapp): seeded fictional demo vault + demo build path"
 
 **Files:**
 - Create: `.github/workflows/deploy-demo.yml`
+
+Gate: the first dispatch requires Task 13 Step 4 (real same-day sample
+records) and Step 3 below (local vault-symbol sweep) — the demo banner's
+"same-day sample records" claim must be true when the site goes public.
 
 - [ ] **Step 1: Write the workflow**
 
@@ -2782,7 +3051,15 @@ jobs:
           import json, pathlib, sys
           payload = json.loads(pathlib.Path("demo/dataset.json").read_text())
           assert payload["dataset"] == "demo", "refusing: dataset not tagged demo"
-          bad = ["investing-home", "personal_projects/investment"]
+          # symbol allowlist: everything in the dataset must come from the
+          # committed demo vault (guards a wrong --home ever slipping in)
+          allowed = {p.name for p in
+                     pathlib.Path("demo/state-home/records").iterdir()
+                     if p.is_dir()}
+          got = {c["symbol"] for c in payload["board"]["cards"]}
+          got |= set(payload["symbols"])
+          assert got <= allowed, f"non-demo symbols in dataset: {got - allowed}"
+          bad = ["investing-home", "personal_projects/investment", "/Users/"]
           for page in pathlib.Path("webapp_demo_out").rglob("*.html"):
               text = page.read_text(encoding="utf-8")
               for needle in bad:
@@ -2803,7 +3080,37 @@ Expected: `yaml ok`. (The workflow itself is exercised on the first
 manual dispatch after merge — enabling GitHub Pages for the repo is a
 one-time Settings step the owner does by hand.)
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 3: Local pre-publish sweep (owner machine, before the first
+  dispatch and after any demo regeneration)**
+
+The CI check above cannot screen for the real vault's symbols — committing
+that list would itself leak it. The owner-side sweep reads the private vault
+locally and greps the demo dataset for every real symbol that is not a
+deliberate demo sample (design doc, Verification 5):
+
+```bash
+.venv/bin/python - <<'EOF'
+import pathlib, re, sys
+sys.path.insert(0, "scripts")
+from validate_records import resolve_home
+vault = {p.name for p in (resolve_home(None) / "records").iterdir()
+         if p.is_dir()}
+demo = {p.name for p in pathlib.Path("demo/state-home/records").iterdir()
+        if p.is_dir()}
+blob = pathlib.Path("demo/dataset.json").read_text(encoding="utf-8")
+leaks = [s for s in sorted(vault - demo)
+         if re.search(r"\b" + re.escape(s) + r"\b", blob)]
+assert not leaks, f"real vault symbols leaked into the demo dataset: {leaks}"
+print(f"local vault-symbol sweep ok ({len(vault - demo)} symbols screened)")
+EOF
+```
+
+(The sweep runs against `demo/dataset.json` rather than the built HTML:
+every data byte flows through the dataset, while the HTML only adds the
+template + minified ECharts, whose letter soup would false-positive short
+symbols.)
+
+- [ ] **Step 4: Commit**
 
 ```bash
 git add .github/workflows/deploy-demo.yml
@@ -2888,8 +3195,39 @@ git commit -m "docs: webapp section in README"
 - All P2 scoring runs on the split-adjusted basis (`_meta_adjusted`), fixing
   a latent factor-mismatch the prototypes never hit (their factors were 1).
 - `markdown` is lazy + `skipUnless`-gated, so the pyyaml-only CI job stays
-  clean; renderer tests run in the venv and the inflection CI job.
+  clean; renderer tests run in the venv and the dedicated webapp-tests CI job.
 - Builder tests use a hand-rolled dataset so they run without `markdown`.
 - Prototype directories are **retained** (user decision 2026-08-11,
   overriding the earlier delete-after-landing note) as the Task 10/11/15
   comparison reference; nothing under `.scratch/` is ever committed.
+
+## Two-axis review fixes (2026-08-11, applied to this plan)
+
+- Sanitization: mapping-test symbols are now each market's canonical index
+  heavyweight (uninformative about vault contents); the previous examples
+  were joinable to the design doc's real-data observations.
+- Put badge boundary aligned to the design doc: strict
+  `price < strike * 1.05`.
+- `LiveHistoryProvider` retries (`FETCH_RETRIES` + linear backoff) — ticket
+  02 made retry mandatory; the cache carries its own `CACHE_SCHEMA` tag so a
+  dataset-schema bump never invalidates cached history.
+- `_default_fetch` routes through `morning_check.provider_for` (design:
+  reuse, not re-implementation); `provider_symbol()` is documented as new
+  export-side normalization with upstream unification as a follow-up patch.
+- `outcome_score` scoring primitives promoted to public names —
+  `export_web` no longer imports underscore internals across the module
+  line.
+- `outcome_for`/`simulate_outcome` accept a shared `history` so the adjusted
+  series is built once per symbol; `FileHistoryProvider` gained a no-op
+  `load` (interface parity — no `hasattr` probing in `export_dataset`).
+- The consumption checklist is frozen as `CONSUMPTION_CHECKLIST` + a
+  contract test (the design doc promised exactly this).
+- `related_symbols` renders as a see-also strip (Task 11 item 7; the builder
+  injects `site_symbols` so chips only link to pages that exist).
+- CI: webapp tests run in their own `webapp-tests` job — the inflection job
+  stays untouched; live smoke covers both provider paths (yfinance +
+  akshare).
+- Demo: real same-day sample records are an explicit Task 13 step gating the
+  first Pages deploy; the CI privacy check gained a demo-symbol allowlist +
+  `/Users/` needle, and the owner-side vault-symbol sweep is a documented
+  pre-publish step (Task 14 Step 3).

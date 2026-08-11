@@ -375,9 +375,16 @@ Two-stage, with the JSON snapshot as the contract seam:
 1. **`scripts/export_web.py`** — vault → `web-export/v1` JSON dataset.
    - Reuses existing loaders/helpers instead of re-implementing:
      `validate_records.py` (frontmatter parsing, `resolve_home`,
-     `SYMBOL_PATTERNS`, `MODE_PRIORITY`, INDEX parsing), `morning_check.py`
-     (`provider_for`, lazy-import pattern), `outcome_score.py`
-     (`score_record` and its formula helpers, `PriceHistory` seam).
+     `MODE_PRIORITY`, INDEX parsing), `morning_check.py` (`provider_for`
+     routing, lazy-import pattern), `outcome_score.py` (`score_record` and
+     its scoring primitives — promoted to public names by the implementation
+     plan, `PriceHistory` seam).
+   - One addition on top of `provider_for`: an export-side
+     `provider_symbol()` normalization for the yfinance path (US share-class
+     dots → dashes, HK five-digit codes → four-digit). P1/P2 currently pass
+     canonical symbols to yfinance raw; unifying them on this map is a
+     follow-up upstream patch (same additive pattern as contract patches
+     1–2), not part of v1.
    - Fetches 5y daily history per symbol through the provider stack with the
      **local incremental cache** (append-tail; stale fallback + per-symbol
      `as_of`); computes split factors and adjusts record numbers; snapshots
