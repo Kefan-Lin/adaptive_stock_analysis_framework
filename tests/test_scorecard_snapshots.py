@@ -281,6 +281,18 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(dimensions['product_competitiveness']['assessed_at'], '2026-04-01')
         self.assertEqual(latest['item_sources']['product_competitiveness'], first.snapshot_id)
 
+    def test_public_save_boundary_resolves_partial_baseline_before_publishing(self):
+        card = self.card()
+        selected = 'industry_economics'
+        for dimension in card['company_quality']['dimensions'][1:]:
+            dimension['review_status'] = 'carried_forward'
+            dimension['source_snapshot'] = '2026-11-07-' + 'f' * 32
+        with self.assertRaises(SnapshotValidationError):
+            create_snapshot(self.home, 'QHT', 'US', card, as_of='2026-04-01',
+                review_scope='partial', baseline_id='2026-11-07-' + 'f' * 32,
+                selected_items=[selected], change_reasons={selected: []}, item_sources={})
+        self.assertEqual(list(self.home.iterdir()), [])
+
 
 if __name__ == '__main__':
     unittest.main()

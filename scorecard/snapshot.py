@@ -185,6 +185,15 @@ def create_snapshot(home, symbol, market, card, *, as_of, review_scope='full', s
                         change_reasons=change_reasons, item_sources=item_sources)
     validate_snapshot(snapshot)
     state_home = _home_path(home)
+    if review_scope != 'full':
+        if baseline_id is not None:
+            baseline = read_snapshot(home, symbol, baseline_id)
+            if baseline['market'] != market:
+                raise SnapshotValidationError('baseline belongs to another market')
+        if correction_of is not None:
+            target = read_snapshot(home, symbol, correction_of)
+            if target['market'] != market or correction_of != baseline_id:
+                raise SnapshotValidationError('correction target differs from baseline or market')
     if state_home is None:
         return SaveResult(False, reason='Private state home unavailable; research was not saved.')
     temporary = None
