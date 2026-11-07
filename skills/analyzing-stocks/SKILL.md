@@ -30,7 +30,7 @@ Core principle: **先做行业分型，再做估值，再做仓位建议**。不
    Bear/Base/Bull values are being set or changed.
 8. Run the input verification pass: confirm the critical valuation inputs and show the weighted-fair-value arithmetic before anything is finalized.
 9. Assemble and validate the three-card research scorecard from the completed analysis using [research-scorecard](references/research-scorecard.md); this stage does not persist it.
-10. Produce the unified report with stance and position sizing.
+10. Produce the unified report; include stance and position sizing when a decision is supported. After the complete report, save the validated card through the public snapshot boundary and state the outcome.
 
 Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selection is incomplete.
 
@@ -39,7 +39,7 @@ Do not skip steps 2, 3, 4, 5. A report without explicit routing and family selec
 - Pin down ticker, exchange, currency, analysis date.
 - If there are multiple listings, ADRs, or locally listed lines, state the primary listing and the actual tradable line you are evaluating.
 - State horizon (`1-2y`, `3-5y`, `5y+`) and style (`compounder`, `cyclical`, `turnaround`, `special situation`).
-- State the final user-facing `Stance`: `Buy / Add / Hold / Reduce / Avoid`.
+- State the final user-facing `Stance`: `Buy / Add / Hold / Reduce / Avoid` when a supported investment conclusion exists; otherwise state that no stance has formed.
 - If working notes use `initiate / trim`, normalize them to `Buy / Reduce` before the final report.
 - If user gives no constraints, assume a fundamental-investor context and label assumptions.
 - **User-View Isolation:** if the user states a directional view at intake (e.g. "this
@@ -221,7 +221,7 @@ corrupts Weighted Fair Value, margin of safety, and sizing.
 
 ## Step 6.6: Validate the research scorecard
 
-After the analysis and verification pass, assemble the eight independent judgments, price references, and decision conditions under [research-scorecard](references/research-scorecard.md). Run `scorecard.card.validate_card` before report display; fix any invalid fields and make the summary agree with the cited body sections. If the existing valuation or portfolio information is unavailable, show the corresponding unassessed state. Card assembly alone does not rerun valuation or create a saved snapshot. For an existing company, read the previous report and decision record first; a new gate, reanalysis, correction, or second opinion never grants permission to change its valuation method, earnings basis, forecast horizon, or scenario meanings. User authorization to change mode is required and recorded before such a change. Preserve original 0–5 scores and explain conflicts with independent new quality scores.
+After the analysis and verification pass, assemble the eight independent judgments, price references, and decision conditions under [research-scorecard](references/research-scorecard.md). Run `scorecard.card.validate_card` before report display; fix any invalid fields and make the summary agree with the cited body sections. If the existing valuation or portfolio information is unavailable, show the corresponding unassessed state. Card assembly does not rerun valuation. After the complete report is finished, call `scorecard.create_snapshot` according to [research-scorecard](references/research-scorecard.md), then report the returned saved or unsaved state accurately. Do not create a snapshot for temporary chat or imply an unsaved snapshot reference. For an existing company, read the previous report and decision record first; a new gate, reanalysis, correction, or second opinion never grants permission to change its valuation method, earnings basis, forecast horizon, or scenario meanings. User authorization to change mode is required and recorded before such a change. Preserve original 0–5 scores and explain conflicts with independent new quality scores.
 
 ## Step 7: Produce the Unified Report
 
@@ -231,18 +231,19 @@ After the analysis and verification pass, assemble the eight independent judgmen
   - `Bear / Base / Bull`
   - `Structural re-rating sensitivity` when applicable
   - `Fact / Inference / Assumption`
-  - `Stance`
+  - `Stance` when a supported conclusion exists; otherwise explicitly not formed
   - `Weighted Fair Value`
   - `Margin of Safety`
-  - `Position Size`
+  - `Position Size` when an actionable decision exists; otherwise not assessed
   - `Add-on Trigger`
   - `Trim/Exit Trigger`
   - the fixed closing line from the template
 - When a private state home is configured (see
   [decision-records](references/decision-records.md)), emit the decision-record
-  frontmatter block at the end of the report and offer to save it as a
-  `mode: research` record plus its `INDEX.md` row, so standalone research runs
-  are archive-ready without the decision workflow.
+  frontmatter block at the end of the report and offer a `mode: research`
+  decision record only when a stance or execution_method exists, so decision
+  research remains archive-ready. A pure research scorecard snapshot saves
+  independently without inventing a decision record.
 
 ## Hard Rules
 

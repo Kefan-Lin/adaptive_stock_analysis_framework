@@ -1,14 +1,20 @@
 # 研究打分卡 v1：单一规范与卡片契约
 
-完整研究完成既有分析和关键输入核验后，从已引用的分析证据组装三卡。运行公开入口 `scorecard.card.validate_card(card)`，通过后在十章报告摘要展示并将论证指向正文；本阶段只展示，不声称已保存评分快照。卡片组装不执行估值计算，不把质量分用于买卖或仓位自动映射。
+完整研究完成既有分析和关键输入核验后，从已引用的分析证据组装三卡。运行公开入口 `scorecard.card.validate_card(card)`，通过后在十章报告摘要展示并将论证指向正文。完整报告确认完成后通过下述快照入口保存，并依据返回结果说明保存状态。卡片组装不执行估值计算，不把质量分用于买卖或仓位自动映射。
 
 ## 规范版本与公用接口
 
-结构版本 `schema_version: 1` 与评分规范版本 `rubric_version: "1.0"` 分开。卡片顶层包含 `company_quality`、`price_attractiveness`、`decision_conditions` 和 `report_reference`。公开的 Python 校验入口接收字典，合法时原样返回，非法时抛 `CardValidationError`；不读写私人目录。供后续保存、局部复核、精确引用及行业伴侣接入使用同一卡片字典，不各造评分规范。虚构完整示例见 `examples/research-scorecard/fictional-card.json`，报告见其同目录 `fictional-report.md`。后续快照的身份、时点、创建与历史比较由独立持久化任务定义；卡片中的 `assessed_at` 是原评估日，`as_of` 是信息截止日，沿用项的 `source_snapshot` 为来源版本，`review_status: carried_forward` 表示本次未复核。新评估用 `reviewed`。报告引用为可定位的 `report_reference`，当前不是已保存快照的承诺。
+结构版本 `schema_version: 1` 与评分规范版本 `rubric_version: "1.0"` 分开。卡片顶层包含 `company_quality`、`price_attractiveness`、`decision_conditions` 和 `report_reference`。公开的 Python 校验入口接收字典，合法时原样返回，非法时抛 `CardValidationError`；不读写私人目录。供后续保存、局部复核、精确引用及行业伴侣接入使用同一卡片字典，不各造评分规范。虚构完整示例见 `examples/research-scorecard/fictional-card.json`，报告见其同目录 `fictional-report.md`。快照的独立身份与时点见下述持久化入口；历史比较由后续任务定义；卡片中的 `assessed_at` 是原评估日，`as_of` 是信息截止日，沿用项的 `source_snapshot` 为来源版本，`review_status: carried_forward` 表示本次未复核。新评估用 `reviewed`。报告引用为可定位的 `report_reference`，当前不是已保存快照的承诺。
 
 八维在 `company_quality.dimensions` 中各出现一次，使用以下稳定 id。每项必含 `id`、`status`（`assessed`、`insufficient_information`、`not_applicable`）、`score`、`confidence`、`rationale`、`supporting_evidence`、`counterevidence`、`counterevidence_search`、`open_questions`、`review_triggers`、`assessed_at`、`as_of`、`review_status`。2/4 分另加 `adjacent_anchor_explanation`，写清满足的相邻锚点及未达到更高档的差距；沿用另加 `source_snapshot`。已评估的分数严格为 1–5 整数，可信度严格为 high / medium / low，必须有支持证据、反证或具体检索范围。没有形成判断用空分数和空可信度，信息不足写明具体缺口；不适用给出适用性理由。不得因表现差或资料缺失标不适用，不得用低可信度代替信息不足。事实材料可跨维使用，但逐维说明其不同含义，不重复加权；无跨维总分。缺足够材料时坦陈尚未核查，不编造反证或来源。
 
 每条证据至少含 `id`、`source`（精确定位）、`source_date`、`summary` 与 `kind`（fact / management_claim / inference）。推断还含 `depends_on`（本项已有证据 id）和 `assumptions`；来源日期不得晚于信息截止日。可信度高指关键判断直接可追溯、覆盖必要时期且解释主要矛盾；中指足以判断但历史覆盖、独立核实或细节有缺口；低指初步判断依赖单方说法、间接指标或强假设，须列出待验证事项。官方披露不自动等于高可信度，转载不算独立来源。
+
+## 完整研究快照
+
+只有分析、输入核验、卡片校验和完整报告都完成后，才调用 `scorecard.create_snapshot(home, symbol, market, card, as_of=...)`。`home` 是现有私人 state-home 的绝对目录，缺失或不可访问时可传 `None` 或原路径。`symbol` 和 `market` 遵守 canonical tradable-line 身份；`as_of` 是本次研究信息截至日，与各维原评估日分开。返回的 `SaveResult(saved, snapshot_id, reason)` 仅在 `saved=True` 时提供可引用的快照标识；`saved=False` 时明确告诉用户未保存及原因，不退回公共仓库。纯研究不需要 stance、execution_method 或决策记录；临时聊天不调用保存入口。
+
+快照无覆盖写入 `<state-home>/research-scorecards/<SYMBOL>/<YYYY-MM-DD-UUID>.json`，与 `records/` 分开。`scorecard.read_snapshot(home, symbol, snapshot_id)` 精确读取并验证身份；`scorecard.validate_snapshot(snapshot)` 校验独立结构版本、评分规范版本、三卡、证据、创建时点、信息截至时点、复核范围和报告引用。目前只接受 `review_scope='full'` 且八维均标记本次复核。局部复核、修正和历史比较由后续任务实现。
 
 ## 八维锚点
 
