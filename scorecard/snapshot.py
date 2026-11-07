@@ -11,7 +11,7 @@ import tempfile
 from uuid import uuid4
 
 from inflection_discovery.symbols import SYMBOL_PATTERNS
-from .card import DIMENSION_IDS, SUPPORTED_RUBRICS, validate_card
+from .card import DIMENSION_IDS, RUBRIC_IDENTIFIER, validate_card
 
 
 SNAPSHOT_SCHEMA_VERSION = 1
@@ -72,8 +72,8 @@ def validate_snapshot(snapshot):
         raise SnapshotValidationError('snapshot fields do not match the schema')
     if type(snapshot['schema_version']) is not int or snapshot['schema_version'] != SNAPSHOT_SCHEMA_VERSION:
         raise SnapshotValidationError('unsupported snapshot schema version')
-    if snapshot['rubric_version'] not in SUPPORTED_RUBRICS:
-        raise SnapshotValidationError('unsupported snapshot rubric version')
+    if not isinstance(snapshot['rubric_version'], str) or not RUBRIC_IDENTIFIER.fullmatch(snapshot['rubric_version']):
+        raise SnapshotValidationError('invalid snapshot rubric identifier')
     _identity(snapshot['symbol'], snapshot['market'])
     _id(snapshot['snapshot_id'])
     created = _timestamp(snapshot['created_at'])
@@ -344,9 +344,17 @@ def create_partial_snapshot(home, symbol, market, *, baseline_id=None, initial_c
         new_price = card['price_attractiveness']
         if old_price['status'] == new_price['status'] == 'assessed':
             prior = old_price['valuation']; current = new_price['valuation']
-            if any(prior[key] != current[key] for key in prior if key not in (
-                    'market_price', 'price_as_of', 'margin_of_safety', 'market_implied_expectations')):
-                raise SnapshotValidationError('price review cannot change intrinsic valuation or mode')
+            mode = ('currency', 'primary_method', 'earnings_basis', 'forecast_horizon', 'scenario_meanings')
+            if any(prior[key] != current[key] for key in mode):
+                raise SnapshotValidationError('valuation mode requires separately recorded permission')
+            intrinsic = ('fair_value', 'scenarios', 'as_of')
+            if any(prior[key] != current[key] for key in intrinsic):
+                reason_kinds = {entry['kind'] for entry in changes['price_attractiveness']}
+                correction = correction_of is not None and 'error_correction' in reason_kinds
+                sourced_update = ('new_fact' in reason_kinds or 'assumption_change' in reason_kinds) and (
+                    current['as_of'] > prior['as_of'] and current['source_report'] != prior['source_report'])
+                if not (correction or sourced_update):
+                    raise SnapshotValidationError('intrinsic update requires sourced non-price change or explicit correction')
     if previous and 'price_attractiveness' in updates and set(updates) & set(DIMENSION_IDS):
         for item in set(updates) & set(DIMENSION_IDS):
             if not any(reason['kind'] == 'new_fact' for reason in changes[item]) or not any(

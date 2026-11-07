@@ -1,6 +1,7 @@
 """Public validation boundary for the independent three-card research scorecard v1."""
 from datetime import date
 from math import isfinite
+import re
 
 
 class CardValidationError(ValueError):
@@ -14,7 +15,7 @@ DIMENSION_IDS = (
 )
 SCHEMA_VERSION = 1
 RUBRIC_VERSION = '1.0'
-SUPPORTED_RUBRICS = ('1.0', '1.1')  # structure remains v1; judgments across rubrics are not comparable
+RUBRIC_IDENTIFIER = re.compile(r'^[1-9][0-9]*\.[0-9]+$')
 
 
 def _fail(path, problem):
@@ -206,8 +207,8 @@ def validate_card(card):
                            'price_attractiveness', 'decision_conditions', 'report_reference'))
     if type(card['schema_version']) is not int or card['schema_version'] != SCHEMA_VERSION:
         _fail('schema_version', 'unsupported structure version')
-    if card['rubric_version'] not in SUPPORTED_RUBRICS:
-        _fail('rubric_version', 'unsupported scoring rubric version')
+    if not isinstance(card['rubric_version'], str) or not RUBRIC_IDENTIFIER.fullmatch(card['rubric_version']):
+        _fail('rubric_version', 'invalid scoring rubric identifier')
     _text(card['report_reference'], 'report_reference')
     _object(card['company_quality'], 'company_quality', ('dimensions',))
     dimensions = card['company_quality']['dimensions']

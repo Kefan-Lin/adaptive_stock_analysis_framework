@@ -246,6 +246,30 @@ class SnapshotTests(unittest.TestCase):
         with self.assertRaises(SnapshotValidationError):
             create_partial_snapshot(self.home, 'QHT', 'US', **(arguments | {'price_update': invalid}))
 
+    def test_same_mode_arithmetic_correction_can_update_intrinsic_value(self):
+        first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
+        revised = copy.deepcopy(self.card()['price_attractiveness'])
+        revised['valuation']['fair_value'] = 36
+        revised['valuation']['scenarios']['Base'] = 36
+        result = create_partial_snapshot(self.home, 'QHT', 'US', baseline_id=first.snapshot_id,
+            correction_of=first.snapshot_id, correction_reason='Base scenario addition was off by one.',
+            price_update=revised, as_of='2026-04-01', report_reference='fictional-correction.md',
+            changes={'price_attractiveness': [{'kind': 'error_correction',
+                'explanation': 'Corrected a one-unit arithmetic error in the Base scenario.'}]})
+        self.assertTrue(result.saved)
+        after = read_snapshot(self.home, 'QHT', result.snapshot_id)
+        self.assertEqual(after['card']['price_attractiveness']['valuation']['fair_value'], 36)
+        self.assertEqual(after['card']['price_attractiveness']['valuation']['primary_method'],
+                         self.card()['price_attractiveness']['valuation']['primary_method'])
+        changed_mode = copy.deepcopy(revised)
+        changed_mode['valuation']['primary_method'] = 'new DCF'
+        with self.assertRaises(SnapshotValidationError):
+            create_partial_snapshot(self.home, 'QHT', 'US', baseline_id=first.snapshot_id,
+                correction_of=first.snapshot_id, correction_reason='Arithmetic error.',
+                price_update=changed_mode, as_of='2026-04-01', report_reference='fictional-correction.md',
+                changes={'price_attractiveness': [{'kind': 'error_correction',
+                    'explanation': 'Corrected arithmetic.'}]})
+
     def test_substantive_changes_need_specific_reasons_and_fictional_report_discloses_scope(self):
         first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
         changed = copy.deepcopy(self.card()['company_quality']['dimensions'][0])
