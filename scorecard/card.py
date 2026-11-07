@@ -14,6 +14,7 @@ DIMENSION_IDS = (
 )
 SCHEMA_VERSION = 1
 RUBRIC_VERSION = '1.0'
+SUPPORTED_RUBRICS = ('1.0', '1.1')  # structure remains v1; judgments across rubrics are not comparable
 
 
 def _fail(path, problem):
@@ -119,10 +120,13 @@ def _dimension(entry, path):
             _fail(path, 'evidence postdates information cut-off')
     if entry['as_of'] is not None and entry['assessed_at'] is not None and entry['as_of'] > entry['assessed_at']:
         _fail(path, 'source cut-off exceeds original assessment date')
-    if entry['review_status'] not in ('reviewed', 'carried_forward'):
+    if entry['review_status'] not in ('reviewed', 'carried_forward', 'not_reviewed'):
         _fail(path, 'unknown review status')
     if entry['review_status'] == 'carried_forward':
         _text(entry.get('source_snapshot'), f'{path}.source_snapshot')
+    if entry['review_status'] == 'not_reviewed' and (entry['status'] != 'insufficient_information' or
+            entry['assessed_at'] is not None or entry['as_of'] is not None or entry['supporting_evidence'] or entry['counterevidence']):
+        _fail(path, 'unreviewed item must be undated and unknown')
 
 
 def _availability(value, path):
@@ -202,7 +206,7 @@ def validate_card(card):
                            'price_attractiveness', 'decision_conditions', 'report_reference'))
     if type(card['schema_version']) is not int or card['schema_version'] != SCHEMA_VERSION:
         _fail('schema_version', 'unsupported structure version')
-    if card['rubric_version'] != RUBRIC_VERSION:
+    if card['rubric_version'] not in SUPPORTED_RUBRICS:
         _fail('rubric_version', 'unsupported scoring rubric version')
     _text(card['report_reference'], 'report_reference')
     _object(card['company_quality'], 'company_quality', ('dimensions',))
