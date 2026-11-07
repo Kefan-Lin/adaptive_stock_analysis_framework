@@ -241,9 +241,10 @@ After the analysis and verification pass, assemble the eight independent judgmen
 - When a private state home is configured (see
   [decision-records](references/decision-records.md)), emit the decision-record
   frontmatter block at the end of the report and offer a `mode: research`
-  decision record only when a stance or execution_method exists, so decision
-  research remains archive-ready. A pure research scorecard snapshot saves
-  independently without inventing a decision record.
+  decision record only when a supported stance exists, so decision research
+  remains archive-ready under the existing required `stance` field. A pure
+  research scorecard snapshot saves independently without inventing a stance,
+  execution method, or decision record.
 
 ## Hard Rules
 

@@ -64,6 +64,15 @@ before declaring `Missing Inputs`. An explicit in-session user statement
 overrides file state; write the correction back at session end after user
 confirmation.
 
+If a decision record has `scorecard_snapshot_id`, load that exact version with
+`scorecard.read_snapshot(state_home, symbol, snapshot_id)` and use its validated
+three-card payload. If a saved research version is selected independently,
+read its exact ID the same way. Show the saved ID and the card's original
+assessment and valuation dates. If the old report has no card, show
+“未按本版本评估” (not assessed under this version); do not backfill a score.
+If state home or the version is unavailable, identify the gap and never claim
+an unsaved snapshot was cited.
+
 ## Research & Valuation Engine
 
 Use `$analyzing-stocks` when a current valuation report is missing, stale, incomplete, or needs a full rerun.
@@ -105,6 +114,19 @@ until the divergence is reconciled. This is the manual precursor to measured run
 For `Existing Report to Action`, `Position Review`, and `Event Review`, use this path:
 
 `Existing Report / Prior Thesis -> Stale Check -> Incremental Valuation Update -> Decision Brief -> Execution Sheet`
+
+Consume the saved card as research context for the decision. Surface each
+unverified and confirmed material issue separately with its impact and
+verification task; retain evidence gaps, thesis falsifiers, portfolio fit,
+and execution conditions. Explain conflicts between new independent quality
+dimensions and older moat/financial scores or stance by naming what each
+measures and what evidence needs review. The card does not generate another
+score, map quality scores into stance or size, or create an execution ban.
+Keep the prior report's method, earnings/cash-flow basis, horizon, valuation
+date and Bear/Base/Bull meanings. Reading a card is not a valuation refresh;
+any separate refresh follows the existing gates and requires user permission
+before a valuation-mode change. Missing valuation and portfolio data remain
+visible as unassessed or insufficient information.
 
 ### Stale Check
 
@@ -342,6 +364,12 @@ For new ideas, use the current `$analyzing-stocks` output or state that full val
 
 ### 4. Decision Brief
 
+- `Research scorecard`: exact snapshot ID or “未按本版本评估”; show the
+  independent company-quality judgments with confidence and original dates,
+  the price card's existing valuation provenance, and decision conditions.
+- `Material issues / evidence gaps / prior-judgment conflicts`: status,
+  impact, verification, and the older judgment being revisited; do not net
+  these against high quality scores.
 - `Candidate Tier`: `Core Candidate / Tactical Candidate / Reject`
 - `Valuation Zone`: `Accumulation / Hold / Exhaustion / Invalidation`
 - `Thesis status`:
@@ -372,11 +400,17 @@ Keep execution language concrete. If the evidence does not support a concrete or
 When a state home is configured, persist the outcome per
 [decision-records](../analyzing-stocks/references/decision-records.md):
 
-- For every symbol that received at least a `Stance` or an `Execution Method`,
+- For every symbol with an actual supported `Stance`,
   write or update `records/<SYMBOL>/YYYY-MM-DD-<mode>.md` (record identity
   `(symbol, date, mode)`; same identity updates in place) and append or update
-  the symbol's `INDEX.md` row.
+  the symbol's `INDEX.md` row. Set optional `scorecard_snapshot_id` only for
+  a successfully saved exact version matching that symbol and market. A later
+  decision update may choose another saved version; it does not modify either
+  snapshot.
 - After the user confirms an execution, backfill `action_taken` and update
   `portfolio.yaml`.
 - A pure `Missing Inputs` / conditional-only outcome creates no record.
+- Research without a supported stance saves a validated snapshot by the
+  analyzing-stocks boundary and creates no decision record or fabricated
+  stance or execution method.
 - Without a state home, skip this section (stateless behavior).
