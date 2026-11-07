@@ -4,7 +4,7 @@
 
 ## 规范版本与公用接口
 
-结构版本 `schema_version: 1` 与评分规范版本 `rubric_version: "1.0"` 分开。卡片顶层包含 `company_quality`、`price_attractiveness`、`decision_conditions` 和 `report_reference`。公开的 Python 校验入口接收字典，合法时原样返回，非法时抛 `CardValidationError`；不读写私人目录。供后续保存、局部复核、精确引用及行业伴侣接入使用同一卡片字典，不各造评分规范。虚构完整示例见 `examples/research-scorecard/fictional-card.json`，报告见其同目录 `fictional-report.md`。快照的独立身份与时点见下述持久化入口；历史比较由后续任务定义；卡片中的 `assessed_at` 是原评估日，`as_of` 是信息截止日，沿用项的 `source_snapshot` 为来源版本，`review_status: carried_forward` 表示本次未复核。新评估用 `reviewed`。报告引用为可定位的 `report_reference`，当前不是已保存快照的承诺。
+结构版本 `schema_version: 1` 与评分规范版本 `rubric_version: "1.0"` 分开。卡片顶层包含 `company_quality`、`price_attractiveness`、`decision_conditions` 和 `report_reference`。公开的 Python 校验入口接收字典，合法时原样返回，非法时抛 `CardValidationError`；不读写私人目录。供保存、局部复核、精确引用及行业伴侣接入使用同一卡片字典。虚构完整示例见 `examples/research-scorecard/fictional-card.json`，报告见其同目录 `fictional-report.md`。卡片中的 `assessed_at` 是原评估日，`as_of` 是信息截止日，沿用项的 `source_snapshot` 为来源版本，`review_status: carried_forward` 表示本次未复核。新评估用 `reviewed`。报告引用为可定位的 `report_reference`，当前不是已保存快照的承诺。
 
 八维在 `company_quality.dimensions` 中各出现一次，使用以下稳定 id。每项必含 `id`、`status`（`assessed`、`insufficient_information`、`not_applicable`）、`score`、`confidence`、`rationale`、`supporting_evidence`、`counterevidence`、`counterevidence_search`、`open_questions`、`review_triggers`、`assessed_at`、`as_of`、`review_status`。2/4 分另加 `adjacent_anchor_explanation`，写清满足的相邻锚点及未达到更高档的差距；沿用另加 `source_snapshot`。已评估的分数严格为 1–5 整数，可信度严格为 high / medium / low，必须有支持证据、反证或具体检索范围。没有形成判断用空分数和空可信度，信息不足写明具体缺口；不适用给出适用性理由。不得因表现差或资料缺失标不适用，不得用低可信度代替信息不足。事实材料可跨维使用，但逐维说明其不同含义，不重复加权；无跨维总分。缺足够材料时坦陈尚未核查，不编造反证或来源。
 
