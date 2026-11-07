@@ -11,12 +11,18 @@ import tempfile
 from uuid import uuid4
 
 from inflection_discovery.symbols import SYMBOL_PATTERNS
-from .card import DIMENSION_IDS, RUBRIC_IDENTIFIER, validate_card
+from .card import CardValidationError, DIMENSION_IDS, RUBRIC_IDENTIFIER, validate_card
 
 
 SNAPSHOT_SCHEMA_VERSION = 1
 SNAPSHOT_ID = re.compile(r'^\d{4}-\d{2}-\d{2}-[0-9a-f]{32}$')
 STORAGE_DIR = 'research-scorecards'
+ITEM_IDS = (*DIMENSION_IDS, 'price_attractiveness', 'decision_conditions')
+
+
+def _substantive_content(item):
+    return {key: value for key, value in item.items()
+            if key not in ('review_status', 'source_snapshot')}
 
 
 class SnapshotValidationError(ValueError):
@@ -62,6 +68,19 @@ def _id(value):
     _date(value[:10])
 
 
+def _reasons(reasons):
+    if not isinstance(reasons, dict) or any(item not in ITEM_IDS for item in reasons):
+        raise SnapshotValidationError('change reasons must identify known items')
+    for entries in reasons.values():
+        if not isinstance(entries, list):
+            raise SnapshotValidationError('change reasons must be lists')
+        for entry in entries:
+            if not isinstance(entry, dict) or set(entry) != {'kind', 'explanation'} or entry['kind'] not in (
+                    'new_fact', 'assumption_change', 'rubric_change', 'error_correction') or not isinstance(
+                    entry['explanation'], str) or not entry['explanation'].strip() or entry['explanation'].strip() == '更新了':
+                raise SnapshotValidationError('specific substantive change reason required')
+
+
 def validate_snapshot(snapshot):
     """Validate the independent envelope and embedded three-card contract."""
     required = {'schema_version', 'rubric_version', 'snapshot_id', 'symbol', 'market',
@@ -82,15 +101,24 @@ def validate_snapshot(snapshot):
         raise SnapshotValidationError('snapshot identity or cutoff conflicts with creation time')
     if snapshot['review_scope'] not in ('full', 'partial', 'correction'):
         raise SnapshotValidationError('unknown review scope')
-    validate_card(snapshot['card'])
+    try:
+        validate_card(snapshot['card'])
+    except CardValidationError as exc:
+        raise SnapshotValidationError(f'invalid embedded card: {exc}') from exc
     if snapshot['rubric_version'] != snapshot['card']['rubric_version'] or snapshot['source_report'] != snapshot['card']['report_reference']:
         raise SnapshotValidationError('card rubric or report reference differs from snapshot')
     if snapshot['review_scope'] == 'full' and any(d['review_status'] != 'reviewed' for d in snapshot['card']['company_quality']['dimensions']):
         raise SnapshotValidationError('full research must review every dimension')
+    if snapshot['review_scope'] == 'full':
+        if 'baseline_id' in snapshot:
+            _id(snapshot['baseline_id'])
+            _reasons(snapshot.get('change_reasons'))
+        elif 'change_reasons' in snapshot:
+            raise SnapshotValidationError('full research reasons require an exact predecessor')
     if snapshot['review_scope'] != 'full':
         selected = snapshot.get('selected_items')
-        if not isinstance(selected, list) or not selected or len(set(selected)) != len(selected) or any(
-                item not in (*DIMENSION_IDS, 'price_attractiveness', 'decision_conditions') for item in selected):
+        if not isinstance(selected, list) or not selected or any(not isinstance(item, str) for item in selected) or len(set(selected)) != len(selected) or any(
+                item not in ITEM_IDS for item in selected):
             raise SnapshotValidationError('partial review requires selected items')
         baseline = snapshot.get('baseline_id')
         if baseline is not None:
@@ -103,19 +131,12 @@ def validate_snapshot(snapshot):
         sources = snapshot.get('item_sources')
         if not isinstance(reasons, dict) or not isinstance(sources, dict) or set(reasons) != set(selected):
             raise SnapshotValidationError('change reasons and source tracking required')
-        for item, entries in reasons.items():
-            if not isinstance(entries, list):
-                raise SnapshotValidationError('change reasons must be lists')
-            for entry in entries:
-                if not isinstance(entry, dict) or set(entry) != {'kind', 'explanation'} or entry['kind'] not in (
-                        'new_fact', 'assumption_change', 'rubric_change', 'error_correction') or not isinstance(
-                        entry['explanation'], str) or not entry['explanation'].strip() or entry['explanation'].strip() == '更新了':
-                    raise SnapshotValidationError('specific substantive change reason required')
+        _reasons(reasons)
         if snapshot['review_scope'] == 'correction' and not any(
                 entry['kind'] == 'error_correction' for entries in reasons.values() for entry in entries):
             raise SnapshotValidationError('correction requires error correction reason')
         for item, source in sources.items():
-            if item not in (*DIMENSION_IDS, 'price_attractiveness', 'decision_conditions'):
+            if item not in ITEM_IDS:
                 raise SnapshotValidationError('unknown item source')
             _id(source)
         for dimension in snapshot['card']['company_quality']['dimensions']:
@@ -148,6 +169,14 @@ def _home_path(home):
         repository = Path(__file__).resolve().parents[1]
         if path == repository or repository in path.parents:
             return None
+        for ancestor in (path, *path.parents):
+            try:
+                if ((ancestor / 'install' / 'install.sh').is_file() and
+                        (ancestor / 'skills' / 'analyzing-stocks' / 'SKILL.md').is_file() and
+                        (ancestor / 'inflection_discovery' / 'symbols.py').is_file()):
+                    return None
+            except OSError:
+                continue
         return path
     except (OSError, TypeError, ValueError):
         return None
@@ -162,6 +191,40 @@ def _safe_dir(home, symbol):
     return target
 
 
+def _validate_linked_update(previous, card, selected, reasons, correction_of):
+    original = previous['card']
+    if card['rubric_version'] != original['rubric_version'] and not all(
+            any(entry['kind'] == 'rubric_change' for entry in reasons[item]) for item in selected):
+        raise SnapshotValidationError('rubric change requires a reason per selected item')
+    new_parts = _parts(card)
+    for item in selected:
+        new = new_parts[item]
+        if item in DIMENSION_IDS and new['assessed_at'] is not None and _date(new['assessed_at']) < _date(new['as_of']):
+            raise SnapshotValidationError('assessment precedes information cutoff')
+    if 'price_attractiveness' not in selected:
+        return
+    old_price, new_price = original['price_attractiveness'], card['price_attractiveness']
+    kinds = {entry['kind'] for entry in reasons['price_attractiveness']}
+    if old_price['status'] == new_price['status'] == 'assessed':
+        prior, current = old_price['valuation'], new_price['valuation']
+        mode = ('currency', 'primary_method', 'earnings_basis', 'forecast_horizon', 'scenario_meanings')
+        if any(prior[key] != current[key] for key in mode):
+            raise SnapshotValidationError('valuation mode requires separately recorded permission')
+        intrinsic = ('fair_value', 'scenarios', 'as_of')
+        if any(prior[key] != current[key] for key in intrinsic):
+            correction = correction_of is not None and 'error_correction' in kinds
+            sourced = bool({'new_fact', 'assumption_change'} & kinds) and (
+                current['as_of'] > prior['as_of'] and current['source_report'] != prior['source_report'])
+            if not (correction or sourced):
+                raise SnapshotValidationError('intrinsic update requires sourced non-price change or explicit correction')
+    if {'new_fact', 'assumption_change'} & kinds:
+        for item in set(selected) & set(DIMENSION_IDS):
+            if any(entry['kind'] == 'new_fact' for entry in reasons[item]) and not any(
+                    evidence['source_date'] > previous['as_of']
+                    for evidence in new_parts[item]['supporting_evidence']):
+                raise SnapshotValidationError('operating transmission requires independent dated facts')
+
+
 def create_snapshot(home, symbol, market, card, *, as_of, review_scope='full', snapshot_id=None,
                     baseline_id=None, correction_of=None, correction_reason=None,
                     selected_items=None, change_reasons=None, item_sources=None):
@@ -173,6 +236,9 @@ def create_snapshot(home, symbol, market, card, *, as_of, review_scope='full', s
     _identity(symbol, market)
     cutoff = _date(as_of)
     validate_card(card)
+    if review_scope == 'full' and any(value is not None for value in (
+            correction_of, correction_reason, selected_items, item_sources)):
+        raise SnapshotValidationError('full research does not accept partial selection or correction metadata')
     now = datetime.now(timezone.utc)
     identifier = snapshot_id if snapshot_id is not None else f'{now.date().isoformat()}-{uuid4().hex}'
     snapshot = {'schema_version': SNAPSHOT_SCHEMA_VERSION, 'rubric_version': card['rubric_version'],
@@ -183,13 +249,64 @@ def create_snapshot(home, symbol, market, card, *, as_of, review_scope='full', s
         snapshot.update(baseline_id=baseline_id, correction_of=correction_of,
                         correction_reason=correction_reason, selected_items=selected_items,
                         change_reasons=change_reasons, item_sources=item_sources)
+    elif baseline_id is not None or change_reasons is not None:
+        snapshot.update(baseline_id=baseline_id, change_reasons=change_reasons)
     validate_snapshot(snapshot)
     state_home = _home_path(home)
+    if review_scope == 'full' and baseline_id is not None:
+        baseline = read_snapshot(home, symbol, baseline_id)
+        if baseline['market'] != market:
+            raise SnapshotValidationError('baseline belongs to another market')
+        old, new = _parts(baseline['card']), _parts(card)
+        changed = {item for item in ITEM_IDS if _substantive_content(old[item]) != _substantive_content(new[item])}
+        if any(not change_reasons.get(item) for item in changed):
+            raise SnapshotValidationError('substantive item change requires reasons')
+        if card['rubric_version'] != baseline['rubric_version'] and any(
+                not any(entry['kind'] == 'rubric_change' for entry in change_reasons.get(item, []))
+                for item in ITEM_IDS):
+            raise SnapshotValidationError('full rubric change requires reasons for every reviewed item')
+        _validate_linked_update(baseline, card, changed, change_reasons, None)
+        if cutoff < _date(baseline['as_of']):
+            raise SnapshotValidationError('new cutoff cannot precede baseline')
     if review_scope != 'full':
         if baseline_id is not None:
             baseline = read_snapshot(home, symbol, baseline_id)
             if baseline['market'] != market:
                 raise SnapshotValidationError('baseline belongs to another market')
+            before, after = _parts(baseline['card']), _parts(card)
+            expected_sources = {item: baseline.get('item_sources', {}).get(item, baseline_id)
+                                for item in ITEM_IDS if item not in selected_items}
+            if item_sources != expected_sources:
+                raise SnapshotValidationError('carried item sources differ from baseline provenance')
+            for item, source in expected_sources.items():
+                origin = read_snapshot(home, symbol, source)
+                if origin['market'] != market or _substantive_content(_parts(origin['card'])[item]) != _substantive_content(before[item]):
+                    raise SnapshotValidationError('carried item source does not contain baseline judgment')
+                if _substantive_content(after[item]) != _substantive_content(before[item]):
+                    raise SnapshotValidationError('unselected item differs from baseline')
+                if item in DIMENSION_IDS and after[item].get('source_snapshot') != source:
+                    raise SnapshotValidationError('carried dimension source differs from baseline')
+            for item in selected_items:
+                if _substantive_content(after[item]) != _substantive_content(before[item]) and not change_reasons[item]:
+                    raise SnapshotValidationError('substantive item change requires reasons')
+            _validate_linked_update(baseline, card, selected_items, change_reasons, correction_of)
+            if cutoff < _date(baseline['as_of']):
+                raise SnapshotValidationError('new cutoff cannot precede baseline')
+        else:
+            if item_sources:
+                raise SnapshotValidationError('first partial review has no prior sources')
+            for item, dimension in _parts(card).items():
+                if item in selected_items:
+                    continue
+                if item in DIMENSION_IDS and (dimension['review_status'] != 'not_reviewed' or
+                        dimension['status'] != 'insufficient_information' or 'source_snapshot' in dimension):
+                    raise SnapshotValidationError('first partial unselected judgment must be unknown')
+                if item == 'price_attractiveness' and dimension['status'] != 'not_assessed':
+                    raise SnapshotValidationError('first partial price must be unassessed')
+                if item == 'decision_conditions' and (dimension['material_issues'] or
+                        dimension['portfolio_fit']['status'] != 'not_assessed' or
+                        dimension['execution_conditions']['status'] != 'not_assessed'):
+                    raise SnapshotValidationError('first partial decision must be unassessed')
         if correction_of is not None:
             target = read_snapshot(home, symbol, correction_of)
             if target['market'] != market or correction_of != baseline_id:
@@ -321,46 +438,16 @@ def create_partial_snapshot(home, symbol, market, *, baseline_id=None, initial_c
             card[name] = deepcopy(updates[name])
     card['report_reference'] = report_reference
     card['rubric_version'] = rubric_version or original['rubric_version']
-    if previous and card['rubric_version'] != original['rubric_version']:
-        if not all(any(reason.get('kind') == 'rubric_change' for reason in changes.get(item, []))
-                   for item in updates):
-            raise SnapshotValidationError('rubric change requires a reason per selected item')
     validate_card(card)
     now_cutoff = _date(as_of)
     if previous and now_cutoff < _date(previous['as_of']):
         raise SnapshotValidationError('new cutoff cannot precede baseline')
     for item in updates:
         new = _parts(card)[item]
-        old_content = {key: value for key, value in old_parts[item].items()
-                       if key not in ('review_status', 'source_snapshot')}
-        new_content = {key: value for key, value in new.items()
-                       if key not in ('review_status', 'source_snapshot')}
+        old_content = _substantive_content(old_parts[item])
+        new_content = _substantive_content(new)
         if previous and new_content != old_content and not changes[item]:
             raise SnapshotValidationError('substantive item change requires reasons')
-        if item in DIMENSION_IDS and new.get('assessed_at') is not None and _date(new['assessed_at']) < _date(new['as_of']):
-            raise SnapshotValidationError('assessment precedes information cutoff')
-    if previous and 'price_attractiveness' in updates:
-        old_price = original['price_attractiveness']
-        new_price = card['price_attractiveness']
-        if old_price['status'] == new_price['status'] == 'assessed':
-            prior = old_price['valuation']; current = new_price['valuation']
-            mode = ('currency', 'primary_method', 'earnings_basis', 'forecast_horizon', 'scenario_meanings')
-            if any(prior[key] != current[key] for key in mode):
-                raise SnapshotValidationError('valuation mode requires separately recorded permission')
-            intrinsic = ('fair_value', 'scenarios', 'as_of')
-            if any(prior[key] != current[key] for key in intrinsic):
-                reason_kinds = {entry['kind'] for entry in changes['price_attractiveness']}
-                correction = correction_of is not None and 'error_correction' in reason_kinds
-                sourced_update = ('new_fact' in reason_kinds or 'assumption_change' in reason_kinds) and (
-                    current['as_of'] > prior['as_of'] and current['source_report'] != prior['source_report'])
-                if not (correction or sourced_update):
-                    raise SnapshotValidationError('intrinsic update requires sourced non-price change or explicit correction')
-    if previous and 'price_attractiveness' in updates and set(updates) & set(DIMENSION_IDS):
-        for item in set(updates) & set(DIMENSION_IDS):
-            if not any(reason['kind'] == 'new_fact' for reason in changes[item]) or not any(
-                    evidence['source_date'] > previous['as_of']
-                    for evidence in _parts(card)[item]['supporting_evidence']):
-                raise SnapshotValidationError('operating transmission requires independent dated facts')
     sources = ({item: previous.get('item_sources', {}).get(item, baseline_id)
                 for item in old_parts if item not in updates} if previous else {})
     return create_snapshot(home, symbol, market, card, as_of=as_of,
@@ -376,16 +463,36 @@ def compare_snapshots(home, symbol, before_id, after_id):
     if before['market'] != after['market']:
         raise SnapshotValidationError('versions belong to different markets')
     old, new = _parts(before['card']), _parts(after['card'])
+    lineage = []
+    cursor = after
+    seen = set()
+    while cursor['snapshot_id'] != before_id and cursor.get('baseline_id') and cursor['snapshot_id'] not in seen:
+        seen.add(cursor['snapshot_id'])
+        parent = read_snapshot(home, symbol, cursor['baseline_id'])
+        lineage.append((parent, cursor))
+        cursor = parent
+    connected = cursor['snapshot_id'] == before_id
+
+    def item_rubric(snapshot, item):
+        source = snapshot.get('item_sources', {}).get(item)
+        return read_snapshot(home, symbol, source)['rubric_version'] if source else snapshot['rubric_version']
+
     differences = {}
     for item in old:
         # Review bookkeeping is not a substantive change in a judgment.
-        left = {k: v for k, v in old[item].items() if k not in ('review_status', 'source_snapshot')}
-        right = {k: v for k, v in new[item].items() if k not in ('review_status', 'source_snapshot')}
+        left, right = _substantive_content(old[item]), _substantive_content(new[item])
         fields = sorted(k for k in left.keys() | right.keys() if left.get(k) != right.get(k))
-        if fields or before['rubric_version'] != after['rubric_version']:
+        comparable = item_rubric(before, item) == item_rubric(after, item)
+        if fields or not comparable:
+            reasons = []
+            if connected:
+                for parent, child in reversed(lineage):
+                    if (_substantive_content(_parts(parent['card'])[item]) !=
+                            _substantive_content(_parts(child['card'])[item]) or
+                            item_rubric(parent, item) != item_rubric(child, item)):
+                        reasons.extend(child.get('change_reasons', {}).get(item, []))
             differences[item] = {'before': left, 'after': right, 'changed_fields': fields,
-                'comparable': before['rubric_version'] == after['rubric_version'],
-                'reasons': after.get('change_reasons', {}).get(item, []),
-                'note': 'Different scoring rubrics; scores are not comparable.'
-                        if before['rubric_version'] != after['rubric_version'] else None}
+                'comparable': comparable, 'reasons': reasons,
+                'note': 'Different scoring rubrics; scores are not comparable.' if not comparable else
+                        ('No connected baseline history; reasons unavailable.' if not connected else None)}
     return {'before_id': before_id, 'after_id': after_id, 'changes': differences}

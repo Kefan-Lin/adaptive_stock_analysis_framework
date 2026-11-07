@@ -2,6 +2,8 @@
 
 完整研究完成既有分析和关键输入核验后，从已引用的分析证据组装三卡。运行公开入口 `scorecard.card.validate_card(card)`，通过后在十章报告摘要展示并将论证指向正文。完整报告确认完成后通过下述快照入口保存，并依据返回结果说明保存状态。卡片组装不执行估值计算，不把质量分用于买卖或仓位自动映射。
 
+安装 `analyzing-stocks` 后，可从任意工作目录运行 `python <installed-skills>/analyzing-stocks/scripts/scorecard.py validate --card card.json`、`... create --home /absolute/private/state-home --symbol QHT --market US --card card.json --as-of 2026-04-01`，并用 `... read --home /absolute/private/state-home --symbol QHT --snapshot-id <exact-id>` 验证精确引用（返回文件完整校验且必须匹配 symbol 和 exact id；需要 market 时核对返回的 market）。局部复核和修正版用 `... partial --request request.json`，JSON 请求包含 `create_partial_snapshot` 所需的 `home`、`symbol`、`market`、`baseline_id`、`dimension_updates`、`as_of`、`report_reference`、`changes` 等同名参数，修正另含 `correction_of` 与 `correction_reason`；`... compare --home /absolute/private/state-home --symbol QHT --before-id <exact-id> --after-id <exact-id>` 返回变化。创建及局部复核命令输出 JSON 的 `saved`、`snapshot_id`、`reason`，失败退出码为 1。复制安装在技能内提供同源 Python 运行包；若直接调用 Python API，将 `<installed-skills>/analyzing-stocks/.scorecard-runtime` 加入 `PYTHONPATH`。符号规则与仓库的 `inflection_discovery.symbols` 同步安装。软链接安装直接使用仓库源码，此时 `PYTHONPATH` 指向仓库根目录。
+
 ## 规范版本与公用接口
 
 结构版本 `schema_version: 1` 与评分规范版本 `rubric_version: "1.0"` 分开。卡片顶层包含 `company_quality`、`price_attractiveness`、`decision_conditions` 和 `report_reference`。公开的 Python 校验入口接收字典，合法时原样返回，非法时抛 `CardValidationError`；不读写私人目录。供保存、局部复核、精确引用及行业伴侣接入使用同一卡片字典。虚构完整示例见 `examples/research-scorecard/fictional-card.json`，报告见其同目录 `fictional-report.md`。卡片中的 `assessed_at` 是原评估日，`as_of` 是信息截止日，沿用项的 `source_snapshot` 为来源版本，`review_status: carried_forward` 表示本次未复核。新评估用 `reviewed`。报告引用为可定位的 `report_reference`，当前不是已保存快照的承诺。
@@ -13,6 +15,8 @@
 ## 完整研究快照
 
 只有分析、输入核验、卡片校验和完整报告都完成后，才调用 `scorecard.create_snapshot(home, symbol, market, card, as_of=...)`。`home` 是现有私人 state-home 的绝对目录，缺失或不可访问时可传 `None` 或原路径。`symbol` 和 `market` 遵守 canonical tradable-line 身份；`as_of` 是本次研究信息截至日，与各维原评估日分开。返回的 `SaveResult(saved, snapshot_id, reason)` 仅在 `saved=True` 时提供可引用的快照标识；`saved=False` 时明确告诉用户未保存及原因，不退回公共仓库。纯研究不需要 stance、execution_method 或决策记录；临时聊天不调用保存入口。
+
+再次完整研究若有明确前一版本，Python API 传 `baseline_id=exact_id` 和 `change_reasons={item_id: [{'kind': 'new_fact', 'explanation': '具体缘由'}]}`，覆盖所有实际变更项目；命令行 `create` 则加 `--baseline-id <exact-id> --change-reasons reasons.json`，文件内容为同样的 JSON 映射。独立完整研究无前序关联时，跨版本对比会如实提示原因不可得。评分规范切换时，完整研究给每项已复核项目记录 `rubric_change` 原因。
 
 快照无覆盖写入 `<state-home>/research-scorecards/<SYMBOL>/<YYYY-MM-DD-UUID>.json`，与 `records/` 分开。`scorecard.read_snapshot(home, symbol, snapshot_id)` 精确读取并验证身份；`scorecard.validate_snapshot(snapshot)` 校验结构、评分规范标识、三卡、日期、范围和报告引用。完整研究八维均标记本次复核。
 
