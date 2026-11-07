@@ -12,6 +12,8 @@ Use as a companion to `$analyzing-stocks`, not as a standalone replacement for t
 
 ## Controller Contract
 
+- Return applicable KPI, dated evidence, counterevidence or search scope, applicability reasons and review triggers to the controller for the single [research scorecard](../analyzing-stocks/references/industry-scorecard-mapping.md); use its eight dimension meanings and anchors.
+
 - Return only subtype, KPI tree, accounting traps, valuation route, risk checklist, and monitor triggers.
 - Do not restate generic report structure or value-investing theory.
 

@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "rubric_version": "1.0",
+  "company_quality": {
+    "dimensions": [
+      {
+        "id": "industry_economics",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "售后需求三年上升，但产能增幅更快限制议价；有合理利润空间却未见足够供给纪律。",
+        "supporting_evidence": [
+          {
+            "id": "operating-0-fact",
+            "source": "行业协会模拟调查，2026-03-31，第 2 页",
+            "source_date": "2026-03-31",
+            "summary": "三年售后件需求指数 100、106、111；供应商产能指数 100、109、121；新产能扩张快于需求。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "待查竞争者新产能的实际开工率。",
+        "open_questions": [
+          "复核：待查竞争者新产能的实际开工率。"
+        ],
+        "review_triggers": [
+          "新披露改变 行业经济性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "business_model",
+        "status": "assessed",
+        "score": 4,
+        "confidence": "medium",
+        "rationale": "单位贡献从 19 升至 25 美元且客户复购支撑盈利机制；渠道服务费用和新增产能回报尚约束最强档。",
+        "supporting_evidence": [
+          {
+            "id": "operating-1-fact",
+            "source": "虚构 FY2025 年报，2026-03-20，第 8 页",
+            "source_date": "2026-03-20",
+            "summary": "每台售后件毛利 42 美元，保修与渠道服务合计 17 美元；2023–25 年单位贡献 19、22、25 美元。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "渠道费用及认证服务成本可侵蚀单位贡献。",
+        "open_questions": [
+          "复核：渠道费用及认证服务成本可侵蚀单位贡献。"
+        ],
+        "review_triggers": [
+          "新披露改变 商业模式 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed",
+        "adjacent_anchor_explanation": "单位贡献从 19 升至 25 美元且客户复购支撑盈利机制；渠道服务费用和新增产能回报尚约束最强档。"
+      },
+      {
+        "id": "product_competitiveness",
+        "status": "assessed",
+        "score": 4,
+        "confidence": "medium",
+        "rationale": "同口径复购 92/120 高于竞品 78/110，表明当前客户选择优势；仍有 28 家不复购，未达压倒性优势。",
+        "supporting_evidence": [
+          {
+            "id": "operating-2-fact",
+            "source": "虚构客户复购表，2026-04-10，第 3 页",
+            "source_date": "2026-04-10",
+            "summary": "有连续三年跟踪的 120 家客户，2025 年 92 家复购；竞品同口径披露 78/110 家复购。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "分组客户留存与订单规模差异仍需复核。",
+        "open_questions": [
+          "复核：分组客户留存与订单规模差异仍需复核。"
+        ],
+        "review_triggers": [
+          "新披露改变 产品竞争力 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed",
+        "adjacent_anchor_explanation": "同口径复购 92/120 高于竞品 78/110，表明当前客户选择优势；仍有 28 家不复购，未达压倒性优势。"
+      },
+      {
+        "id": "moat_durability",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "low",
+        "rationale": "重新认证是壁垒，但两家已见竞争认证，十二家非随机访谈不足以判定长期持续。",
+        "supporting_evidence": [
+          {
+            "id": "operating-3-fact",
+            "source": "虚构客户访谈纪要，2026-04-15，第 5 页",
+            "source_date": "2026-04-15",
+            "summary": "12 家访谈客户中 7 家称需要重新认证；两家称竞品 2026 年已取得认证，访谈样本非随机。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "两家客户所述竞品认证削弱永久壁垒叙事。",
+        "open_questions": [
+          "复核：两家客户所述竞品认证削弱永久壁垒叙事。"
+        ],
+        "review_triggers": [
+          "新披露改变 护城河持续性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "management_governance",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "四项承诺兑现三项且激励含每股自由现金流、关联交易已披露；九个月延迟使执行评价参差。",
+        "supporting_evidence": [
+          {
+            "id": "operating-4-fact",
+            "source": "虚构董事会承诺核对表，2026-05-01，第 4 页",
+            "source_date": "2026-05-01",
+            "summary": "2023–25 年管理层四项按期扩产承诺完成三项；一项延迟九个月；CEO 奖金含每股自由现金流目标；关联交易明细经审计附注列示。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "扩产迟延九个月，与兑现承诺的强档不符。",
+        "open_questions": [
+          "复核：扩产迟延九个月，与兑现承诺的强档不符。"
+        ],
+        "review_triggers": [
+          "新披露改变 管理层与治理 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "capital_allocation",
+        "status": "assessed",
+        "score": 4,
+        "confidence": "medium",
+        "rationale": "新产线增量回报 15% 超过估计资本成本 10%，每股 FCF 1.10 升至 1.45；收购回报仅 5% 且回购均价 28 美元的估值纪律待核，故未达持续最强档。",
+        "supporting_evidence": [
+          {
+            "id": "operating-5-fact",
+            "source": "虚构资本配置台账，2026-05-10，第 6 页",
+            "source_date": "2026-05-10",
+            "summary": "2023–25 年投入新产线 60 百万美元，新增税后经营利润 9 百万美元，增量投入资本回报 15%，估计资本成本 10%；20 百万美元收购在两年后贡献 1 百万美元利润。",
+            "kind": "fact"
+          },
+          {
+            "id": "operating-5-per-share",
+            "source": "虚构股本与分配表，2026-05-10，第 7 页",
+            "source_date": "2026-05-10",
+            "summary": "三年稀释股数 50m 降至 49m，回购支出 12m、股息 8m；每股自由现金流由 1.10 升至 1.45 美元；回购均价 28 美元。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "收购 20m 仅贡献 1m 税后利润，拖累每股资本效率。",
+        "open_questions": [
+          "复核：收购 20m 仅贡献 1m 税后利润，拖累每股资本效率。"
+        ],
+        "review_triggers": [
+          "新披露改变 资本配置与再投资 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed",
+        "adjacent_anchor_explanation": "新产线增量回报 15% 超过估计资本成本 10%，每股 FCF 1.10 升至 1.45；收购回报仅 5% 且回购均价 28 美元的估值纪律待核，故未达持续最强档。"
+      },
+      {
+        "id": "earnings_cash_quality",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "三年经营现金流与净利润接近，维护性资本开支后现金为正；应收增长 18% 快于收入 9%，回款质量尚需验证。",
+        "supporting_evidence": [
+          {
+            "id": "operating-6-fact",
+            "source": "虚构 FY2025 现金流附注，2026-03-20，第 11 页",
+            "source_date": "2026-03-20",
+            "summary": "2023–25 年净利润 32、35、38 百万美元；经营现金流 31、37、39；维护资本开支 12、13、14；2025 年应收账款增速 18% 快于收入 9%。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "应收增速高于收入可能预示现金转化走弱。",
+        "open_questions": [
+          "复核：应收增速高于收入可能预示现金转化走弱。"
+        ],
+        "review_triggers": [
+          "新披露改变 盈利与现金质量 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "financial_resilience",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "25m 现金及 8m 一年到期债务可覆盖严重压力现金缺口；压力下经营现金减维护资本开支仅 4m，缓冲并不宽裕。",
+        "supporting_evidence": [
+          {
+            "id": "operating-7-fact",
+            "source": "虚构 FY2025 债务附注，2026-03-20，第 13 页",
+            "source_date": "2026-03-20",
+            "summary": "现金 25m、债务 45m，下一年到期 8m；严重压力下经营现金流估算 18m、维持性资本开支 14m，仍需使用现金偿债。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "下一年到期债务超过压力下自由现金流。",
+        "open_questions": [
+          "复核：下一年到期债务超过压力下自由现金流。"
+        ],
+        "review_triggers": [
+          "新披露改变 财务韧性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      }
+    ]
+  },
+  "price_attractiveness": {
+    "status": "assessed",
+    "reason": "",
+    "valuation": {
+      "source_report": "operating-sources.md#虚构原报告估值摘录",
+      "as_of": "2026-06-30",
+      "price_as_of": "2026-06-30",
+      "currency": "USD",
+      "market_price": 30,
+      "primary_method": "FCFF DCF",
+      "earnings_basis": "normalized operating cash flow after maintenance capex",
+      "forecast_horizon": "5 years",
+      "scenarios": {
+        "Bear": 22,
+        "Base": 32,
+        "Bull": 42
+      },
+      "scenario_meanings": {
+        "Bear": "adverse funding or demand",
+        "Base": "normalized conditions",
+        "Bull": "stronger durable economics"
+      },
+      "fair_value": 32,
+      "margin_of_safety": "6.25%",
+      "market_implied_expectations": "Market implies muted terminal growth"
+    }
+  },
+  "decision_conditions": {
+    "material_issues": [
+      {
+        "status": "unverified",
+        "description": "待核实：核心客户订单集中",
+        "impact": "若三家客户合计超过收入一半，复购证据外推及估值基数将受损。",
+        "verification": "取得分客户审计收入桥与合同，当前仅有匿名访谈。",
+        "evidence": []
+      }
+    ],
+    "thesis": "回购均价 28 美元接近原估值合理价值 32 美元，只有约 12.5% 折价；再投资较有吸引力，但不能因回购减少股数就推断所有回购增值。每股 FCF 同期上升可能同时来自经营改善，需拆分收购和回购贡献。",
+    "falsifiers": [
+      "若三家客户合计超过收入一半，复购证据外推及估值基数将受损。"
+    ],
+    "evidence_gaps": [
+      "取得分客户审计收入桥与合同，当前仅有匿名访谈。"
+    ],
+    "portfolio_fit": {
+      "status": "insufficient_information",
+      "reason": "No fictional portfolio allocation or holdings supplied."
+    },
+    "execution_conditions": {
+      "status": "not_assessed",
+      "reason": "No execution decision was made."
+    }
+  },
+  "report_reference": "operating-report.md#1-执行摘要"
+}
