@@ -16,7 +16,10 @@ Core principle: **先做行业分型，再做估值，再做仓位建议**。不
 1. Define scope and decision question.
 2. Determine primary industry and optional secondary industry.
 3. Route to one primary industry skill and optionally one secondary companion skill.
-4. Determine the `analysis family` and `valuation family`.
+4. For an existing company, read its prior report and decision record, identify the
+   established valuation mode and check user permission before any method, earnings
+   basis, horizon, or scenario-meaning change; then determine the `analysis family`
+   and `valuation family`.
 5. Load shared references from this skill.
 6. Build source map, evidence ledger, and any needed structural overlay.
 7. Run the structural re-rating gate when new evidence changes revenue visibility,

@@ -29,7 +29,16 @@ Hard rules:
 
 ### Scenario Change Control
 
-When reassessing a company with a prior local report, treat the prior Bear/Base/Bull
+When reassessing a company with a prior local report, first read that report and its
+decision record: record the primary method, earnings/cash-flow basis, valuation date,
+forecast horizon, and meanings of Bear/Base/Bull. Preserve that existing mode unless
+the user explicitly authorizes a change; record permission and date, retain the old
+model, and separate factual, assumption, and methodology changes. A new gate, complete
+rerun, error correction, second opinion, or new research scorecard does not grant mode
+change permission. Report limitations of the old mode and request authorization before
+changing method, basis, horizon, or scenario meanings. Updates to sourced inputs and
+clear arithmetic corrections within the existing mode remain permitted with an impact
+bridge. Treat the prior Bear/Base/Bull
 fair values as the starting baseline. The current market price updates expected
 return, margin of safety, stance discipline, and market-implied expectations; it
 does not by itself update intrinsic value.
@@ -41,9 +50,10 @@ driver:
 - discount rate, required return, terminal multiple, or valuation multiple
 - net debt, cash, share count, dilution, FX, or capital return
 - material M&A, regulation, litigation, refinancing, or other capital action
-- a framework or gate methodology change that first quantifies already-disclosed facts
-  (e.g. a newly mandatory gate); attribute the revision to the gate, and never use it to
-  launder a price- or sentiment-driven change
+- a gate within the authorized existing mode that first quantifies already-disclosed
+  facts; attribute the revision to the gate and explain the original model input
+  affected. A gate that changes method, earnings basis, horizon, or scenario meaning
+  first requires explicit user permission under the preceding change-control rule
 
 If price changed but the valuation drivers did not, keep Bear/Base/Bull fair values
 unchanged and update only the margin-of-safety, expected-return, market-implied
