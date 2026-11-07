@@ -4,6 +4,10 @@
 
 Judge whether management converts operating success into per-share value creation.
 
+## Governance Evidence
+
+Review management through dated behavior: promises versus delivery, incentive design, execution across periods, treatment of minority shareholders and related-party dealings. Record counterevidence and evidence gaps; personality, charisma, and publicity do not establish integrity. For reinvestment, acquisitions, buybacks, financing and distributions, trace per-share outcomes and dilution, not just headline growth. Feed these findings to the separate management/governance and capital allocation dimensions under [research-scorecard](research-scorecard.md) without altering the existing capital allocation verdict.
+
 ## Core Questions
 
 1. Is reinvestment earning above the cost of capital?
