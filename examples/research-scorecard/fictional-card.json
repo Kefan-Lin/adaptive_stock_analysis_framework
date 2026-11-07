@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "rubric_version": "1.0",
+  "company_quality": {
+    "dimensions": [
+      {
+        "id": "industry_economics",
+        "status": "assessed",
+        "score": 4,
+        "confidence": "medium",
+        "rationale": "需求稳定但供给纪律缺少完整周期验证。",
+        "supporting_evidence": [
+          {
+            "id": "annual",
+            "source": "虚构行业调查，2026-03-10，第 2 页",
+            "source_date": "2026-03-10",
+            "summary": "三年需求指数 100/103/105，产能指数 100/104/107；需求韧性可见，供给增长略快。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "同类企业产能投资计划尚未独立核查。",
+        "open_questions": [
+          "取得更长周期供需资料。"
+        ],
+        "review_triggers": [
+          "行业产能连续两年增速超过需求。"
+        ],
+        "assessed_at": "2026-04-01",
+        "as_of": "2026-03-10",
+        "review_status": "reviewed",
+        "adjacent_anchor_explanation": "需求稳定高于 3 分，但缺少完整周期的供给纪律证明，未达 5 分。"
+      },
+      {
+        "id": "business_model",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "许可续约带来收益，渠道费用抑制利润率。",
+        "supporting_evidence": [
+          {
+            "id": "annual",
+            "source": "虚构年报，2026-03-15，第 4 页",
+            "source_date": "2026-03-15",
+            "summary": "许可续约贡献 65% 收入、毛利率 62%，渠道费占收入 18%；盈利机制存在但费用约束明显。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "检查同业渠道费资料，未取得可比口径。",
+        "open_questions": [
+          "渠道费增长是否侵蚀单位经济性？"
+        ],
+        "review_triggers": [
+          "渠道费占收入升至 25%。"
+        ],
+        "assessed_at": "2026-04-01",
+        "as_of": "2026-03-15",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "product_competitiveness",
+        "status": "assessed",
+        "score": 5,
+        "confidence": "low",
+        "rationale": "80% 的留存体现目前产品优势；单一披露缺少独立核查。",
+        "supporting_evidence": [
+          {
+            "id": "annual",
+            "source": "虚构年报，2026-03-15，第 4 页",
+            "source_date": "2026-03-15",
+            "summary": "公司委托的百人调查中 60 人选 QHT、25 人选竞品、15 人未定；自报留存 80%，缺独立验证。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "检索竞品披露，尚未取得独立同口径客户选择调查。",
+        "open_questions": [
+          "独立样本是否重现相对选择优势？"
+        ],
+        "review_triggers": [
+          "独立调查发现 QHT 选择率不高于竞品。"
+        ],
+        "assessed_at": "2026-04-01",
+        "as_of": "2026-03-15",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "moat_durability",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "部分切换成本存在但新竞争者可能复制。",
+        "supporting_evidence": [
+          {
+            "id": "annual",
+            "source": "虚构年报，2026-03-15，第 5 页",
+            "source_date": "2026-03-15",
+            "summary": "历史数据迁移需中位数 30 工时，竞品在 2026 年推出导入工具。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "竞品导入工具是可见侵蚀路径，需观察客户迁移。",
+        "open_questions": [
+          "导入工具能否消除主要切换成本？"
+        ],
+        "review_triggers": [
+          "迁移工时降至 5 小时或客户流失显著上升。"
+        ],
+        "assessed_at": "2026-04-01",
+        "as_of": "2026-03-15",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "management_governance",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "管理层兑现部分承诺，激励及小股东待遇仍待核对。",
+        "supporting_evidence": [
+          {
+            "id": "annual",
+            "source": "虚构治理记录，2026-03-12，第 3 页",
+            "source_date": "2026-03-12",
+            "summary": "2024–25 年三项产品交付承诺兑现两项，一项晚六个月；奖金仅奖励收入增长，2025 年同比例股息公平对待小股东。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "关联方交易独立核查资料尚缺。",
+        "open_questions": [
+          "取得关联方台账，核对激励是否纳入每股回报。"
+        ],
+        "review_triggers": [
+          "新增延迟承诺或不平等股东待遇。"
+        ],
+        "assessed_at": "2026-04-01",
+        "as_of": "2026-03-12",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "capital_allocation",
+        "status": "not_applicable",
+        "score": null,
+        "confidence": null,
+        "rationale": "QHT 是上市运营信托；不可撤销章程把资本配置专属权交由受托人，运营管理层无并购、回购、再投资或发行决策权。因此管理层的自由资本配置与再投资评价不适用；同比例股息仍用于治理评价。",
+        "supporting_evidence": [
+          {
+            "id": "charter",
+            "source": "虚构信托章程，2025-12-01，第 6 页",
+            "source_date": "2025-12-01",
+            "summary": "运营管理层无资本部署权；可分配现金由受托人按章程向份额持有人同比例支付。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "核查章程中的资本权力条款；未发现运营管理层自由配置权限。",
+        "open_questions": [
+          "章程是否经份额持有人投票修改？"
+        ],
+        "review_triggers": [
+          "章程变更使运营管理层拥有资本配置权限。"
+        ],
+        "assessed_at": "2026-04-01",
+        "as_of": "2025-12-01",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "earnings_cash_quality",
+        "status": "insufficient_information",
+        "score": null,
+        "confidence": null,
+        "rationale": "尚无现金流分项资料，无法判断盈利与现金质量。",
+        "supporting_evidence": [],
+        "counterevidence": [],
+        "counterevidence_search": "尚未核查完整现金流资料。",
+        "open_questions": [
+          "取得利润与经营现金流的分项调节表。"
+        ],
+        "review_triggers": [
+          "完整现金流量表披露。"
+        ],
+        "assessed_at": "2026-04-01",
+        "as_of": "2026-03-15",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "financial_resilience",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "现金缓冲存在，但压力情景中供应中断风险仍在。",
+        "supporting_evidence": [
+          {
+            "id": "annual",
+            "source": "虚构年报，2026-03-15，第 8 页",
+            "source_date": "2026-03-15",
+            "summary": "现金 1200 万美元、债务 500 万美元、年运营成本 900 万美元；成本压力上升 30% 将使年成本约 1170 万美元，债务期限未知。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "未取得债务到期表，压力期再融资能力尚未核实。",
+        "open_questions": [
+          "取得债务到期表并验证可用现金。"
+        ],
+        "review_triggers": [
+          "现金低于压力年成本与一年内到期债务合计。"
+        ],
+        "assessed_at": "2026-04-01",
+        "as_of": "2026-03-15",
+        "review_status": "reviewed"
+      }
+    ]
+  },
+  "price_attractiveness": {
+    "status": "assessed",
+    "reason": "",
+    "valuation": {
+      "source_report": "fictional-report.md#7-估值与情景",
+      "as_of": "2026-04-01",
+      "price_as_of": "2026-04-01",
+      "currency": "USD",
+      "market_price": 30,
+      "primary_method": "FCFE",
+      "earnings_basis": "经存货拨备调整的每股所有者收益",
+      "forecast_horizon": "5 年",
+      "scenarios": {
+        "Bear": 20,
+        "Base": 35,
+        "Bull": 50
+      },
+      "scenario_meanings": {
+        "Bear": "供应中断",
+        "Base": "续约稳定",
+        "Bull": "客户扩张"
+      },
+      "fair_value": 35,
+      "margin_of_safety": "14%（30 相对 35）",
+      "market_implied_expectations": "现价隐含近乎零增长。"
+    }
+  },
+  "decision_conditions": {
+    "material_issues": [
+      {
+        "status": "unverified",
+        "description": "供应商集中",
+        "impact": "若唯一原料中断，投资逻辑可能失效。",
+        "verification": "核实采购合同及替代供应商。",
+        "evidence": []
+      },
+      {
+        "status": "confirmed",
+        "description": "存货跌价",
+        "impact": "当期盈利质量降低，需调整估值输入。",
+        "verification": "核对后续存货拨备和销售。",
+        "evidence": [
+          {
+            "id": "inventory",
+            "source": "虚构年报，2026-03-15，第 7 页",
+            "source_date": "2026-03-15",
+            "summary": "披露存货跌价准备 2 百万元。",
+            "kind": "fact"
+          }
+        ]
+      }
+    ],
+    "thesis": "Recurring demand may persist.",
+    "falsifiers": [
+      "Retention falls."
+    ],
+    "evidence_gaps": [
+      "供应商合同与现金流明细未取得。"
+    ],
+    "portfolio_fit": {
+      "status": "insufficient_information",
+      "reason": "No portfolio provided."
+    },
+    "execution_conditions": {
+      "status": "not_assessed",
+      "reason": "No decision yet."
+    }
+  },
+  "report_reference": "fictional-report.md#1-执行摘要"
+}
