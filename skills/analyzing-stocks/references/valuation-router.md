@@ -4,6 +4,16 @@
 
 Match valuation method to industry economics instead of defaulting to one generic DCF template.
 
+For first coverage, use the applicable route and the user-approved framework. For a
+company with prior reports, inspect the original report and decision record before
+routing: identify method, earnings/cash-flow basis, date, horizon, and scenario meanings.
+The table is a diagnostic reference, not permission to replace an established model.
+Preserve the existing mode unless the user expressly authorizes a change and the
+authorization and date are recorded alongside the retained old model. Point out old
+mode limitations; update sourced inputs or correct arithmetic within the mode and
+explain their effects. New gates, reruns, errors, second opinions, and scorecard
+assembly cannot silently switch mode.
+
 ## Routing Table
 
 | Skill | Primary method | Secondary method | Key decision variables |

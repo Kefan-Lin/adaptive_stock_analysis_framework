@@ -5,11 +5,15 @@ Normative doc under test: skills/analyzing-stocks/references/decision-records.md
 """
 
 import pathlib
+import copy
+import json
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+
+from scorecard import create_snapshot, read_snapshot
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 
@@ -165,6 +169,80 @@ class StateHomeTestCase(unittest.TestCase):
             f"[record]({date}-research.md) | — |\n",
             encoding="utf-8",
         )
+
+
+class SnapshotReferenceTests(StateHomeTestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.record = self.home / "records/ACME/2026-06-01-new-idea.md"
+        self.card = json.loads(read("examples/research-scorecard/fictional-card.json"))
+
+    def attach(self, identifier: str) -> None:
+        self.mutate(
+            "records/ACME/2026-06-01-new-idea.md",
+            "source_report: null",
+            f"scorecard_snapshot_id: {identifier}\nsource_report: null",
+        )
+
+    def test_two_direct_versions_can_be_selected_without_changing_snapshot_bytes(self) -> None:
+        first = create_snapshot(self.home, "ACME", "US", self.card, as_of="2026-04-01")
+        changed = copy.deepcopy(self.card)
+        changed["company_quality"]["dimensions"][0]["score"] = 3
+        second = create_snapshot(self.home, "ACME", "US", changed, as_of="2026-04-01")
+        self.assertTrue(first.saved and second.saved)
+        self.assertNotEqual(first.snapshot_id, second.snapshot_id)
+        paths = [self.home / "research-scorecards/ACME" / (identifier + ".json")
+                 for identifier in (first.snapshot_id, second.snapshot_id)]
+        originals = [path.read_bytes() for path in paths]
+        original_record = self.record.read_bytes()
+        for identifier in (first.snapshot_id, second.snapshot_id):
+            if "scorecard_snapshot_id:" in self.record.read_text():
+                self.mutate("records/ACME/2026-06-01-new-idea.md",
+                            "scorecard_snapshot_id: " + first.snapshot_id,
+                            "scorecard_snapshot_id: " + second.snapshot_id)
+            else:
+                self.attach(identifier)
+            self.assertEqual(run_validator(self.home).returncode, 0)
+            self.assertEqual(run_validator(self.home, "--reindex").returncode, 0)
+            self.assertEqual([path.read_bytes() for path in paths], originals)
+            self.assertEqual(read_snapshot(self.home, "ACME", identifier)["card"],
+                             self.card if identifier == first.snapshot_id else changed)
+        self.assertIn(b"weighted_fair_value: 140", self.record.read_bytes())
+        self.assertEqual(self.record.read_bytes().replace(
+            f"scorecard_snapshot_id: {second.snapshot_id}\n".encode(), b""), original_record)
+        self.assertEqual(self.record.read_text().count("scorecard_snapshot_id:"), 1)
+        self.assertIn("| 2026-05-01 | historical |", (self.home / "records/1234.HK/INDEX.md").read_text())
+
+    def test_invalid_latest_missing_and_other_symbol_references_fail_both_boundaries(self) -> None:
+        valid = create_snapshot(self.home, "ACME", "US", self.card, as_of="2026-04-01")
+        other = create_snapshot(self.home, "1234.HK", "HK", self.card, as_of="2026-04-01")
+        self.assertTrue(valid.saved and other.saved)
+        for identifier in ("latest", "2026-11-07-" + "0" * 32, other.snapshot_id):
+            with self.subTest(identifier=identifier):
+                self.attach(identifier)
+                for args in ((), ("--reindex",)):
+                    result = run_validator(self.home, *args)
+                    self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                    self.assertIn("scorecard_snapshot_id", result.stdout)
+                self.mutate("records/ACME/2026-06-01-new-idea.md",
+                            f"scorecard_snapshot_id: {identifier}\n", "")
+
+    def test_legacy_records_remain_valid_without_backfill(self) -> None:
+        original = self.record.read_bytes()
+        self.assertEqual(run_validator(self.home).returncode, 0)
+        self.assertEqual(run_validator(self.home, "--reindex").returncode, 0)
+        self.assertEqual(self.record.read_bytes(), original)
+
+    def test_same_symbol_with_different_market_is_rejected(self) -> None:
+        # This tradable-line spelling is canonical in both US and AU patterns.
+        self.add_research_record("ABC.AX", "US")
+        saved = create_snapshot(self.home, "ABC.AX", "AU", self.card, as_of="2026-04-01")
+        self.assertTrue(saved.saved)
+        self.mutate("records/ABC.AX/2026-07-04-research.md", "stance: Hold",
+                    f"scorecard_snapshot_id: {saved.snapshot_id}\nstance: Hold")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("snapshot market differs", result.stdout)
 
 
 class RecordValidationTests(StateHomeTestCase):

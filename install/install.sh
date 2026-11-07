@@ -101,6 +101,13 @@ for skill in "${REQUESTED_SKILLS[@]}"; do
 
   if [[ "$MODE" == "copy" ]]; then
     cp -R "$SOURCE_PATH" "$TARGET_PATH"
+    if [[ "$skill" == "analyzing-stocks" ]]; then
+      RUNTIME="$TARGET_PATH/.scorecard-runtime"
+      mkdir -p "$RUNTIME/inflection_discovery"
+      mkdir -p "$RUNTIME/scorecard"
+      cp "$REPO_ROOT/scorecard/"*.py "$RUNTIME/scorecard/"
+      cp "$REPO_ROOT/inflection_discovery/__init__.py" "$REPO_ROOT/inflection_discovery/symbols.py" "$RUNTIME/inflection_discovery/"
+    fi
   else
     ln -s "$SOURCE_PATH" "$TARGET_PATH"
   fi

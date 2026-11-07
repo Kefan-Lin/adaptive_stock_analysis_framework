@@ -5,13 +5,17 @@
 - 标的：`<Ticker / Company>`
 - 分析日期：`<YYYY-MM-DD>`，币种：`<USD/CNY/AUD...>`
 - 当前价格：`<price>`
-- `Stance`：`Buy / Add / Hold / Reduce / Avoid`
+- `Stance`：`Buy / Add / Hold / Reduce / Avoid`；尚未形成结论时标为未形成，不虚构立场
 - `Target Range`：`Bear / Base / Bull`
 - `Weighted Fair Value`：
 - `Expected Return`：
 - `Margin of Safety`：
 - `Confidence`：`High / Medium / Low`
-- `Position Size`：`Core / Starter / Speculative / Watch-Avoid`
+- `Position Size`：`Core / Starter / Speculative / Watch-Avoid`；尚无决策时标为未评估
+
+### 三层研究打分卡（由已校验的同一卡片填入）
+
+按 [research-scorecard](research-scorecard.md) 组装与校验，摘要压缩呈现八维质量判断（分数或未知/不适用、独立可信度）、已有估值引用的价格卡、重大问题与组合/执行条件卡，分别链接 §3–6、§7–8、§9–10 的详细依据。显示来源和评估时点，并分别命名原护城河/财务评分与新质量分；冲突说明对象差异与待复核项。没有估值或组合资料时标明尚未评估/信息不足。报告完成后依据 `scorecard.create_snapshot` 的实际结果标注已保存及精确标识，或明确标注未保存及原因；在创建成功前不输出快照标识。
 
 ## 2. 公司与行业分型
 
@@ -60,6 +64,8 @@
 
 ## 5. 管理层与资本配置
 
+- 长期行为、承诺兑现、激励、执行及小股东待遇的证据：
+- 再投资结果及每股价值变化的证据：
 - 再投资质量：
 - 回购/分红纪律：
 - 并购质量：
@@ -234,11 +240,11 @@
    写 `N/A - no user directional view`。）
    结论：
 
-如果以上各条中有任一条导致论点无法支持当前 Stance，必须将 Stance 至少降低一档后再继续。
+如果以上各条中有任一条导致论点无法支持当前 Stance，必须将 Stance 至少降低一档后再继续；若材料不足以形成任何结论，明确尚未形成立场并继续归档已完成研究。
 
 ### 9.1 投资结论
 
-- `Stance`：`Buy / Add / Hold / Reduce / Avoid`
+- `Stance`：`Buy / Add / Hold / Reduce / Avoid`；尚未形成结论时标为未形成，不虚构立场
 - `Position Size`（per-name，来自 portfolio-sizing.md）：`Core / Starter / Speculative / Watch-Avoid`
 - `Position Size`（portfolio-adjusted，来自 portfolio-construction.md）：`Core / Starter / Speculative / Watch-Avoid`
 - 如果两者不同，说明调整原因（行业上限/相关性/因子集中度）：

@@ -62,9 +62,11 @@ One markdown file per **symbol × decision**. Record identity is
 its row in place. For "latest record" on a same-date tie, use mode priority
 `position-review > event-review > existing-report > new-idea > research`.
 
-Write a record when the session produced at least a `stance` or an
-`execution_method` for the symbol; a pure `Missing Inputs` / conditional-only
-outcome creates no record.
+Write a record when the session produced a supported `stance` for the symbol;
+a pure `Missing Inputs` / conditional-only outcome creates no record. The
+current `decision-record/v1` schema requires an actual `stance`; keep research
+without one as an independent scorecard snapshot, even when an execution
+method is discussed.
 
 The body must be self-contained: for single-name runs, the full report; for
 multi-name runs, that symbol's complete per-name sections. `source_report`
@@ -106,6 +108,7 @@ monitor:
 next_earnings: 2026-08-20     # null if unknown
 review_by: 2026-09-01         # staleness date, always required
 related_symbols: []           # optional cross-listing links
+scorecard_snapshot_id: null   # optional exact saved snapshot ID, never latest
 source_report: null           # relative to state home; null if absent
 action_taken: null            # backfilled after confirmed execution
 ---
@@ -115,6 +118,15 @@ action_taken: null            # backfilled after confirmed execution
 
 - Required always: `schema, symbol, market, date, mode, price_at_decision,
   currency, stance, review_by`.
+- `scorecard_snapshot_id` is optional. If set, use the `snapshot_id` returned by
+  a successful `scorecard.create_snapshot` and resolve it with
+  `scorecard.read_snapshot(state_home, symbol, snapshot_id)`. The target must
+  exist, validate, and match the record's canonical symbol and market. `latest`,
+  a path, a failed save, or a snapshot for a related tradable line is invalid.
+  Choosing another exact ID in a same-identity decision update changes only
+  the decision record; both snapshot files remain immutable. Records without
+  this field remain valid; old reports without a card display “未按本版本评估”
+  (not assessed under this version), without retrospective scores.
 - Required together when a full valuation backs the decision:
   `weighted_fair_value, scenarios, position_size, confidence`.
 - `scenario_probabilities` is optional; when present it has exactly `bear/base/bull`,
@@ -244,3 +256,6 @@ python scripts/validate_records.py --home <state-home> --reindex   # rebuild IND
 
 Without `--home`, the script resolves `~/.investing-home`. Exit code 0 = clean;
 1 = violations (printed one per line); 2 = environment error.
+Both commands validate a present `scorecard_snapshot_id` through the public
+snapshot reader; reindex preserves historical rows and does not edit decision
+record bodies or snapshot files.

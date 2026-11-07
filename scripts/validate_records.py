@@ -15,6 +15,10 @@ import sys
 from collections import Counter
 from pathlib import Path
 
+# The validator is also run as a script from outside the repository root.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from scorecard import SnapshotValidationError, read_snapshot
+
 try:
     import yaml
 except ImportError:  # pragma: no cover
@@ -216,6 +220,15 @@ class Checker:
                 resolves = False
             if not resolves:
                 self.err(path, f"source_report does not resolve inside the state home: {source!r}")
+
+        reference = meta.get("scorecard_snapshot_id")
+        if reference is not None:
+            try:
+                snapshot = read_snapshot(self.home, symbol_dir, reference)
+                if snapshot["market"] != market:
+                    raise SnapshotValidationError("snapshot market differs from decision record")
+            except (SnapshotValidationError, TypeError, ValueError) as exc:
+                self.err(path, f"scorecard_snapshot_id does not resolve to a matching exact snapshot: {exc}")
 
         return meta
 
