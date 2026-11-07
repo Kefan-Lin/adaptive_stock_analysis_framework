@@ -217,6 +217,7 @@ def validate_card(card):
     ids = []
     for index, entry in enumerate(dimensions):
         _dimension(entry, f'company_quality.dimensions[{index}]')
+        _text(entry['id'], f'company_quality.dimensions[{index}].id')
         ids.append(entry['id'])
     if set(ids) != set(DIMENSION_IDS) or len(set(ids)) != len(ids):
         _fail('company_quality', 'dimension identifiers must match the rubric exactly')
