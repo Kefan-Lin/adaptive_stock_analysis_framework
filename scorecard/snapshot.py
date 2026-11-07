@@ -322,7 +322,11 @@ def create_partial_snapshot(home, symbol, market, *, baseline_id=None, initial_c
         raise SnapshotValidationError('new cutoff cannot precede baseline')
     for item in updates:
         new = _parts(card)[item]
-        if previous and new != old_parts[item] and not changes[item]:
+        old_content = {key: value for key, value in old_parts[item].items()
+                       if key not in ('review_status', 'source_snapshot')}
+        new_content = {key: value for key, value in new.items()
+                       if key not in ('review_status', 'source_snapshot')}
+        if previous and new_content != old_content and not changes[item]:
             raise SnapshotValidationError('substantive item change requires reasons')
         if item in DIMENSION_IDS and new.get('assessed_at') is not None and _date(new['assessed_at']) < _date(new['as_of']):
             raise SnapshotValidationError('assessment precedes information cutoff')
