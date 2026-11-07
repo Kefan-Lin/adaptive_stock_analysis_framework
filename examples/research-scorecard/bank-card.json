@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "rubric_version": "1.0",
+  "company_quality": {
+    "dimensions": [
+      {
+        "id": "industry_economics",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "区域存款需求平稳，但线上竞价推动资金成本上升，银行仍有盈利空间而无法维持旧价差。",
+        "supporting_evidence": [
+          {
+            "id": "bank-0-fact",
+            "source": "虚构地区银行行业表，2026-04-01，第 2 页",
+            "source_date": "2026-04-01",
+            "summary": "三年区域存款需求增长 4%、5%、5%，线上银行同期竞争性促销利率上升 120bp。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "促销利率上升压缩区域存款定价优势。",
+        "open_questions": [
+          "复核：促销利率上升压缩区域存款定价优势。"
+        ],
+        "review_triggers": [
+          "新披露改变 行业经济性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "business_model",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "3.2% 净息差和 58% 成本收入比支持盈利机制；净息差从 3.6% 回落，规模尚未抵消资金成本。",
+        "supporting_evidence": [
+          {
+            "id": "bank-1-fact",
+            "source": "虚构银行 FY2025 年报，2026-03-25，第 10 页",
+            "source_date": "2026-03-25",
+            "summary": "净息差 3.2%，成本收入比 58%；存款利率上调后净息差从 3.6% 回落。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "存款重定价使收益转化受限。",
+        "open_questions": [
+          "复核：存款重定价使收益转化受限。"
+        ],
+        "review_triggers": [
+          "新披露改变 商业模式 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "product_competitiveness",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "low",
+        "rationale": "活跃账户留存 88% 略高于竞品 85%，当前服务能留客；本行网点单方样本和小幅差距只支持优劣并存的初判。",
+        "supporting_evidence": [
+          {
+            "id": "bank-2-fact",
+            "source": "虚构客户账户调查，2026-04-12，第 4 页",
+            "source_date": "2026-04-12",
+            "summary": "2025 年小企业活跃账户留存 88%，竞品样本 85%；调查样本仅覆盖本行网点客户。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "样本未涵盖已流失的客户，选择优势可能被高估。",
+        "open_questions": [
+          "复核：样本未涵盖已流失的客户，选择优势可能被高估。"
+        ],
+        "review_triggers": [
+          "新披露改变 产品竞争力 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "moat_durability",
+        "status": "assessed",
+        "score": 2,
+        "confidence": "medium",
+        "rationale": "核心存款占比 66% 降至 58%，即时迁户降低摩擦；尚有多数核心存款，未见彻底失守，但离中档稳定壁垒仍有差距。",
+        "supporting_evidence": [
+          {
+            "id": "bank-3-fact",
+            "source": "虚构存款结构报告，2026-04-18，第 6 页",
+            "source_date": "2026-04-18",
+            "summary": "低成本核心存款占比从 66% 降至 58%，大额未保险存款占 31%；竞争者推出即时迁户服务。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "31% 未保险存款增大压力情景流失可能。",
+        "open_questions": [
+          "复核：31% 未保险存款增大压力情景流失可能。"
+        ],
+        "review_triggers": [
+          "新披露改变 护城河持续性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed",
+        "adjacent_anchor_explanation": "核心存款占比 66% 降至 58%，即时迁户降低摩擦；尚有多数核心存款，未见彻底失守，但离中档稳定壁垒仍有差距。"
+      },
+      {
+        "id": "management_governance",
+        "status": "insufficient_information",
+        "score": null,
+        "confidence": null,
+        "rationale": "信息不足：虽有当期薪酬表，缺三年信用预测承诺、关联贷款治理和小股东投票记录，不能推断长期诚信或执行。",
+        "supporting_evidence": [
+          {
+            "id": "bank-4-fact",
+            "source": "虚构治理披露索引，2026-04-20，第 2 页",
+            "source_date": "2026-04-20",
+            "summary": "披露了现任董事薪酬表，但缺前任团队 2023–25 年信用损失预测承诺兑现记录、关联贷款审查和少数股东投票明细。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "尚未检查历史会议纪要及独立治理资料。",
+        "open_questions": [
+          "复核：尚未检查历史会议纪要及独立治理资料。"
+        ],
+        "review_triggers": [
+          "新披露改变 管理层与治理 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "capital_allocation",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "有形每股账面价值 20 升至 22 美元，但稀释股数增长、接近账面值回购效果有限；待区分内生资本形成与拨备释放。",
+        "supporting_evidence": [
+          {
+            "id": "bank-5-fact",
+            "source": "虚构资本台账，2026-05-02，第 8 页",
+            "source_date": "2026-05-02",
+            "summary": "2023–25 年有形每股账面价值 20、21、22 美元，稀释股数 10m、10.2m、10.3m；22 美元价格回购 0.1m 股，信用成本未稳定。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "持续稀释削弱每股改善。",
+        "open_questions": [
+          "复核：持续稀释削弱每股改善。"
+        ],
+        "review_triggers": [
+          "新披露改变 资本配置与再投资 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "earnings_cash_quality",
+        "status": "assessed",
+        "score": 2,
+        "confidence": "medium",
+        "rationale": "拨备释放 3m 抬高 2025 年利润 8%，同时不良贷款率升、覆盖率降；仍有正的核心息差，故高于最薄弱档，低于可信盈利的中档。",
+        "supporting_evidence": [
+          {
+            "id": "bank-6-fact",
+            "source": "虚构信贷附注，2026-03-25，第 14 页",
+            "source_date": "2026-03-25",
+            "summary": "不良贷款率 1.4% 升至 2.2%；拨备覆盖率 130% 降至 105%；2025 年拨备释放 3m 令报告利润增加 8%。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "不良率 2.2% 与覆盖率 105% 同时恶化。",
+        "open_questions": [
+          "复核：不良率 2.2% 与覆盖率 105% 同时恶化。"
+        ],
+        "review_triggers": [
+          "新披露改变 盈利与现金质量 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed",
+        "adjacent_anchor_explanation": "拨备释放 3m 抬高 2025 年利润 8%，同时不良贷款率升、覆盖率降；仍有正的核心息差，故高于最薄弱档，低于可信盈利的中档。"
+      },
+      {
+        "id": "financial_resilience",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "CET1 压力后 9.2% 高于 7% 要求且三十天流动性覆盖 125%；18m 证券浮亏与 31% 未保险存款使冲击缓冲受限。",
+        "supporting_evidence": [
+          {
+            "id": "bank-7-fact",
+            "source": "虚构银行监管压力表，2026-05-15，第 5 页",
+            "source_date": "2026-05-15",
+            "summary": "CET1 11.5%，压力后 9.2%，最低要求 7%；高质量流动性资产覆盖未来三十天净流出 125%，证券浮亏 18m 未在账面 CET1 全额反映。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "证券浮亏可能使实际可动用资本缓冲低于表面值。",
+        "open_questions": [
+          "复核：证券浮亏可能使实际可动用资本缓冲低于表面值。"
+        ],
+        "review_triggers": [
+          "新披露改变 财务韧性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      }
+    ]
+  },
+  "price_attractiveness": {
+    "status": "assessed",
+    "reason": "",
+    "valuation": {
+      "source_report": "bank-sources.md#虚构原报告估值摘录",
+      "as_of": "2026-06-30",
+      "price_as_of": "2026-06-30",
+      "currency": "USD",
+      "market_price": 21,
+      "primary_method": "P/TBV",
+      "earnings_basis": "normalized ROTCE and tangible book value per share",
+      "forecast_horizon": "3 years",
+      "scenarios": {
+        "Bear": 16,
+        "Base": 24,
+        "Bull": 31
+      },
+      "scenario_meanings": {
+        "Bear": "adverse funding or demand",
+        "Base": "normalized conditions",
+        "Bull": "stronger durable economics"
+      },
+      "fair_value": 24,
+      "margin_of_safety": "12.5%",
+      "market_implied_expectations": "Market implies lower sustained ROTCE"
+    }
+  },
+  "decision_conditions": {
+    "material_issues": [
+      {
+        "status": "confirmed",
+        "description": "已确认：关联贷款分类错误",
+        "impact": "2m 分类差错已调整不良余额，信用审查与治理风险仍需复核。",
+        "verification": "核查调整后的信用表、审计意见及内控补救。",
+        "evidence": [
+          {
+            "id": "bank-issue",
+            "source": "虚构审计调整通知，2026-05-20，第 3 页",
+            "source_date": "2026-05-20",
+            "summary": "2025 年一笔 2m 关联贷款分类错误已由审计确认，已调整不良贷款余额；无需推断为欺诈，后续内控复核待做。",
+            "kind": "fact"
+          }
+        ]
+      }
+    ],
+    "thesis": "银行盈利质量以拨备、信用成本和 ROTCE 评估，财务韧性以 CET1、资产质量、存款结构、流动性及证券估值压力评估；不采用普通企业净债务/EBITDA、FCF 转化或 ROIC/WACC。贷款分类差错是已确认的具体问题，但不凭其定性为欺诈。",
+    "falsifiers": [
+      "2m 分类差错已调整不良余额，信用审查与治理风险仍需复核。"
+    ],
+    "evidence_gaps": [
+      "核查调整后的信用表、审计意见及内控补救。"
+    ],
+    "portfolio_fit": {
+      "status": "insufficient_information",
+      "reason": "No fictional portfolio allocation or holdings supplied."
+    },
+    "execution_conditions": {
+      "status": "not_assessed",
+      "reason": "No execution decision was made."
+    }
+  },
+  "report_reference": "bank-report.md#1-执行摘要"
+}
