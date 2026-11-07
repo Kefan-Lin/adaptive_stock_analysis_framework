@@ -233,6 +233,17 @@ class SnapshotReferenceTests(StateHomeTestCase):
         self.assertEqual(run_validator(self.home, "--reindex").returncode, 0)
         self.assertEqual(self.record.read_bytes(), original)
 
+    def test_same_symbol_with_different_market_is_rejected(self) -> None:
+        # This tradable-line spelling is canonical in both US and AU patterns.
+        self.add_research_record("ABC.AX", "US")
+        saved = create_snapshot(self.home, "ABC.AX", "AU", self.card, as_of="2026-04-01")
+        self.assertTrue(saved.saved)
+        self.mutate("records/ABC.AX/2026-07-04-research.md", "stance: Hold",
+                    f"scorecard_snapshot_id: {saved.snapshot_id}\nstance: Hold")
+        result = run_validator(self.home)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("snapshot market differs", result.stdout)
+
 
 class RecordValidationTests(StateHomeTestCase):
     def test_good_fixture_home_passes(self) -> None:
