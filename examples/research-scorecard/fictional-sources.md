@@ -25,3 +25,7 @@ Cash was USD 12m and debt USD 5m; annual operating costs were USD 9m. A fictiona
 ## 虚构年报，2026-03-15，第 7 页
 
 An inventory write down provision of USD 2m was disclosed. Subsequent inventory realization has not been reported.
+
+## 虚构信托章程，2025-12-01，第 6 页
+
+QHT is a listed operating trust. Its trustee alone controls capital deployment under an irrevocable charter: all distributable cash is paid to unit holders pro rata, and the operating management cannot choose acquisitions, buybacks, reinvestment or equity issuance. The operating team can manage product delivery and customer relationships. This unusual arrangement makes a judgment of **management's discretionary capital allocation and reinvestment** inapplicable; dividend fairness remains evidence about governance. The trustee's financial obligations still matter to financial resilience.

@@ -150,6 +150,9 @@ class ScorecardContractTests(unittest.TestCase):
         self.assertIn('债务到期表', entries['financial_resilience']['open_questions'][0])
         self.assertEqual(entries['earnings_cash_quality']['score'], None)
         self.assertEqual(entries['capital_allocation']['status'], 'not_applicable')
+        self.assertIn('信托章程', entries['capital_allocation']['supporting_evidence'][0]['source'])
+        self.assertIn('受托人', entries['capital_allocation']['rationale'])
+        self.assertIn('运营管理层无并购、回购', report)
         self.assertEqual([issue['status'] for issue in card['decision_conditions']['material_issues']],
                          ['unverified', 'confirmed'])
 
@@ -163,6 +166,28 @@ class ScorecardContractTests(unittest.TestCase):
             'fair_value': 35, 'margin_of_safety': None,
             'market_implied_expectations': None}}
         self.assertEqual(validate_card(card), card)
+
+    def test_original_scenario_values_must_be_finite_numbers(self):
+        card = fictional_card()
+        card['price_attractiveness'] = {'status': 'assessed', 'reason': '', 'valuation': {
+            'source_report': 'fictional-report.md#7', 'as_of': '2026-04-01',
+            'price_as_of': '2026-04-01', 'currency': 'USD', 'market_price': 30,
+            'primary_method': 'FCFE', 'earnings_basis': 'owner earnings',
+            'forecast_horizon': '5 years', 'scenarios': {'Bear': 20, 'Base': 35},
+            'scenario_meanings': {'Bear': 'Loss', 'Base': 'Stable'},
+            'fair_value': 35, 'margin_of_safety': None,
+            'market_implied_expectations': None}}
+        self.assertEqual(validate_card(card), card)
+        for bad in (True, '35', float('nan'), float('inf'), -float('inf')):
+            for field in ('scenario', 'market_price', 'fair_value'):
+                changed = json.loads(json.dumps(card))
+                valuation = changed['price_attractiveness']['valuation']
+                if field == 'scenario':
+                    valuation['scenarios']['Base'] = bad
+                else:
+                    valuation[field] = bad
+                with self.subTest(value=bad, field=field), self.assertRaises(CardValidationError):
+                    validate_card(changed)
 
     def test_first_partial_unknown_does_not_invent_an_assessment_date(self):
         card = fictional_card()

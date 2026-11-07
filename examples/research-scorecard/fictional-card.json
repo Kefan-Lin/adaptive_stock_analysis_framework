@@ -144,18 +144,26 @@
         "status": "not_applicable",
         "score": null,
         "confidence": null,
-        "rationale": "虚构主体尚无再投资、回购、股息以外的资本配置记录；现有同比例股息仅证明待遇，未形成可评价的长期配置结果。",
-        "supporting_evidence": [],
+        "rationale": "QHT 是上市运营信托；不可撤销章程把资本配置专属权交由受托人，运营管理层无并购、回购、再投资或发行决策权。因此管理层的自由资本配置与再投资评价不适用；同比例股息仍用于治理评价。",
+        "supporting_evidence": [
+          {
+            "id": "charter",
+            "source": "虚构信托章程，2025-12-01，第 6 页",
+            "source_date": "2025-12-01",
+            "summary": "运营管理层无资本部署权；可分配现金由受托人按章程向份额持有人同比例支付。",
+            "kind": "fact"
+          }
+        ],
         "counterevidence": [],
-        "counterevidence_search": "检查虚构年报第 4 页。",
+        "counterevidence_search": "核查章程中的资本权力条款；未发现运营管理层自由配置权限。",
         "open_questions": [
-          "未来取得再投资或分配结果后评价每股价值。"
+          "章程是否经份额持有人投票修改？"
         ],
         "review_triggers": [
-          "发生首次重大再投资、并购或回购。"
+          "章程变更使运营管理层拥有资本配置权限。"
         ],
         "assessed_at": "2026-04-01",
-        "as_of": "2026-03-15",
+        "as_of": "2025-12-01",
         "review_status": "reviewed"
       },
       {

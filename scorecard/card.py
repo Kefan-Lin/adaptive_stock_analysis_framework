@@ -1,5 +1,6 @@
 """Public validation boundary for the independent three-card research scorecard v1."""
 from datetime import date
+from math import isfinite
 
 
 class CardValidationError(ValueError):
@@ -39,6 +40,11 @@ def _date(value, path):
         date.fromisoformat(value)
     except ValueError:
         _fail(path, 'expected ISO date')
+
+
+def _number(value, path):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not isfinite(value):
+        _fail(path, 'expected finite numeric value')
 
 
 def _texts(value, path):
@@ -150,10 +156,13 @@ def _price(value):
             if not isinstance(valuation[key], dict):
                 _fail(path, f'{key} must preserve original labeled scenarios')
         elif key in ('market_price', 'fair_value'):
-            if valuation[key] is not None and (isinstance(valuation[key], bool) or not isinstance(valuation[key], (int, float))):
-                _fail(path, f'{key} must be numeric')
+            if valuation[key] is not None:
+                _number(valuation[key], f'{path}.{key}')
         elif valuation[key] is not None or key not in ('margin_of_safety', 'market_implied_expectations'):
             _text(valuation[key], f'{path}.{key}')
+    for label, value in valuation['scenarios'].items():
+        _text(label, path)
+        _number(value, f'{path}.scenarios.{label}')
     if valuation['scenarios'].keys() != valuation['scenario_meanings'].keys():
         _fail(path, 'scenario values and meanings differ')
     for label, meaning in valuation['scenario_meanings'].items():
