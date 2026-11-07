@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "rubric_version": "1.0",
+  "company_quality": {
+    "dimensions": [
+      {
+        "id": "industry_economics",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "low",
+        "rationale": "目标疾病存在未满足需求，但可及患者和替代疗法竞争未定，行业价值分配只能作中档初判。",
+        "supporting_evidence": [
+          {
+            "id": "precommercial-0-fact",
+            "source": "虚构临床领域调查，2026-02-28，第 3 页",
+            "source_date": "2026-02-28",
+            "summary": "目标疾病约 8 万患者；已有疗法缓解率 35%–45%，新进入项目在研，实际可及患者尚不明。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "在研替代项目可能压低可达市场。",
+        "open_questions": [
+          "复核：在研替代项目可能压低可达市场。"
+        ],
+        "review_triggers": [
+          "新披露改变 行业经济性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "business_model",
+        "status": "insufficient_information",
+        "score": null,
+        "confidence": null,
+        "rationale": "信息不足：单一候选物尚无疗效结果或合作报价，授权路径与未来单位经济性无法判断；单资产依赖属于风险而非已证实的差商业模式。",
+        "supporting_evidence": [
+          {
+            "id": "precommercial-1-fact",
+            "source": "虚构试验方案，2026-03-05，第 7 页",
+            "source_date": "2026-03-05",
+            "summary": "单一候选物 CLB-1 的二期研究已招募 80/120 人；尚无随机对照疗效结果，公司没有商业化收入。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "取得临床结果、合作条款与可比疗法定价。",
+        "open_questions": [
+          "复核：取得临床结果、合作条款与可比疗法定价。"
+        ],
+        "review_triggers": [
+          "新披露改变 商业模式 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "product_competitiveness",
+        "status": "insufficient_information",
+        "score": null,
+        "confidence": null,
+        "rationale": "信息不足：入组进展不是临床效果，随机对照终点与退出率均未公布，不能对产品当前竞争力打分。",
+        "supporting_evidence": [
+          {
+            "id": "precommercial-2-fact",
+            "source": "虚构入组中心记录，2026-04-02，第 4 页",
+            "source_date": "2026-04-02",
+            "summary": "计划的 8 个中心已启动 7 个，最近季度入组 30 人；受试者退出率尚未公开。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "尚无疗效对照数据或同口径竞品结果。",
+        "open_questions": [
+          "复核：尚无疗效对照数据或同口径竞品结果。"
+        ],
+        "review_triggers": [
+          "新披露改变 产品竞争力 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "moat_durability",
+        "status": "assessed",
+        "score": 2,
+        "confidence": "low",
+        "rationale": "专利提供有限排他期，但两个同靶点二期对手和未知疗效使壁垒极不确定；专利仍使其高于立即可复制的最弱档。",
+        "supporting_evidence": [
+          {
+            "id": "precommercial-3-fact",
+            "source": "虚构专利与竞争表，2026-04-10，第 6 页",
+            "source_date": "2026-04-10",
+            "summary": "CLB-1 核心专利预计 2035 年到期；同靶点两个对手项目在二期，疗效优劣未知。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "两个竞争项目进入相同临床阶段。",
+        "open_questions": [
+          "复核：两个竞争项目进入相同临床阶段。"
+        ],
+        "review_triggers": [
+          "新披露改变 护城河持续性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed",
+        "adjacent_anchor_explanation": "专利提供有限排他期，但两个同靶点二期对手和未知疗效使壁垒极不确定；专利仍使其高于立即可复制的最弱档。"
+      },
+      {
+        "id": "management_governance",
+        "status": "assessed",
+        "score": 3,
+        "confidence": "medium",
+        "rationale": "两项入组承诺只兑现一项，但延期及时披露、同等认购权照顾小股东；9% 期权稀释需看里程碑绑定。",
+        "supporting_evidence": [
+          {
+            "id": "precommercial-4-fact",
+            "source": "虚构董事会和股东通知，2026-04-20，第 5 页",
+            "source_date": "2026-04-20",
+            "summary": "两项 2025 年入组节点完成一项；延期四个月并及时披露；管理层期权占稀释后股本 9%，少数股东享同等认购权。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "延期四个月且期权比例偏高。",
+        "open_questions": [
+          "复核：延期四个月且期权比例偏高。"
+        ],
+        "review_triggers": [
+          "新披露改变 管理层与治理 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "capital_allocation",
+        "status": "insufficient_information",
+        "score": null,
+        "confidence": null,
+        "rationale": "信息不足：单项目研发投入与拟议 25% 稀释尚无成功概率、融资价格或每股成果，无法判定资本配置结果；记录融资风险并在财务韧性评价跑道。",
+        "supporting_evidence": [
+          {
+            "id": "precommercial-5-fact",
+            "source": "虚构融资条款摘要，2026-05-01，第 10 页",
+            "source_date": "2026-05-01",
+            "summary": "拟议的合作预付款 30m 尚未签约；失败时公司拟发行新股，潜在稀释约 25%；未承诺融资价格。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "取得研发里程碑、融资价格和摊薄后每股价值测算。",
+        "open_questions": [
+          "复核：取得研发里程碑、融资价格和摊薄后每股价值测算。"
+        ],
+        "review_triggers": [
+          "新披露改变 资本配置与再投资 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "earnings_cash_quality",
+        "status": "not_applicable",
+        "score": null,
+        "confidence": null,
+        "rationale": "不适用：从未商业化且没有营业收入或可评价的经常性盈利，利润转现金及正常 ROIC 无经济含义；合作预付款尚未签约，现金消耗在财务韧性项评价。",
+        "supporting_evidence": [
+          {
+            "id": "precommercial-6-fact",
+            "source": "虚构试验方案，2026-03-05，第 7 页",
+            "source_date": "2026-03-05",
+            "summary": "单一候选物 CLB-1 的二期研究已招募 80/120 人；尚无随机对照疗效结果，公司没有商业化收入。",
+            "kind": "fact"
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "若获批并形成可重复销售，重新评价收入确认和收益现金质量。",
+        "open_questions": [
+          "复核：若获批并形成可重复销售，重新评价收入确认和收益现金质量。"
+        ],
+        "review_triggers": [
+          "新披露改变 盈利与现金质量 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed"
+      },
+      {
+        "id": "financial_resilience",
+        "status": "assessed",
+        "score": 2,
+        "confidence": "medium",
+        "rationale": "72m 现金以假设未来每季 12m 消耗只能覆盖六季，关键读出在第七季后；30m 合作预付款未签约，融资依赖与潜在 25% 稀释使缓冲低于中档。",
+        "supporting_evidence": [
+          {
+            "id": "precommercial-7-fact",
+            "source": "虚构现金与融资表，2026-05-01，第 9 页",
+            "source_date": "2026-05-01",
+            "summary": "现金 72m，最近四季消耗 7、8、10、11m。",
+            "kind": "fact"
+          },
+          {
+            "id": "precommercial-7-readout",
+            "source": "虚构现金与融资表，2026-05-01，第 9 页",
+            "source_date": "2026-05-01",
+            "summary": "管理层预计关键读出在七季后。",
+            "kind": "management_claim"
+          },
+          {
+            "id": "precommercial-7-runway",
+            "source": "虚构分析员跑道计算，2026-05-02，第 1 页",
+            "source_date": "2026-05-02",
+            "summary": "基于已披露 72m 现金、最近一季 11m 消耗，假设以后每季 12m 且无融资，72/12=6 季，较第七季读出短至少一季。",
+            "kind": "inference",
+            "depends_on": [
+              "precommercial-7-fact",
+              "precommercial-7-readout"
+            ],
+            "assumptions": [
+              "以后每季现金消耗 12m",
+              "读出时间不提前",
+              "未签约预付款不可用于支付"
+            ]
+          }
+        ],
+        "counterevidence": [],
+        "counterevidence_search": "最近四季现金消耗逐季从 7m 升至 11m，静态年化会高估跑道。",
+        "open_questions": [
+          "复核：最近四季现金消耗逐季从 7m 升至 11m，静态年化会高估跑道。"
+        ],
+        "review_triggers": [
+          "新披露改变 财务韧性 的关键假设或适用性。"
+        ],
+        "assessed_at": "2026-06-30",
+        "as_of": "2026-06-30",
+        "review_status": "reviewed",
+        "adjacent_anchor_explanation": "72m 现金以假设未来每季 12m 消耗只能覆盖六季，关键读出在第七季后；30m 合作预付款未签约，融资依赖与潜在 25% 稀释使缓冲低于中档。"
+      }
+    ]
+  },
+  "price_attractiveness": {
+    "status": "not_assessed",
+    "reason": "No reliable established valuation or verified price was supplied.",
+    "valuation": null
+  },
+  "decision_conditions": {
+    "material_issues": [
+      {
+        "status": "unverified",
+        "description": "待核实：主要终点调整的统计影响",
+        "impact": "若额外统计方案降低成功概率或延后读出，单资产投资逻辑与融资需求均受影响。",
+        "verification": "取得正式统计方案及审查反馈，不把来函视为疗效失败。",
+        "evidence": [
+          {
+            "id": "precommercial-issue",
+            "source": "虚构监管来函，2026-05-12，第 2 页",
+            "source_date": "2026-05-12",
+            "summary": "监管机构已确认 CLB-1 的主要终点调整需提交额外统计方案；试验尚未获疗效结论。",
+            "kind": "fact"
+          }
+        ]
+      }
+    ],
+    "thesis": "现金消耗四季加速，按最近 11m 或下一季 12m 做跑道压力；72/12=6 季，读出在七季后，至少差一季且不能把未签约 30m 当现金。收入缺失使盈利现金质量的经营指标不适用，却不豁免财务韧性、资本配置和稀释判断。未提供可靠原估值，价格卡保持尚未评估，不临时制作 rNPV。",
+    "falsifiers": [
+      "若额外统计方案降低成功概率或延后读出，单资产投资逻辑与融资需求均受影响。"
+    ],
+    "evidence_gaps": [
+      "取得正式统计方案及审查反馈，不把来函视为疗效失败。"
+    ],
+    "portfolio_fit": {
+      "status": "insufficient_information",
+      "reason": "No fictional portfolio allocation or holdings supplied."
+    },
+    "execution_conditions": {
+      "status": "not_assessed",
+      "reason": "No execution decision was made."
+    }
+  },
+  "report_reference": "precommercial-report.md#1-执行摘要"
+}
