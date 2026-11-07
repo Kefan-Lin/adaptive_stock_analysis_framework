@@ -184,3 +184,5 @@ Include:
 3. Top 5 confirmed strengths and weaknesses
 4. Stress result using the correct downside design for that family
 5. Items that can invalidate forecasts or value anchors
+
+把所选家族的指标、压力证据及不适用理由送入 [统一卡片的行业映射](industry-scorecard-mapping.md)。保留本节原五类加权财务评分及对应估值用途；新八维质量分是独立判断，不反推原分数或改动原估值家族。
