@@ -1,7 +1,8 @@
 """Versioned research scorecard and private immutable snapshot boundaries."""
 from .card import CardValidationError, validate_card
 from .snapshot import (SaveResult, SnapshotValidationError, create_snapshot,
-                       read_snapshot, validate_snapshot)
+                       read_snapshot, validate_snapshot, create_partial_snapshot, compare_snapshots)
 
 __all__ = ['CardValidationError', 'validate_card', 'SaveResult',
-           'SnapshotValidationError', 'create_snapshot', 'read_snapshot', 'validate_snapshot']
+           'SnapshotValidationError', 'create_snapshot', 'read_snapshot', 'validate_snapshot',
+           'create_partial_snapshot', 'compare_snapshots']

@@ -10,7 +10,8 @@ from pathlib import Path
 from unittest.mock import patch
 
 from scorecard import (SnapshotValidationError, create_snapshot,
-                       read_snapshot, validate_snapshot)
+                       read_snapshot, validate_snapshot, create_partial_snapshot,
+                       compare_snapshots)
 from scorecard.card import CardValidationError
 
 REPO = Path(__file__).resolve().parents[1]
@@ -144,6 +145,177 @@ class SnapshotTests(unittest.TestCase):
         self.assertFalse(outcome.saved)
         self.assertIsNone(outcome.snapshot_id)
         self.assertEqual(list((self.home / 'research-scorecards' / 'QHT').iterdir()), [])
+
+    def test_partial_review_carries_original_judgments_and_compares_evidence(self):
+        first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
+        old_path = self.home / 'research-scorecards' / 'QHT' / (first.snapshot_id + '.json')
+        old_bytes = old_path.read_bytes()
+        changed = copy.deepcopy(self.card()['company_quality']['dimensions'][0])
+        changed['supporting_evidence'][0]['summary'] = 'A new fictional capacity survey confirms demand.'
+        changed['supporting_evidence'][0]['source_date'] = '2026-04-02'
+        changed.update(as_of='2026-04-02', assessed_at='2026-04-03')
+        result = create_partial_snapshot(self.home, 'QHT', 'US', baseline_id=first.snapshot_id,
+            dimension_updates={'industry_economics': changed}, as_of='2026-04-03',
+            report_reference='fictional-incremental.md', changes={
+                'industry_economics': [{'kind': 'new_fact', 'explanation': 'New capacity survey confirms demand.'}]})
+        self.assertTrue(result.saved)
+        new = read_snapshot(self.home, 'QHT', result.snapshot_id)
+        old = read_snapshot(self.home, 'QHT', first.snapshot_id)
+        self.assertEqual(old_path.read_bytes(), old_bytes)
+        carried = new['card']['company_quality']['dimensions'][1]
+        self.assertEqual(carried['supporting_evidence'], old['card']['company_quality']['dimensions'][1]['supporting_evidence'])
+        self.assertEqual(carried['assessed_at'], '2026-04-01')
+        self.assertEqual(carried['source_snapshot'], first.snapshot_id)
+        self.assertEqual(carried['review_status'], 'carried_forward')
+        comparison = compare_snapshots(self.home, 'QHT', first.snapshot_id, result.snapshot_id)
+        self.assertEqual(comparison['changes']['industry_economics']['before']['score'], 4)
+        self.assertIn('supporting_evidence', comparison['changes']['industry_economics']['changed_fields'])
+        self.assertEqual(comparison['changes']['industry_economics']['after']['score'], 4)
+
+    def test_first_partial_research_leaves_other_dimensions_unknown_and_undated(self):
+        example = self.card()
+        selected = example['company_quality']['dimensions'][0]
+        saved = create_partial_snapshot(self.home, 'QHT', 'US', initial_card=example,
+            dimension_updates={'industry_economics': selected}, as_of='2026-04-01',
+            report_reference='fictional-incremental.md', changes={'industry_economics': []})
+        self.assertTrue(saved.saved)
+        snapshot = read_snapshot(self.home, 'QHT', saved.snapshot_id)
+        for dimension in snapshot['card']['company_quality']['dimensions'][1:]:
+            self.assertEqual((dimension['status'], dimension['score'], dimension['confidence'],
+                              dimension['assessed_at'], dimension['as_of'], dimension['review_status']),
+                             ('insufficient_information', None, None, None, None, 'not_reviewed'))
+            self.assertNotIn('source_snapshot', dimension)
+
+    def test_correction_links_target_without_changing_old_bytes_and_rejects_wrong_references(self):
+        first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
+        original_path = self.home / 'research-scorecards' / 'QHT' / (first.snapshot_id + '.json')
+        original = original_path.read_bytes()
+        wrong = create_snapshot(self.home, 'OTHER', 'US', self.card(), as_of='2026-04-01')
+        changed = copy.deepcopy(self.card()['company_quality']['dimensions'][0])
+        changed['score'] = 3
+        changed.pop('adjacent_anchor_explanation')
+        options = dict(baseline_id=first.snapshot_id, dimension_updates={'industry_economics': changed},
+            as_of='2026-04-01', report_reference='fictional-incremental.md',
+            changes={'industry_economics': [{'kind': 'error_correction',
+                'explanation': 'Original rating transposed the survey columns.'}]},
+            correction_of=first.snapshot_id, correction_reason='Survey columns were transposed.')
+        result = create_partial_snapshot(self.home, 'QHT', 'US', **options)
+        self.assertTrue(result.saved)
+        self.assertEqual(read_snapshot(self.home, 'QHT', result.snapshot_id)['correction_of'], first.snapshot_id)
+        self.assertEqual(original_path.read_bytes(), original)
+        for bad in ('2026-11-07-' + 'f' * 32, wrong.snapshot_id):
+            for key in ('baseline_id', 'correction_of'):
+                with self.subTest(reference=bad, field=key), self.assertRaises(SnapshotValidationError):
+                    create_partial_snapshot(self.home, 'QHT', 'US', **(options | {key: bad}))
+
+    def test_rubric_change_marks_items_incomparable_without_rewriting_history(self):
+        first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
+        old_path = self.home / 'research-scorecards' / 'QHT' / (first.snapshot_id + '.json')
+        old_bytes = old_path.read_bytes()
+        updated = copy.deepcopy(self.card()['company_quality']['dimensions'][0])
+        updated['rationale'] = 'Under revised anchor, capacity discipline remains mixed.'
+        second = create_partial_snapshot(self.home, 'QHT', 'US', baseline_id=first.snapshot_id,
+            dimension_updates={'industry_economics': updated}, rubric_version='1.1',
+            as_of='2026-04-01', report_reference='fictional-incremental.md',
+            changes={'industry_economics': [{'kind': 'rubric_change',
+                'explanation': 'The revised capacity anchor interprets supply more strictly.'}]})
+        self.assertTrue(second.saved)
+        comparison = compare_snapshots(self.home, 'QHT', first.snapshot_id, second.snapshot_id)
+        self.assertFalse(comparison['changes']['industry_economics']['comparable'])
+        self.assertIn('not comparable', comparison['changes']['industry_economics']['note'])
+        self.assertEqual(old_path.read_bytes(), old_bytes)
+
+    def test_price_only_update_preserves_valuation_mode_and_quality(self):
+        first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
+        price = copy.deepcopy(self.card()['price_attractiveness'])
+        price['valuation']['market_price'] = 24
+        price['valuation']['price_as_of'] = '2026-04-02'
+        price['valuation']['margin_of_safety'] = '31%'
+        arguments = dict(baseline_id=first.snapshot_id, price_update=price,
+            as_of='2026-04-02', report_reference='fictional-incremental.md',
+            changes={'price_attractiveness': [{'kind': 'new_fact',
+                'explanation': 'Exchange close changed to 24; original valuation is retained.'}]})
+        saved = create_partial_snapshot(self.home, 'QHT', 'US', **arguments)
+        self.assertTrue(saved.saved)
+        before = read_snapshot(self.home, 'QHT', first.snapshot_id)['card']
+        after = read_snapshot(self.home, 'QHT', saved.snapshot_id)['card']
+        self.assertEqual(before['company_quality']['dimensions'][0]['score'], after['company_quality']['dimensions'][0]['score'])
+        self.assertEqual(before['price_attractiveness']['valuation']['fair_value'], after['price_attractiveness']['valuation']['fair_value'])
+        invalid = copy.deepcopy(price)
+        invalid['valuation']['fair_value'] = 99
+        with self.assertRaises(SnapshotValidationError):
+            create_partial_snapshot(self.home, 'QHT', 'US', **(arguments | {'price_update': invalid}))
+
+    def test_same_mode_arithmetic_correction_can_update_intrinsic_value(self):
+        first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
+        revised = copy.deepcopy(self.card()['price_attractiveness'])
+        revised['valuation']['fair_value'] = 36
+        revised['valuation']['scenarios']['Base'] = 36
+        result = create_partial_snapshot(self.home, 'QHT', 'US', baseline_id=first.snapshot_id,
+            correction_of=first.snapshot_id, correction_reason='Base scenario addition was off by one.',
+            price_update=revised, as_of='2026-04-01', report_reference='fictional-correction.md',
+            changes={'price_attractiveness': [{'kind': 'error_correction',
+                'explanation': 'Corrected a one-unit arithmetic error in the Base scenario.'}]})
+        self.assertTrue(result.saved)
+        after = read_snapshot(self.home, 'QHT', result.snapshot_id)
+        self.assertEqual(after['card']['price_attractiveness']['valuation']['fair_value'], 36)
+        self.assertEqual(after['card']['price_attractiveness']['valuation']['primary_method'],
+                         self.card()['price_attractiveness']['valuation']['primary_method'])
+        changed_mode = copy.deepcopy(revised)
+        changed_mode['valuation']['primary_method'] = 'new DCF'
+        with self.assertRaises(SnapshotValidationError):
+            create_partial_snapshot(self.home, 'QHT', 'US', baseline_id=first.snapshot_id,
+                correction_of=first.snapshot_id, correction_reason='Arithmetic error.',
+                price_update=changed_mode, as_of='2026-04-01', report_reference='fictional-correction.md',
+                changes={'price_attractiveness': [{'kind': 'error_correction',
+                    'explanation': 'Corrected arithmetic.'}]})
+
+    def test_substantive_changes_need_specific_reasons_and_fictional_report_discloses_scope(self):
+        first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
+        changed = copy.deepcopy(self.card()['company_quality']['dimensions'][0])
+        changed['confidence'] = 'low'
+        arguments = dict(baseline_id=first.snapshot_id,
+            dimension_updates={'industry_economics': changed}, as_of='2026-04-01',
+            report_reference='fictional-incremental-review.md', changes={'industry_economics': []})
+        with self.assertRaises(SnapshotValidationError):
+            create_partial_snapshot(self.home, 'QHT', 'US', **arguments)
+        with self.assertRaises(SnapshotValidationError):
+            create_partial_snapshot(self.home, 'QHT', 'US', **(arguments | {'changes': {
+                'industry_economics': [{'kind': 'new_fact', 'explanation': '更新了'}]}}))
+        report = (REPO / 'examples/research-scorecard/fictional-incremental-review.md').read_text()
+        for detail in ('仅复核行业经济性', '原评估日期 2026-04-01',
+                       '资料日期 2026-04-02', '本次未复核', '4→4', '未重做完整十章研究'):
+            self.assertIn(detail, report)
+
+    def test_consecutive_partial_reviews_retain_transitive_original_provenance(self):
+        first = create_snapshot(self.home, 'QHT', 'US', self.card(), as_of='2026-04-01')
+        base = self.card()
+        one = create_partial_snapshot(self.home, 'QHT', 'US', baseline_id=first.snapshot_id,
+            dimension_updates={'industry_economics': base['company_quality']['dimensions'][0]},
+            as_of='2026-04-01', report_reference='fictional-one.md',
+            changes={'industry_economics': []})
+        two = create_partial_snapshot(self.home, 'QHT', 'US', baseline_id=one.snapshot_id,
+            dimension_updates={'business_model': base['company_quality']['dimensions'][1]},
+            as_of='2026-04-01', report_reference='fictional-two.md',
+            changes={'business_model': []})
+        latest = read_snapshot(self.home, 'QHT', two.snapshot_id)
+        dimensions = {entry['id']: entry for entry in latest['card']['company_quality']['dimensions']}
+        self.assertEqual(dimensions['industry_economics']['source_snapshot'], one.snapshot_id)
+        self.assertEqual(dimensions['product_competitiveness']['source_snapshot'], first.snapshot_id)
+        self.assertEqual(dimensions['product_competitiveness']['assessed_at'], '2026-04-01')
+        self.assertEqual(latest['item_sources']['product_competitiveness'], first.snapshot_id)
+
+    def test_public_save_boundary_resolves_partial_baseline_before_publishing(self):
+        card = self.card()
+        selected = 'industry_economics'
+        for dimension in card['company_quality']['dimensions'][1:]:
+            dimension['review_status'] = 'carried_forward'
+            dimension['source_snapshot'] = '2026-11-07-' + 'f' * 32
+        with self.assertRaises(SnapshotValidationError):
+            create_snapshot(self.home, 'QHT', 'US', card, as_of='2026-04-01',
+                review_scope='partial', baseline_id='2026-11-07-' + 'f' * 32,
+                selected_items=[selected], change_reasons={selected: []}, item_sources={})
+        self.assertEqual(list(self.home.iterdir()), [])
 
 
 if __name__ == '__main__':

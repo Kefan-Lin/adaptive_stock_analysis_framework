@@ -132,7 +132,7 @@ Always load these references from this skill:
 - [portfolio-sizing](references/portfolio-sizing.md)
 - [portfolio-construction](references/portfolio-construction.md)
 - [report-template](references/report-template.md)
-- [research-scorecard](references/research-scorecard.md) — load for full research card assembly and validation.
+- [research-scorecard](references/research-scorecard.md) — load for full research and incremental/event reviews, corrections, storage and comparisons.
 - [industry-scorecard-mapping](references/industry-scorecard-mapping.md) — load after route and diagnostic-family selection to transfer applicable KPI and evidence into the same card.
 - [decision-records](references/decision-records.md) — required only when a
   private state home is configured (see that file's resolution rules)
@@ -221,6 +221,8 @@ corrupts Weighted Fair Value, margin of safety, and sizing.
 - Record the pass in report Section 10.4's `输入验证块` so skipping it is visible.
 
 ## Step 6.6: Validate the research scorecard
+
+For an incremental or event review, load [research-scorecard](references/research-scorecard.md) and use its partial snapshot path with an exact baseline and selected items after the review is complete. State the scope and original dates in the incremental output.
 
 After the analysis and verification pass, assemble the eight independent judgments, price references, and decision conditions under [research-scorecard](references/research-scorecard.md), with route-specific evidence from [industry-scorecard-mapping](references/industry-scorecard-mapping.md). Run `scorecard.card.validate_card` before report display; fix any invalid fields and make the summary agree with the cited body sections. If the existing valuation or portfolio information is unavailable, show the corresponding unassessed state. Card assembly does not rerun valuation. After the complete report is finished, call `scorecard.create_snapshot` according to [research-scorecard](references/research-scorecard.md), then report the returned saved or unsaved state accurately. Do not create a snapshot for temporary chat or imply an unsaved snapshot reference. For an existing company, read the previous report and decision record first; a new gate, reanalysis, correction, or second opinion never grants permission to change its valuation method, earnings basis, forecast horizon, or scenario meanings. User authorization to change mode is required and recorded before such a change. Preserve original 0–5 scores and explain conflicts with independent new quality scores.
 

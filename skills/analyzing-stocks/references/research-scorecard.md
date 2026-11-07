@@ -4,7 +4,7 @@
 
 ## 规范版本与公用接口
 
-结构版本 `schema_version: 1` 与评分规范版本 `rubric_version: "1.0"` 分开。卡片顶层包含 `company_quality`、`price_attractiveness`、`decision_conditions` 和 `report_reference`。公开的 Python 校验入口接收字典，合法时原样返回，非法时抛 `CardValidationError`；不读写私人目录。供后续保存、局部复核、精确引用及行业伴侣接入使用同一卡片字典，不各造评分规范。虚构完整示例见 `examples/research-scorecard/fictional-card.json`，报告见其同目录 `fictional-report.md`。快照的独立身份与时点见下述持久化入口；历史比较由后续任务定义；卡片中的 `assessed_at` 是原评估日，`as_of` 是信息截止日，沿用项的 `source_snapshot` 为来源版本，`review_status: carried_forward` 表示本次未复核。新评估用 `reviewed`。报告引用为可定位的 `report_reference`，当前不是已保存快照的承诺。
+结构版本 `schema_version: 1` 与评分规范版本 `rubric_version: "1.0"` 分开。卡片顶层包含 `company_quality`、`price_attractiveness`、`decision_conditions` 和 `report_reference`。公开的 Python 校验入口接收字典，合法时原样返回，非法时抛 `CardValidationError`；不读写私人目录。供保存、局部复核、精确引用及行业伴侣接入使用同一卡片字典。虚构完整示例见 `examples/research-scorecard/fictional-card.json`，报告见其同目录 `fictional-report.md`。卡片中的 `assessed_at` 是原评估日，`as_of` 是信息截止日，沿用项的 `source_snapshot` 为来源版本，`review_status: carried_forward` 表示本次未复核。新评估用 `reviewed`。报告引用为可定位的 `report_reference`，当前不是已保存快照的承诺。
 
 八维在 `company_quality.dimensions` 中各出现一次，使用以下稳定 id。每项必含 `id`、`status`（`assessed`、`insufficient_information`、`not_applicable`）、`score`、`confidence`、`rationale`、`supporting_evidence`、`counterevidence`、`counterevidence_search`、`open_questions`、`review_triggers`、`assessed_at`、`as_of`、`review_status`。2/4 分另加 `adjacent_anchor_explanation`，写清满足的相邻锚点及未达到更高档的差距；沿用另加 `source_snapshot`。已评估的分数严格为 1–5 整数，可信度严格为 high / medium / low，必须有支持证据、反证或具体检索范围。没有形成判断用空分数和空可信度，信息不足写明具体缺口；不适用给出适用性理由。不得因表现差或资料缺失标不适用，不得用低可信度代替信息不足。事实材料可跨维使用，但逐维说明其不同含义，不重复加权；无跨维总分。缺足够材料时坦陈尚未核查，不编造反证或来源。
 
@@ -14,7 +14,11 @@
 
 只有分析、输入核验、卡片校验和完整报告都完成后，才调用 `scorecard.create_snapshot(home, symbol, market, card, as_of=...)`。`home` 是现有私人 state-home 的绝对目录，缺失或不可访问时可传 `None` 或原路径。`symbol` 和 `market` 遵守 canonical tradable-line 身份；`as_of` 是本次研究信息截至日，与各维原评估日分开。返回的 `SaveResult(saved, snapshot_id, reason)` 仅在 `saved=True` 时提供可引用的快照标识；`saved=False` 时明确告诉用户未保存及原因，不退回公共仓库。纯研究不需要 stance、execution_method 或决策记录；临时聊天不调用保存入口。
 
-快照无覆盖写入 `<state-home>/research-scorecards/<SYMBOL>/<YYYY-MM-DD-UUID>.json`，与 `records/` 分开。`scorecard.read_snapshot(home, symbol, snapshot_id)` 精确读取并验证身份；`scorecard.validate_snapshot(snapshot)` 校验独立结构版本、评分规范版本、三卡、证据、创建时点、信息截至时点、复核范围和报告引用。目前只接受 `review_scope='full'` 且八维均标记本次复核。局部复核、修正和历史比较由后续任务实现。
+快照无覆盖写入 `<state-home>/research-scorecards/<SYMBOL>/<YYYY-MM-DD-UUID>.json`，与 `records/` 分开。`scorecard.read_snapshot(home, symbol, snapshot_id)` 精确读取并验证身份；`scorecard.validate_snapshot(snapshot)` 校验结构、评分规范标识、三卡、日期、范围和报告引用。完整研究八维均标记本次复核。
+
+局部或事件复核完成后，调用 `scorecard.create_partial_snapshot(home, symbol, market, baseline_id=exact_id, dimension_updates={id: dimension}, as_of='YYYY-MM-DD', report_reference='report.md#section', changes={id: [{'kind': 'new_fact', 'explanation': '具体新事实和来源'}]})`；也可选 `price_update`、`decision_update`，对应 `changes` 键分别为 `price_attractiveness`、`decision_conditions`。首次局部研究无历史时改传 `initial_card=card`，其他维度成为无分数、无评估日期的 `not_reviewed`。明确错误修正添加 `correction_of=exact_id, correction_reason='具体错误'` 及 `error_correction` 类型原因。变化原因类型还有 `assumption_change`、`rubric_change`，每项可记录多个。沿用项保持原证据、评估日期和来源快照。用 `scorecard.compare_snapshots(home, symbol, before_id, after_id)` 只读比较指定版本的实际字段变化；跨评分规范标记不可直接比较。增量报告标明复核范围、本次更新、沿用项原日期及历史引用，不声称完成十章报告。返回 `SaveResult` 后按实际保存状态展示。
+
+评分规范标识可记录形如 `1.0` 的历史版本，标识格式校验不表示新规范获批准。当前权威锚点仍为 `1.0`；未来规范须先独立发布对应锚点，之后才用于真实新判断。纯股价更新保留合理价值、原模式和质量判断；同模式重估要求有来源的新事实或假设与更新的估值时点及报告引用，明确算术错误修正则关联原快照并说明原因。
 
 ## 八维锚点
 
