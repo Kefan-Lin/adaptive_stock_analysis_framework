@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "研究与决策 · 宿主 Agent 内的技能编排",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kefan-Lin/adaptive_stock_analysis_framework",
+      "revision": "59f227e15ec34e143fb2335b139fe3798760df41"
+    }
+  },
+  "components": [
+    {
+      "id": "decision",
+      "type": "backend",
+      "label": "决策工作流",
+      "sublabel": "入：想法 / 持仓 → 出：运行模式",
+      "tag": "优先级路由；实时核验；过期检查",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/investment-decision-workflow/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "controller",
+      "type": "backend",
+      "label": "研究控制器",
+      "sublabel": "入：公司与范围 → 出：分析路由",
+      "tag": "主行业 + 可选副行业；选分析家族",
+      "pos": [
+        380,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/analyzing-stocks/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "valuation",
+      "type": "backend",
+      "label": "财务诊断与估值",
+      "sublabel": "入：证据与行业契约 → 出：情景",
+      "tag": "归一化；重评级 / 重基准 / 谷底门",
+      "pos": [
+        720,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/analyzing-stocks/references/financial-diagnostics.md"
+        },
+        {
+          "path": "skills/analyzing-stocks/references/valuation-scenarios.md"
+        }
+      ]
+    },
+    {
+      "id": "report",
+      "type": "backend",
+      "label": "输入核查与报告",
+      "sublabel": "入：情景与关键量 → 出：10 块报告",
+      "tag": "核股数 / 净债务；重算 WFV；给立场",
+      "pos": [
+        1060,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/analyzing-stocks/SKILL.md"
+        },
+        {
+          "path": "skills/analyzing-stocks/references/report-template.md"
+        }
+      ]
+    },
+    {
+      "id": "sector",
+      "type": "backend",
+      "label": "10 个行业策略",
+      "sublabel": "入：业务模式 → 出：行业契约",
+      "tag": "KPI / 会计陷阱 / 估值锚 / 监控线",
+      "pos": [
+        380,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "docs/framework-map.md"
+        }
+      ]
+    },
+    {
+      "id": "references",
+      "type": "backend",
+      "label": "15 份共享参考",
+      "sublabel": "入：路由与问题 → 出：方法约束",
+      "tag": "来源；护城河；宏观；风险；仓位",
+      "pos": [
+        720,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/analyzing-stocks/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "debate",
+      "type": "backend",
+      "label": "独立辩论与中立核查",
+      "sublabel": "入：争议论点 → 出：核查裁决",
+      "tag": "平行开篇 → 交叉反驳 → 核查 → 裁决",
+      "pos": [
+        720,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/debating-stocks/SKILL.md"
+        },
+        {
+          "path": "skills/debating-stocks/REFERENCE.md"
+        }
+      ]
+    },
+    {
+      "id": "action",
+      "type": "backend",
+      "label": "行动适配与落盘",
+      "sublabel": "入：当前估值 → 出：执行表与记录",
+      "tag": "候选层级 / 估值区 / 敞口 / No Action",
+      "pos": [
+        1060,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/investment-decision-workflow/SKILL.md"
+        },
+        {
+          "path": "skills/analyzing-stocks/references/decision-records.md"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "decision-to-controller",
+      "from": "decision",
+      "to": "controller",
+      "label": "调用研究",
+      "variant": "emphasis"
+    },
+    {
+      "id": "controller-to-valuation",
+      "from": "controller",
+      "to": "valuation",
+      "label": "合并行业方法",
+      "variant": "emphasis"
+    },
+    {
+      "id": "valuation-to-report",
+      "from": "valuation",
+      "to": "report",
+      "label": "情景与证据",
+      "variant": "emphasis"
+    },
+    {
+      "id": "sector-to-controller",
+      "from": "sector",
+      "to": "controller",
+      "label": "主副行业契约",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        495,
+        230
+      ]
+    },
+    {
+      "id": "references-to-valuation",
+      "from": "references",
+      "to": "valuation",
+      "label": "方法与证据纪律",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        835,
+        230
+      ]
+    },
+    {
+      "id": "valuation-to-debate",
+      "from": "valuation",
+      "to": "debate",
+      "label": "按条件升级",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        835,
+        470
+      ]
+    },
+    {
+      "id": "report-to-action",
+      "from": "report",
+      "to": "action",
+      "label": "研究结果交回编排器",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1175,
+        470
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "技能约定",
+      "items": [
+        "由 Codex / Claude 等宿主解释 SKILL.md；不是仓库自带的 Python Agent 服务。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "估值与执行边界",
+      "items": [
+        "价格变化先更新安全边际与执行区；估值变动必须有证据。",
+        "辩论结果回填红队门；技术指标仅辅助执行。"
+      ]
+    }
+  ]
+}

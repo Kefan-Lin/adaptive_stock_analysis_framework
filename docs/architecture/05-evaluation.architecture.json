@@ -1,0 +1,313 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "结果评估 · 决策复盘与发现引擎回测",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kefan-Lin/adaptive_stock_analysis_framework",
+      "revision": "59f227e15ec34e143fb2335b139fe3798760df41"
+    }
+  },
+  "components": [
+    {
+      "id": "past",
+      "type": "database",
+      "label": "P2：全部有效决策",
+      "sublabel": "入：所有记录 → 出：可评分记录",
+      "tag": "跳过 INDEX 与无效日期 / 非正价格",
+      "pos": [
+        40,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/outcome_score.py"
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "type": "backend",
+      "label": "PriceHistory 适配",
+      "sublabel": "入：symbol + 日期段 → 出：日线",
+      "tag": "File / Live / Chain；收盘回看 ≤7 天",
+      "pos": [
+        380,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/outcome_score.py"
+        }
+      ]
+    },
+    {
+      "id": "score-record",
+      "type": "backend",
+      "label": "score_record",
+      "sublabel": "入：记录 + 日线 → 出：窗口指标",
+      "tag": "90/180/365 天；收益 / 方向 / 触价",
+      "pos": [
+        720,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/outcome_score.py"
+        }
+      ]
+    },
+    {
+      "id": "calibrate",
+      "type": "backend",
+      "label": "calibrate / 报告",
+      "sublabel": "入：已成熟结果 → 出：分桶统计",
+      "tag": "stance / confidence / zone / market",
+      "pos": [
+        1060,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/outcome_score.py"
+        },
+        {
+          "path": "skills/outcome-scoring/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "benchmark",
+      "type": "database",
+      "label": "标签集与对照全集",
+      "sublabel": "入：CSV + SEC 股票池 → 出：样本",
+      "tag": "正例 t*−6/3/1 月；对照可重建数据",
+      "pos": [
+        40,
+        400
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/benchmark/loader.py"
+        },
+        {
+          "path": "inflection_discovery/pit/universe.py"
+        }
+      ]
+    },
+    {
+      "id": "backtest",
+      "type": "backend",
+      "label": "B 回测 / A-B 对比",
+      "sublabel": "入：PIT 数据 + LLM 分数 → 出：排名",
+      "tag": "复用 A 门 / D / 对照；仅替换 B/C/trap",
+      "pos": [
+        380,
+        400
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/harness/backtest.py"
+        },
+        {
+          "path": "inflection_discovery/harness/llm_backtest.py"
+        }
+      ]
+    },
+    {
+      "id": "metrics",
+      "type": "backend",
+      "label": "流动性筛选与统计",
+      "sublabel": "入：排名与标签 → 出：指标 + CI",
+      "tag": "ADV 过滤；Top-N；Wilson；6/12 月收益",
+      "pos": [
+        720,
+        400
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/harness/backtest.py"
+        },
+        {
+          "path": "inflection_discovery/harness/metrics.py"
+        },
+        {
+          "path": "inflection_discovery/pit/prices.py"
+        }
+      ]
+    },
+    {
+      "id": "reports",
+      "type": "backend",
+      "label": "研究评估产物",
+      "sublabel": "入：结果 JSON → 出：报告 / 图表",
+      "tag": "comparison-report；HTML；价格曲线",
+      "pos": [
+        1060,
+        400
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "reports/comparison-report.md"
+        },
+        {
+          "path": "reports/make_ab_compare.py"
+        },
+        {
+          "path": "reports/make_dashboard.py"
+        }
+      ]
+    },
+    {
+      "id": "canaries",
+      "type": "backend",
+      "label": "五组 Canary 检查",
+      "sublabel": "入：已知时间边界 → 出：PASS / FAIL",
+      "tag": "拆股 / 披露延迟 / 未来值 / 退市 / 换壳",
+      "pos": [
+        380,
+        640
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/harness/canary.py"
+        }
+      ]
+    },
+    {
+      "id": "holdout",
+      "type": "backend",
+      "label": "Holdout 抽样与复验",
+      "sublabel": "入：股票快照 + seed → 出：样本/结果",
+      "tag": "去重；固定 seed；SHA-256；独立复验",
+      "pos": [
+        1060,
+        640
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "reports/sample_holdout.py"
+        },
+        {
+          "path": "reports/run_holdout.py"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "past-to-history",
+      "from": "past",
+      "to": "history",
+      "label": "按标的预载日线",
+      "variant": "emphasis"
+    },
+    {
+      "id": "history-to-score-record",
+      "from": "history",
+      "to": "score-record",
+      "label": "close / low / high",
+      "variant": "emphasis"
+    },
+    {
+      "id": "score-record-to-calibrate",
+      "from": "score-record",
+      "to": "calibrate",
+      "label": "scored / pending / gaps",
+      "variant": "emphasis",
+      "labelAt": [
+        1005,
+        174
+      ]
+    },
+    {
+      "id": "benchmark-to-backtest",
+      "from": "benchmark",
+      "to": "backtest",
+      "label": "同日全集",
+      "variant": "emphasis"
+    },
+    {
+      "id": "backtest-to-metrics",
+      "from": "backtest",
+      "to": "metrics",
+      "label": "D 排名与标签",
+      "variant": "emphasis"
+    },
+    {
+      "id": "metrics-to-reports",
+      "from": "metrics",
+      "to": "reports",
+      "label": "指标与明细",
+      "variant": "emphasis"
+    },
+    {
+      "id": "holdout-to-reports",
+      "from": "holdout",
+      "to": "reports",
+      "label": "独立样本结果",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "两类评估独立",
+      "items": [
+        "上排测量真实决策结果；下排评估候选发现的区分能力。",
+        "Canary 是单独 CLI 命令，不是 backtest 的自动前置调用。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "解释边界",
+      "items": [
+        "P2 仅绝对本币收益、无基准；低 N<3 标记；不自动调参。",
+        "A 历史对比有记忆污染；Holdout 结论仅为探索性证据。"
+      ]
+    }
+  ]
+}

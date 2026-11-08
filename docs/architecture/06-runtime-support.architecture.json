@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "运行与交付 · 安装、质量检查和本地原型",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kefan-Lin/adaptive_stock_analysis_framework",
+      "revision": "59f227e15ec34e143fb2335b139fe3798760df41"
+    }
+  },
+  "components": [
+    {
+      "id": "checkout",
+      "type": "database",
+      "label": "框架源码与配置",
+      "sublabel": "入：Git checkout → 出：技能与脚本",
+      "tag": "Python ≥3.9；PyYAML；行情依赖懒载入",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "pyproject.toml"
+        },
+        {
+          "path": "README.zh-CN.md"
+        }
+      ]
+    },
+    {
+      "id": "installer",
+      "type": "backend",
+      "label": "平台安装器",
+      "sublabel": "入：平台 + 技能选择 → 出：安装目录",
+      "tag": "默认软链；--copy；显式 --force 覆盖",
+      "pos": [
+        380,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "install/install.sh"
+        },
+        {
+          "path": "install/install-codex.sh"
+        },
+        {
+          "path": "install/install-claude.sh"
+        }
+      ]
+    },
+    {
+      "id": "host",
+      "type": "external",
+      "label": "Codex / Claude 宿主",
+      "sublabel": "入：SKILL.md + 请求 → 出：技能执行",
+      "tag": "LLM 调工具 / 子 Agent；执行本地 CLI",
+      "pos": [
+        720,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "docs/platforms/codex.md"
+        },
+        {
+          "path": "docs/platforms/claude.md"
+        },
+        {
+          "path": "skills/debating-stocks/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "private",
+      "type": "database",
+      "label": "外置私有文件状态",
+      "sublabel": "入：研究决策 → 出：记录和组合",
+      "tag": "~/.investing-home 指向仓库之外",
+      "pos": [
+        1060,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/analyzing-stocks/references/decision-records.md"
+        }
+      ]
+    },
+    {
+      "id": "ci",
+      "type": "security",
+      "label": "GitHub Actions CI",
+      "sublabel": "入：push / PR → 出：检查结果",
+      "tag": "unittest / 结构校验 / 安装 e2e / pytest",
+      "pos": [
+        380,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": ".github/workflows/ci.yml"
+        }
+      ]
+    },
+    {
+      "id": "reports",
+      "type": "backend",
+      "label": "静态评估报告工具",
+      "sublabel": "入：回测 JSON / 行情 → 出：HTML",
+      "tag": "报告卡片；A-B 对比；曲线；dashboard",
+      "pos": [
+        40,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "reports/make_report_html.py"
+        },
+        {
+          "path": "reports/make_price_curves.py"
+        },
+        {
+          "path": "reports/make_dashboard.py"
+        }
+      ]
+    },
+    {
+      "id": "prototype",
+      "type": "backend",
+      "label": "本地 Web 原型（未跟踪）",
+      "sublabel": "入：状态 / 行情 → 出：内联 HTML",
+      "tag": "export_data.py → data.json → build.py",
+      "pos": [
+        1060,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "docs/plans/2026-08-11-web-app-design.md"
+        },
+        {
+          "path": "docs/plans/2026-08-11-web-app-implementation.md"
+        }
+      ]
+    },
+    {
+      "id": "roadmap",
+      "type": "frontend",
+      "label": "规划中的生产 Web App",
+      "sublabel": "入：设计方案 → 出：待实施契约",
+      "tag": "计划描述不构成已部署系统",
+      "pos": [
+        720,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "docs/plans/2026-08-11-web-app-design.md"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "checkout-to-installer",
+      "from": "checkout",
+      "to": "installer",
+      "label": "选取 skills/",
+      "variant": "emphasis"
+    },
+    {
+      "id": "installer-to-host",
+      "from": "installer",
+      "to": "host",
+      "label": "软链或复制安装",
+      "variant": "emphasis"
+    },
+    {
+      "id": "host-to-private",
+      "from": "host",
+      "to": "private",
+      "label": "按技能约定读写",
+      "variant": "emphasis"
+    },
+    {
+      "id": "checkout-to-ci",
+      "from": "checkout",
+      "to": "ci",
+      "label": "push / pull_request",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "id": "checkout-to-reports",
+      "from": "checkout",
+      "to": "reports",
+      "label": "独立报告工具",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        155,
+        470
+      ]
+    },
+    {
+      "id": "private-to-prototype",
+      "from": "private",
+      "to": "prototype",
+      "label": "本地导出只读输入",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1175,
+        470
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "已实现的运行形态",
+      "items": [
+        "文件型 Skills + Python CLI + 静态报告；仓库未提供常驻 API 服务。",
+        "CI 定义覆盖不同 Python 版本，不代表本轮已执行整套业务测试。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "原型证据单独保留",
+      "items": [
+        "原型位于 .scratch/stock-analysis-web-app/prototypes/06 与 07。",
+        "SRC 指向已提交设计文档；手册另列本地原型路径与验证范围。"
+      ]
+    }
+  ]
+}

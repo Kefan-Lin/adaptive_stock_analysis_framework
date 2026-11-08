@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "自适应股票分析框架 · 全景架构",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kefan-Lin/adaptive_stock_analysis_framework",
+      "revision": "59f227e15ec34e143fb2335b139fe3798760df41"
+    }
+  },
+  "components": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "研究输入",
+      "sublabel": "标的 / 报告 / 持仓 / 事件",
+      "tag": "输入：自然语言与已知材料",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        200,
+        86
+      ],
+      "sources": [
+        {
+          "path": "README.zh-CN.md"
+        }
+      ]
+    },
+    {
+      "id": "workflow",
+      "type": "backend",
+      "label": "决策编排",
+      "sublabel": "investment-decision-workflow",
+      "tag": "输出：Decision Brief + Execution Sheet",
+      "pos": [
+        380,
+        300
+      ],
+      "size": [
+        200,
+        86
+      ],
+      "sources": [
+        {
+          "path": "skills/investment-decision-workflow/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "research",
+      "type": "backend",
+      "label": "研究与估值控制器",
+      "sublabel": "analyzing-stocks",
+      "tag": "输出：统一 10 块报告 + 估值情景",
+      "pos": [
+        720,
+        300
+      ],
+      "size": [
+        200,
+        86
+      ],
+      "sources": [
+        {
+          "path": "skills/analyzing-stocks/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "state",
+      "type": "database",
+      "label": "私有文件状态库",
+      "sublabel": "records/*.md + portfolio.yaml",
+      "tag": "输出：decision-record/v1 + INDEX.md",
+      "pos": [
+        1060,
+        300
+      ],
+      "size": [
+        230,
+        86
+      ],
+      "sources": [
+        {
+          "path": "skills/analyzing-stocks/references/decision-records.md"
+        }
+      ]
+    },
+    {
+      "id": "discover",
+      "type": "backend",
+      "label": "可选候选发现",
+      "sublabel": "discovering-inflections / Python",
+      "tag": "输出：Candidate；技能先经辩论门",
+      "pos": [
+        40,
+        70
+      ],
+      "size": [
+        235,
+        86
+      ],
+      "sources": [
+        {
+          "path": "skills/discovering-inflections/SKILL.md"
+        },
+        {
+          "path": "inflection_discovery/contract.py"
+        }
+      ]
+    },
+    {
+      "id": "sectors",
+      "type": "backend",
+      "label": "10 个行业策略",
+      "sublabel": "行业分类 / KPI / 估值锚",
+      "tag": "输出：行业 Merge schema",
+      "pos": [
+        720,
+        70
+      ],
+      "size": [
+        200,
+        86
+      ],
+      "sources": [
+        {
+          "path": "docs/framework-map.md"
+        }
+      ]
+    },
+    {
+      "id": "debate",
+      "type": "backend",
+      "label": "对抗辩论与事实核查",
+      "sublabel": "debating-stocks",
+      "tag": "输出：裁决 / 分歧 / 翻转条件",
+      "pos": [
+        720,
+        550
+      ],
+      "size": [
+        200,
+        86
+      ],
+      "sources": [
+        {
+          "path": "skills/debating-stocks/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "monitor",
+      "type": "backend",
+      "label": "校验 · 晨检 · 复盘",
+      "sublabel": "4 个确定性 Python CLI",
+      "tag": "输出：诊断 / 提醒 / 校准统计",
+      "pos": [
+        1060,
+        550
+      ],
+      "size": [
+        230,
+        86
+      ],
+      "sources": [
+        {
+          "path": "scripts/validate_records.py"
+        },
+        {
+          "path": "scripts/morning_check.py"
+        },
+        {
+          "path": "scripts/outcome_score.py"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "user-to-workflow",
+      "from": "user",
+      "to": "workflow",
+      "label": "研究请求",
+      "variant": "emphasis",
+      "labelAt": [
+        290,
+        340
+      ]
+    },
+    {
+      "id": "workflow-to-research",
+      "from": "workflow",
+      "to": "research",
+      "label": "调用或刷新估值",
+      "variant": "emphasis"
+    },
+    {
+      "id": "research-to-state",
+      "from": "research",
+      "to": "state",
+      "label": "按技能契约落盘",
+      "variant": "emphasis"
+    },
+    {
+      "id": "discover-to-workflow",
+      "from": "discover",
+      "to": "workflow",
+      "label": "候选线索"
+    },
+    {
+      "id": "sectors-to-research",
+      "from": "sectors",
+      "to": "research",
+      "label": "行业专用契约",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        820,
+        230
+      ]
+    },
+    {
+      "id": "research-to-debate",
+      "from": "research",
+      "to": "debate",
+      "label": "争议论点核查",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        820,
+        465
+      ]
+    },
+    {
+      "id": "state-to-monitor",
+      "from": "state",
+      "to": "monitor",
+      "label": "记录 + 组合",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1175,
+        465
+      ]
+    },
+    {
+      "id": "monitor-to-workflow",
+      "from": "monitor",
+      "to": "workflow",
+      "label": "晨检触发复查",
+      "fromSide": "bottom",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "技能层：由宿主 Agent 执行",
+      "items": [
+        "16 个 SKILL.md；10 个行业插件；15 份共享参考",
+        "箭头表示技能交接或文件消费，非常驻微服务 RPC。"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "确定性层：Python CLI",
+      "items": [
+        "记录校验 → 晨检 → 到期复盘；反转发现另有 PIT 回测",
+        "行情：yfinance / akshare；事实：SEC EDGAR。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "实现边界 · HEAD 59f227e",
+      "items": [
+        "晨检与评分手动触发；校准只测量，未自动反哺决策",
+        "Web 页面是 .scratch 原型；后续详图逐模块展开。"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "反转发现 · 数据重建与候选契约",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kefan-Lin/adaptive_stock_analysis_framework",
+      "revision": "59f227e15ec34e143fb2335b139fe3798760df41"
+    }
+  },
+  "components": [
+    {
+      "id": "entry",
+      "type": "backend",
+      "label": "CLI / 技能预筛入口",
+      "sublabel": "入：tickers、T → 出：运行路径",
+      "tag": "canary / backtest / discover / A 股",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/cli.py"
+        },
+        {
+          "path": "skills/discovering-inflections/scripts/prescreen.py"
+        }
+      ]
+    },
+    {
+      "id": "pit",
+      "type": "backend",
+      "label": "时点数据重建 PIT",
+      "sublabel": "入：ticker + T → 出：历史输入",
+      "tag": "filed ≤ T；价格切片；撤销未来拆股",
+      "pos": [
+        380,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/pit/fundamentals.py"
+        },
+        {
+          "path": "inflection_discovery/pit/prices.py"
+        },
+        {
+          "path": "inflection_discovery/pit/filing_text.py"
+        }
+      ]
+    },
+    {
+      "id": "score",
+      "type": "backend",
+      "label": "记分卡与 B 引擎",
+      "sublabel": "入：价格 / 财务 / 文本 → 出：分数",
+      "tag": "A 硬门；B/C 拐点；陷阱惩罚；D 排序",
+      "pos": [
+        720,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/scorecard/score.py"
+        },
+        {
+          "path": "inflection_discovery/scorecard/taxonomy.py"
+        },
+        {
+          "path": "inflection_discovery/engine_b/pipeline.py"
+        }
+      ]
+    },
+    {
+      "id": "candidate",
+      "type": "backend",
+      "label": "Candidate 候选契约",
+      "sublabel": "入：分数与证据 → 出：候选清单",
+      "tag": "统一 schema；身份归一；routing + thesis",
+      "pos": [
+        1060,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/contract.py"
+        },
+        {
+          "path": "inflection_discovery/symbols.py"
+        }
+      ]
+    },
+    {
+      "id": "sec",
+      "type": "external",
+      "label": "SEC EDGAR 客户端",
+      "sublabel": "入：ticker / URL → 出：JSON",
+      "tag": "CIK 查询；限频；缓存；退避重试",
+      "pos": [
+        380,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/edgar.py"
+        },
+        {
+          "path": "inflection_discovery/config.py"
+        }
+      ]
+    },
+    {
+      "id": "llm",
+      "type": "backend",
+      "label": "A 引擎：LLM 判断漏斗",
+      "sublabel": "入：预筛名单 → 出：A 候选与证据",
+      "tag": "读财务与叙事；比较模式只用 ≤T 资料",
+      "pos": [
+        1060,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/discovering-inflections/SKILL.md"
+        },
+        {
+          "path": "skills/discovering-inflections/scripts/prescreen.py"
+        }
+      ]
+    },
+    {
+      "id": "live",
+      "type": "backend",
+      "label": "US / ADR 当期发现",
+      "sublabel": "入：ticker → 出：当期 Candidate",
+      "tag": "SEC 季度不足 4 个时回退 akshare",
+      "pos": [
+        380,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/live/discover.py"
+        },
+        {
+          "path": "inflection_discovery/live/akshare_source.py"
+        }
+      ]
+    },
+    {
+      "id": "ashare",
+      "type": "backend",
+      "label": "A 股当期发现",
+      "sublabel": "入：6 位代码 → 出：A/B/D 候选",
+      "tag": "后复权价格；同花顺财务；C 留空",
+      "pos": [
+        720,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "inflection_discovery/ashare/data.py"
+        },
+        {
+          "path": "inflection_discovery/ashare/discover.py"
+        }
+      ]
+    },
+    {
+      "id": "handoff",
+      "type": "backend",
+      "label": "技能辩论门与研究交接",
+      "sublabel": "入：Top-N → 出：存活候选研究",
+      "tag": "技能要求辩论；代码 CLI 不自动调用",
+      "pos": [
+        1060,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/discovering-inflections/SKILL.md"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "entry-to-pit",
+      "from": "entry",
+      "to": "pit",
+      "label": "历史 / 回测输入",
+      "variant": "emphasis"
+    },
+    {
+      "id": "pit-to-score",
+      "from": "pit",
+      "to": "score",
+      "label": "PIT 输入",
+      "variant": "emphasis"
+    },
+    {
+      "id": "score-to-candidate",
+      "from": "score",
+      "to": "candidate",
+      "label": "eligible + scored",
+      "variant": "emphasis"
+    },
+    {
+      "id": "sec-to-pit",
+      "from": "sec",
+      "to": "pit",
+      "label": "companyfacts / filings",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        495,
+        230
+      ]
+    },
+    {
+      "id": "llm-to-candidate",
+      "from": "llm",
+      "to": "candidate",
+      "label": "统一 A 契约",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1175,
+        230
+      ]
+    },
+    {
+      "id": "entry-to-live",
+      "from": "entry",
+      "to": "live",
+      "label": "discover",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "candidate-to-handoff",
+      "from": "candidate",
+      "to": "handoff",
+      "label": "技能人工交接",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1175,
+        520
+      ]
+    },
+    {
+      "id": "live-to-candidate",
+      "from": "live",
+      "to": "candidate",
+      "label": "US 当期候选",
+      "fromSide": "top",
+      "toSide": "bottom"
+    },
+    {
+      "id": "ashare-to-candidate",
+      "from": "ashare",
+      "to": "candidate",
+      "label": "A 股当期候选",
+      "fromSide": "top",
+      "toSide": "bottom"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "代码门槛",
+      "items": [
+        "A：较 3 年高点回撤 ≥30%；trap_risk ≤0.70；按 D 排名。",
+        "D = (0.4A + 0.5max(B,C) + 0.1动量) × (1 − 0.4trap)。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "不可混用的输入",
+      "items": [
+        "US/ADR live 与 A 股为 NON-PIT；不可喂入历史回测。",
+        "ADV ≥100 万美元约束在回测 harness 执行；代码发现不等同技能漏斗。"
+      ]
+    }
+  ]
+}

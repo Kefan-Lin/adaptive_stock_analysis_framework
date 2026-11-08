@@ -12,3 +12,15 @@ reports/*.html
 reports/backtest_results*.json
 reports/holdout_results.json
 *.log
+
+# Local prototypes and private research artifacts
+/.scratch/
+/reports/2026-10-31-us-inflection-discovery/
+/docs/stock-scorecard-handoff-2026-11-07.md
+
+# Generated architecture verification artifacts
+/docs/architecture/*.png
+/docs/architecture/*.visual-check.*
+/docs/architecture/*.delivery.json
+/docs/architecture/*.validation.json
+/docs/architecture/RECEIPTS.json

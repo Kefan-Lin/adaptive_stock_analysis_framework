@@ -1,0 +1,305 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "私有状态与晨检 · 文件驱动的监控",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/Kefan-Lin/adaptive_stock_analysis_framework",
+      "revision": "59f227e15ec34e143fb2335b139fe3798760df41"
+    }
+  },
+  "components": [
+    {
+      "id": "records",
+      "type": "database",
+      "label": "状态定位与决策记录",
+      "sublabel": "入：--home / 指针 → 出：记录目录",
+      "tag": "records/<SYMBOL>/date-mode.md",
+      "pos": [
+        40,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/validate_records.py"
+        },
+        {
+          "path": "skills/analyzing-stocks/references/decision-records.md"
+        }
+      ]
+    },
+    {
+      "id": "load",
+      "type": "backend",
+      "label": "晨检载入与最新记录",
+      "sublabel": "入：记录 + 组合 → 出：扫描全集",
+      "tag": "最新日期；同日按 mode 优先级取一条",
+      "pos": [
+        380,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/morning_check.py"
+        }
+      ]
+    },
+    {
+      "id": "checks",
+      "type": "backend",
+      "label": "价格与日期检查",
+      "sublabel": "入：记录 + spot + as_of → 出：提醒",
+      "tag": "价格线 / 跌破 Bear / 复查日 / 财报",
+      "pos": [
+        720,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/morning_check.py"
+        }
+      ]
+    },
+    {
+      "id": "brief",
+      "type": "backend",
+      "label": "结构化结果与简报",
+      "sublabel": "入：检查结果 → 出：JSON / Markdown",
+      "tag": "按 act / review / watch 排序",
+      "pos": [
+        1060,
+        300
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/morning_check.py"
+        },
+        {
+          "path": "skills/morning-check/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "portfolio",
+      "type": "database",
+      "label": "portfolio.yaml",
+      "sublabel": "入：人工维护 → 出：持仓与期权腿",
+      "tag": "holdings / option_legs / accounts",
+      "pos": [
+        380,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/analyzing-stocks/references/decision-records.md"
+        },
+        {
+          "path": "tests/fixtures/state-home/portfolio.yaml"
+        }
+      ]
+    },
+    {
+      "id": "prices",
+      "type": "external",
+      "label": "报价源与文件回退",
+      "sublabel": "入：canonical symbol → 出：spot",
+      "tag": "CN→akshare；其余→yfinance；缺价显式",
+      "pos": [
+        720,
+        70
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/morning_check.py"
+        }
+      ]
+    },
+    {
+      "id": "p0",
+      "type": "security",
+      "label": "P0 校验与索引维护",
+      "sublabel": "入：状态目录 → 出：错误 / INDEX",
+      "tag": "校验词表 / 分组 / 路径；可 --reindex",
+      "pos": [
+        40,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/validate_records.py"
+        }
+      ]
+    },
+    {
+      "id": "option",
+      "type": "backend",
+      "label": "卖 Put 指派检查",
+      "sublabel": "入：short CSP 腿 → 出：风险证据",
+      "tag": "近价 / 实值 / DTE / 财报 / 资金预留",
+      "pos": [
+        720,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "scripts/morning_check.py"
+        }
+      ]
+    },
+    {
+      "id": "judgment",
+      "type": "backend",
+      "label": "技能补充判断与复查",
+      "sublabel": "入：llm_todo → 出：触发判断",
+      "tag": "查 KPI / 事件；归并简报；交回复查",
+      "pos": [
+        1060,
+        550
+      ],
+      "size": [
+        230,
+        90
+      ],
+      "sources": [
+        {
+          "path": "skills/morning-check/SKILL.md"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "records-to-load",
+      "from": "records",
+      "to": "load",
+      "label": "读取 YAML frontmatter",
+      "variant": "emphasis"
+    },
+    {
+      "id": "load-to-checks",
+      "from": "load",
+      "to": "checks",
+      "label": "最新记录",
+      "variant": "emphasis"
+    },
+    {
+      "id": "checks-to-brief",
+      "from": "checks",
+      "to": "brief",
+      "label": "findings + data_gaps",
+      "variant": "emphasis"
+    },
+    {
+      "id": "portfolio-to-load",
+      "from": "portfolio",
+      "to": "load",
+      "label": "组合快照",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        495,
+        230
+      ]
+    },
+    {
+      "id": "prices-to-checks",
+      "from": "prices",
+      "to": "checks",
+      "label": "spot 或 None",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        835,
+        230
+      ]
+    },
+    {
+      "id": "records-to-p0",
+      "from": "records",
+      "to": "p0",
+      "label": "校验；可重建索引",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        155,
+        470
+      ]
+    },
+    {
+      "id": "checks-to-option",
+      "from": "checks",
+      "to": "option",
+      "label": "同轮检查 CSP",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        835,
+        470
+      ]
+    },
+    {
+      "id": "brief-to-judgment",
+      "from": "brief",
+      "to": "judgment",
+      "label": "llm_todo + evidence",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelAt": [
+        1175,
+        470
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "文件是数据枢纽",
+      "items": [
+        "同一 (symbol,date,mode) 更新原记录；不同决策留在同一标的时间线。",
+        "P0 严格校验，P1 容错读取；不能把 P1 视为已自动通过 P0。"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "手动边界",
+      "items": [
+        "晨检不自动下单；财报临近检查使用已存 next_earnings。",
+        "缺价、缺记录、财报日期未知会进入 data_gaps。"
+      ]
+    }
+  ]
+}
